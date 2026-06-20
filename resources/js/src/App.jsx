@@ -1,13 +1,14 @@
 import { Routes, Route } from 'react-router-dom';
-
-function Home() {
-    return <h1>TalentTogo - Ça fonctionne !</h1>;
-}
+import { Navbar } from './components/Navbar';
+import { Home } from './pages/commun/Home';
 
 export default function App() {
     return (
-        <Routes>
-            <Route path="/" element={<Home />} />
-        </Routes>
+        <>
+            <Navbar />
+            <Routes>
+                <Route path="/" element={<Home />} />
+            </Routes>
+        </>
     );
 }
