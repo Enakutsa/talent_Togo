@@ -2,10 +2,10 @@ FROM php:8.2-cli
 
 # Dépendances système
 RUN apt-get update && apt-get install -y \
-    git curl libpq-dev libzip-dev zip unzip nodejs npm
+    git curl libpq-dev libzip-dev zip unzip nodejs npm libicu-dev
 
-# Extensions PHP nécessaires à Laravel + PostgreSQL
-RUN docker-php-ext-install pdo pdo_pgsql zip
+# Extensions PHP nécessaires à Laravel + PostgreSQL + Filament
+RUN docker-php-ext-install pdo pdo_pgsql zip intl
 
 # Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
