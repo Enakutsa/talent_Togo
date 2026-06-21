@@ -1,97 +1,79 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { Search, Menu, X, Bell } from "lucide-react";
-import "../assets/styles/Navbar.css";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Menu, X, Search } from "lucide-react";
+import "../assets/styles/Home.css";
 
-// TODO: brancher l'état réel de connexion via le contexte d'authentification
-// (ex: const { user, isAuthenticated } = useAuth();)
-// Pour l'instant, on affiche la navbar version "visiteur non connecté".
-
-export function Navbar() {
-  const [menuOpen, setMenuOpen] = useState(false);
+export default function Navbar() {
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const location = useLocation();
 
   const links = [
-    { href: "/", label: "Accueil" },
-    { href: "/talents", label: "Talents" },
-    { href: "/messages", label: "Messages" },
+    { label: "Accueil", to: "/" },
+    { label: "Trouver un talent", to: "/recherche" },
   ];
 
-  const isActive = (href) =>
-    href === "/" ? location.pathname === "/" : location.pathname.startsWith(href);
+  const isActive = (to) => (to === "/" ? location.pathname === "/" : location.pathname.startsWith(to));
 
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        <div className="navbar-inner">
-          {/* Logo */}
-          <Link to="/" className="navbar-logo">
-            <div className="navbar-logo-icon">
-              <span>T</span>
-            </div>
-            <span className="navbar-logo-text">
-              Talent<span className="accent">Togo</span>
-            </span>
-          </Link>
-
-          {/* Desktop nav */}
-          <div className="navbar-links">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                className={`navbar-link ${isActive(link.href) ? "active" : ""}`}
-              >
-                {link.label}
-              </Link>
-            ))}
+    <nav className="nav2">
+      <div className="nav2-inner">
+        {/* Logo */}
+        <Link to="/" className="nav2-logo">
+          <div className="nav2-logo-icon">
+            <span>T</span>
           </div>
+          <span className="nav2-logo-text">
+            Talent<span className="nav2-logo-accent">Togo</span>
+          </span>
+        </Link>
 
-          {/* Actions */}
-          <div className="navbar-actions">
-            <button className="icon-button" aria-label="Rechercher">
-              <Search size={18} />
-            </button>
-            <button className="icon-button" aria-label="Notifications">
-              <Bell size={18} />
-              <span className="notif-dot" />
-            </button>
-
-            {/* Visiteur non connecté : connexion / inscription */}
-            <Link to="/login" className="navbar-btn-outline">
-              Se connecter
+        {/* Desktop links */}
+        <div className="nav2-links">
+          {links.map((l) => (
+            <Link key={l.to} to={l.to} className={`nav2-link ${isActive(l.to) ? "nav2-link-active" : ""}`}>
+              {l.label}
             </Link>
-            <Link to="/inscription" className="navbar-cta">
-              S&apos;inscrire
-            </Link>
-          </div>
-
-          {/* Mobile menu toggle */}
-          <button className="navbar-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label="Menu">
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
+          ))}
         </div>
+
+        {/* Actions */}
+        <div className="nav2-actions">
+          <button onClick={() => navigate("/recherche")} className="nav2-icon-btn" aria-label="Rechercher">
+            <Search size={18} />
+          </button>
+          <Link to="/login" className="nav2-btn-outline">
+            Connexion
+          </Link>
+          <Link to="/inscription" className="nav2-btn-primary">
+            S&apos;inscrire
+          </Link>
+        </div>
+
+        {/* Mobile burger */}
+        <button className="nav2-burger" onClick={() => setOpen(!open)} aria-label="Menu">
+          {open ? <X size={20} /> : <Menu size={20} />}
+        </button>
       </div>
 
       {/* Mobile menu */}
-      <div className={`navbar-mobile ${menuOpen ? "open" : ""}`}>
-        {links.map((link) => (
-          <Link
-            key={link.href}
-            to={link.href}
-            onClick={() => setMenuOpen(false)}
-            className={`navbar-mobile-link ${isActive(link.href) ? "active" : ""}`}
-          >
-            {link.label}
-          </Link>
-        ))}
-        <Link to="/login" onClick={() => setMenuOpen(false)} className="navbar-mobile-link">
-          Se connecter
-        </Link>
-        <Link to="/inscription" onClick={() => setMenuOpen(false)} className="navbar-mobile-cta">
-          S&apos;inscrire
-        </Link>
-      </div>
+      {open && (
+        <div className="nav2-mobile">
+          {links.map((l) => (
+            <Link key={l.to} to={l.to} onClick={() => setOpen(false)} className="nav2-mobile-link">
+              {l.label}
+            </Link>
+          ))}
+          <div className="nav2-mobile-actions">
+            <Link to="/login" onClick={() => setOpen(false)} className="nav2-mobile-action-btn nav2-btn-outline">
+              Connexion
+            </Link>
+            <Link to="/inscription" onClick={() => setOpen(false)} className="nav2-mobile-action-btn nav2-btn-primary">
+              S&apos;inscrire
+            </Link>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
