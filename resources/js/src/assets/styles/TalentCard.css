@@ -1,0 +1,231 @@
+.talent-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid var(--gray-200, #e2e6e0);
+    overflow: hidden;
+    transition: box-shadow 0.25s, transform 0.25s;
+  }
+  
+  .talent-card:hover {
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+  
+  /* Cover */
+  .talent-card-cover {
+    position: relative;
+    height: 144px;
+    overflow: hidden;
+  }
+  
+  .talent-card-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s;
+  }
+  
+  .talent-card:hover .talent-card-cover-img {
+    transform: scale(1.05);
+  }
+  
+  .talent-card-cover-gradient {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.35), transparent 60%);
+  }
+  
+  .talent-card-fav-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.92);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    transition: transform 0.15s;
+  }
+  
+  .talent-card-fav-btn:hover {
+    transform: scale(1.1);
+  }
+  
+  .talent-card-heart {
+    color: var(--gray-500, #767d74);
+  }
+  
+  .talent-card-heart-liked {
+    color: #ef4444;
+    fill: #ef4444;
+  }
+  
+  .talent-card-category-badge {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--gray-900, #1a1d1b);
+    font-family: Inter, sans-serif;
+  }
+  
+  /* Body */
+  .talent-card-body {
+    padding: 16px;
+  }
+  
+  .talent-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  
+  .talent-card-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+    margin-top: -32px;
+  }
+  
+  .talent-card-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
+  
+  .talent-card-online-dot {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #22c55e;
+    border: 2px solid #fff;
+  }
+  
+  .talent-card-identity {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .talent-card-name-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  
+  .talent-card-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--gray-900, #1a1d1b);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: Sora, sans-serif;
+  }
+  
+  .talent-card-verified-icon {
+    flex-shrink: 0;
+    color: var(--green-700, #1a5c38);
+  }
+  
+  .talent-card-city {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--gray-500, #767d74);
+    margin-top: 2px;
+  }
+  
+  /* Rating */
+  .talent-card-rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  
+  .talent-card-star {
+    fill: #facc15;
+    color: #facc15;
+  }
+  
+  .talent-card-rating-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-900, #1a1d1b);
+  }
+  
+  .talent-card-rating-count {
+    font-size: 12px;
+    color: var(--gray-500, #767d74);
+  }
+  
+  /* Skills */
+  .talent-card-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  
+  .talent-card-skill-tag,
+  .talent-card-skill-more {
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    background: var(--gray-100, #f1f3ef);
+    color: var(--gray-600, #5a6058);
+    font-family: Inter, sans-serif;
+  }
+  
+  /* Footer */
+  .talent-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .talent-card-price-label {
+    font-size: 12px;
+    color: var(--gray-500, #767d74);
+    display: block;
+  }
+  
+  .talent-card-price-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gray-900, #1a1d1b);
+    margin: 0;
+  }
+  
+  .talent-card-cta {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--green-700, #1a5c38);
+    text-decoration: none;
+    font-family: Sora, sans-serif;
+    transition: opacity 0.15s;
+  }
+  
+  .talent-card-cta:hover {
+    opacity: 0.9;
+  }

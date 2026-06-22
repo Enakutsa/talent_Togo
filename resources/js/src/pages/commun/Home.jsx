@@ -1,234 +1,327 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import TalentCard from "../../components/talent/TalentCard";
+import { getFeaturedTalents, getStats, getCategories, getReviews } from "../../services/talent.service";
 import {
-  Search, Camera, Palette, Scissors, Music2, Film, Package2, Brush, Star,
-  ArrowRight, Users, CheckCircle, TrendingUp, ChevronRight
+  Search, MapPin, Camera, Palette, Scissors, Music2, Film, Package2, Brush, Star,
+  ArrowRight, Users, Briefcase, Globe, ChevronRight, Quote
 } from "lucide-react";
 import "../../assets/styles/Home.css";
 
-const categories = [
-  { icon: Camera, label: "Photographe", count: 48, grad: "grad-rose" },
-  { icon: Palette, label: "Graphiste", count: 32, grad: "grad-blue" },
-  { icon: Scissors, label: "Couturier", count: 61, grad: "grad-amber" },
-  { icon: Music2, label: "Musicien", count: 27, grad: "grad-emerald" },
-  { icon: Film, label: "Vidéaste", count: 19, grad: "grad-violet" },
-  { icon: Package2, label: "Artisan", count: 54, grad: "grad-lime" },
-  { icon: Brush, label: "Maquilleur", count: 38, grad: "grad-fuchsia" },
-  { icon: Star, label: "Danseur", count: 15, grad: "grad-cyan" },
+const CITIES = ["Lomé", "Kara", "Sokodé", "Atakpamé", "Kpalimé", "Dapaong"];
+
+const CATEGORY_ICONS = {
+  Photographe: Camera,
+  Graphiste: Palette,
+  Couturier: Scissors,
+  Musicien: Music2,
+  Vidéaste: Film,
+  Artisan: Package2,
+  Maquilleur: Brush,
+  Danseur: Star,
+};
+
+/* ===== Données de secours (tant que le backend /talents, /stats, /categories, /avis n'existe pas) ===== */
+const FALLBACK_CATEGORIES = [
+  { label: "Photographe", count: 48 },
+  { label: "Graphiste", count: 32 },
+  { label: "Couturier", count: 61 },
+  { label: "Musicien", count: 27 },
+  { label: "Vidéaste", count: 19 },
+  { label: "Artisan", count: 54 },
+  { label: "Maquilleur", count: 38 },
+  { label: "Danseur", count: 15 },
 ];
 
-// TODO: remplacer par un appel API Laravel (GET /api/talents?featured=1)
-const featuredTalents = [
-  { id: 1, nom: "Koffi Mensah", categorie: "Photographe", ville: "Lomé", note: 4.9, avis: 124, tarif: 50000, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop", portfolio: "https://images.unsplash.com/photo-1472148083604-64f1084980b9?w=400&h=300&fit=crop", disponible: true },
-  { id: 2, nom: "Akosua Doe", categorie: "Graphiste", ville: "Lomé", note: 4.7, avis: 89, tarif: 30000, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", portfolio: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop", disponible: true },
-  { id: 3, nom: "Yao Agbenyenu", categorie: "Couturier", ville: "Kara", note: 4.8, avis: 67, tarif: 45000, avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=100&h=100&fit=crop", portfolio: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop", disponible: false },
-  { id: 4, nom: "Ama Tekpor", categorie: "Vidéaste", ville: "Lomé", note: 4.8, avis: 43, tarif: 80000, avatar: "https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=100&h=100&fit=crop", portfolio: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop", disponible: true },
+const FALLBACK_TALENTS = [
+  { id: 1, nom: "Koffi Mensah", categorie: "Photographe", ville: "Lomé", note: 4.9, avis: 124, tarif: 50000, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop", portfolio: "https://images.unsplash.com/photo-1472148083604-64f1084980b9?w=400&h=300&fit=crop", disponible: true, competences: ["Portrait", "Mariage", "Mode"] },
+  { id: 2, nom: "Akosua Doe", categorie: "Graphiste", ville: "Lomé", note: 4.7, avis: 89, tarif: 30000, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", portfolio: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop", disponible: true, competences: ["Logo", "Identité visuelle", "Print"] },
+  { id: 3, nom: "Yao Agbenyenu", categorie: "Couturier", ville: "Kara", note: 4.8, avis: 67, tarif: 45000, avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=100&h=100&fit=crop", portfolio: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop", disponible: false, competences: ["Pagne", "Sur mesure", "Broderie"] },
+];
+
+const FALLBACK_STATS = [
+  { key: "talents", icon: Users, label: "Talents inscrits", value: "500+" },
+  { key: "clients", icon: Briefcase, label: "Clients actifs", value: "1 200+" },
+  { key: "prestations", icon: Star, label: "Prestations réalisées", value: "3 400+" },
+  { key: "villes", icon: Globe, label: "Villes couvertes", value: "6" },
+];
+
+const FALLBACK_REVIEWS = [
+  { id: 1, nom: "Esther Kpadenou", ville: "Lomé", note: 5, commentaire: "J'ai trouvé un photographe en moins de 10 minutes pour mon mariage. Service impeccable et très professionnel !", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop" },
+  { id: 2, nom: "Mawuli Adjété", ville: "Kara", note: 5, commentaire: "TalentTogo m'a permis de trouver une couturière de qualité près de chez moi. Je recommande vivement !", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop" },
+  { id: 3, nom: "Akossiwa Lawson", ville: "Lomé", note: 4, commentaire: "Plateforme simple et rapide pour contacter directement les talents. La messagerie intégrée est top.", avatar: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=80&h=80&fit=crop" },
 ];
 
 const steps = [
-  { num: "01", title: "Recherchez", desc: "Filtrez par catégorie, ville, disponibilité et budget pour trouver le talent idéal.", icon: Search },
-  { num: "02", title: "Consultez", desc: "Parcourez les portfolios, lisez les avis vérifiés et comparez les profils.", icon: Star },
-  { num: "03", title: "Contactez", desc: "Envoyez une demande directement via la messagerie intégrée sécurisée.", icon: CheckCircle },
-];
-
-const testimonials = [
-  { nom: "Kofi Asamoah", role: "Organisateur d'événements", text: "J'ai trouvé un photographe professionnel en 10 minutes. Service exceptionnel !", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=60&h=60&fit=crop", note: 5 },
-  { nom: "Abla Kumi", role: "Propriétaire de boutique", text: "TalentTogo m'a permis d'atteindre des clients que je n'aurais jamais pu contacter autrement.", avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=60&h=60&fit=crop", note: 5 },
-  { nom: "Mawuli Tetteh", role: "Chef d'entreprise", text: "La qualité des talents sur cette plateforme est remarquable. Je recommande vivement.", avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=60&h=60&fit=crop", note: 5 },
+  { step: "01", title: "Recherchez un talent", desc: "Utilisez notre moteur de recherche pour trouver un talent par compétence, ville ou budget." },
+  { step: "02", title: "Consultez le portfolio", desc: "Parcourez les travaux réalisés, lisez les avis et comparez les profils." },
+  { step: "03", title: "Contactez directement", desc: "Envoyez une demande de prestation via notre messagerie intégrée sécurisée." },
 ];
 
 export default function Home() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
+  const [city, setCity] = useState("");
   const [favorites, setFavorites] = useState([]);
+
+  const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
+  const [talents, setTalents] = useState(FALLBACK_TALENTS);
+  const [stats, setStats] = useState(FALLBACK_STATS);
+  const [reviews, setReviews] = useState(FALLBACK_REVIEWS);
+
+  // Chargement temps réel depuis l'API. Si une route n'existe pas encore
+  // côté backend, on garde silencieusement les données de secours.
+  useEffect(() => {
+    getCategories()
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data?.data;
+        if (Array.isArray(list) && list.length) setCategories(list);
+      })
+      .catch(() => {});
+
+    getFeaturedTalents()
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data?.data;
+        if (Array.isArray(list) && list.length) setTalents(list);
+      })
+      .catch(() => {});
+
+    getStats()
+      .then((data) => {
+        if (!data) return;
+        setStats([
+          { key: "talents", icon: Users, label: "Talents inscrits", value: data.talents ?? "500+" },
+          { key: "clients", icon: Briefcase, label: "Clients actifs", value: data.clients ?? "1 200+" },
+          { key: "prestations", icon: Star, label: "Prestations réalisées", value: data.prestations ?? "3 400+" },
+          { key: "villes", icon: Globe, label: "Villes couvertes", value: data.villes ?? "6" },
+        ]);
+      })
+      .catch(() => {});
+
+    getReviews()
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data?.data;
+        if (Array.isArray(list) && list.length) setReviews(list);
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (search) params.set("q", search);
+    if (city) params.set("ville", city);
+    navigate(`/recherche?${params.toString()}`);
+  };
 
   return (
     <div className="home">
       {/* HERO */}
-      <section className="hero-section hero-gradient hero-pattern">
+      <section className="hero-section">
+        <div className="hero-blob hero-blob-amber" />
+        <div className="hero-blob hero-blob-green" />
+
         <div className="hero-inner">
           <div className="hero-badge">
-            <TrendingUp size={13} color="#fcd34d" />
-            <span className="hero-badge-text">+500 talents actifs au Togo</span>
+            <span>🇹🇬 La plateforme des talents togolais</span>
           </div>
 
           <h1 className="hero-title">
-            Connectez-vous aux
-            <br />
-            <span className="shimmer-text">meilleurs talents</span>
-            <br />
-            du Togo
+            Découvrez et valorisez les <span className="hero-accent">talents locaux</span> du Togo
           </h1>
 
           <p className="hero-subtitle">
-            Photographes, graphistes, couturiers, musiciens — trouvez le prestataire créatif
-            idéal pour votre projet en quelques clics.
+            Musiciens, photographes, couturiers, graphistes, artisans… Trouvez le talent parfait
+            pour votre projet en quelques clics.
           </p>
 
-          <div className="hero-search-wrap">
-            <div className="hero-search-bar">
-              <div className="hero-search-field">
-                <Search size={20} color="#9ca3af" />
-                <input
-                  type="text"
-                  placeholder="Photographe, graphiste, couturier..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-              </div>
-              <button onClick={() => navigate("/recherche")} className="hero-search-btn">
-                Rechercher <ArrowRight size={16} />
-              </button>
+          <form onSubmit={handleSearch} className="hero-search-bar">
+            <div className="hero-search-field">
+              <Search size={18} className="hero-search-icon" />
+              <input
+                type="text"
+                placeholder="Quel talent recherchez-vous ?"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
             </div>
-            <p className="hero-suggestions">
-              Suggestions : Photographe à Lomé · Graphiste · Couturier à Kara
-            </p>
-          </div>
+            <div className="hero-search-field hero-search-field-city">
+              <MapPin size={18} className="hero-search-icon" />
+              <select value={city} onChange={(e) => setCity(e.target.value)}>
+                <option value="">Toutes les villes</option>
+                {CITIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <button type="submit" className="hero-search-btn">
+              Rechercher
+            </button>
+          </form>
 
-          <div className="hero-stats">
-            {[
-              { val: "500+", label: "Talents actifs" },
-              { val: "1 200+", label: "Clients satisfaits" },
-              { val: "8+", label: "Catégories" },
-            ].map((s) => (
-              <div key={s.label}>
-                <div className="hero-stat-value">{s.val}</div>
-                <div className="hero-stat-label">{s.label}</div>
-              </div>
+          <div className="hero-quicklinks">
+            {["Photographe à Lomé", "Musicien mariage", "Graphiste logo", "Couture pagne"].map((q) => (
+              <button
+                key={q}
+                type="button"
+                className="hero-quicklink"
+                onClick={() => navigate(`/recherche?q=${encodeURIComponent(q)}`)}
+              >
+                {q}
+              </button>
             ))}
           </div>
         </div>
+      </section>
 
-        <div className="hero-wave">
-          <svg viewBox="0 0 1440 80" fill="none">
-            <path d="M0 80L1440 80L1440 40C1200 80 800 0 600 20C400 40 200 80 0 40Z" fill="#F5F3FF" />
-          </svg>
+      {/* STATS */}
+      <section className="stats-section">
+        <div className="stats-grid">
+          {stats.map(({ key, icon: Icon, label, value }) => (
+            <div key={key} className="stat-item">
+              <div className="stat-icon-wrap">
+                <Icon size={22} />
+              </div>
+              <span className="stat-value">{value}</span>
+              <span className="stat-label">{label}</span>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* CATEGORIES */}
       <section className="section">
-        <div className="section-center">
-          <h2 className="section-title">Explorez par catégorie</h2>
-          <p className="section-subtitle">
-            Des centaines de talents togolais dans tous les domaines créatifs.
-          </p>
+        <div className="section-header-row">
+          <div>
+            <h2 className="section-title-left">Explorez par catégorie</h2>
+            <p className="section-subtitle-left">Toutes les compétences créatives du Togo</p>
+          </div>
+          <button onClick={() => navigate("/recherche")} className="section-link">
+            Voir tout <ChevronRight size={16} />
+          </button>
         </div>
 
         <div className="categories-grid">
-          {categories.map(({ icon: Icon, label, count, grad }) => (
-            <button key={label} onClick={() => navigate("/recherche")} className="category-card">
-              <div className={`category-icon-wrap ${grad}`}>
-                <Icon size={22} color="#fff" />
-              </div>
-              <h3 className="category-label">{label}</h3>
-              <p className="category-count">{count} talents</p>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section className="steps-section">
-        <div className="steps-inner">
-          <div className="section-center">
-            <h2 className="section-title">Comment ça marche ?</h2>
-            <p className="section-subtitle">Trouvez le talent idéal en 3 étapes simples.</p>
-          </div>
-
-          <div className="steps-grid">
-            {steps.map(({ num, title, desc, icon: Icon }) => (
-              <div key={num} className="step-item">
-                <div className="step-icon-wrap">
-                  <Icon size={26} color="#f59e0b" />
+          {(Array.isArray(categories) ? categories : []).map(({ label, count }) => {
+            const Icon = CATEGORY_ICONS[label] || Star;
+            return (
+              <button
+                key={label}
+                onClick={() => navigate(`/recherche?categorie=${encodeURIComponent(label)}`)}
+                className="category-card"
+              >
+                <div className="category-icon-wrap">
+                  <Icon size={22} />
                 </div>
-                <div className="step-num">{num}</div>
-                <h3 className="step-title">{title}</h3>
-                <p className="step-desc">{desc}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="steps-cta-wrap">
-            <button onClick={() => navigate("/recherche")} className="btn-amber">
-              Trouver un talent maintenant <ArrowRight size={18} />
-            </button>
-          </div>
+                <h3 className="category-label">{label}</h3>
+                <p className="category-count">{count} talents</p>
+              </button>
+            );
+          })}
         </div>
       </section>
 
       {/* FEATURED TALENTS */}
-      <section className="section">
-        <div className="section-header-row">
-          <div>
-            <h2 className="section-title">Talents en vedette</h2>
-            <p className="section-subtitle" style={{ margin: 0, textAlign: "left" }}>
-              Les mieux notés de la semaine
-            </p>
+      <section className="featured-section">
+        <div className="featured-inner">
+          <div className="section-header-row">
+            <div>
+              <h2 className="section-title-left">Talents en vedette</h2>
+              <p className="section-subtitle-left">Les profils les mieux notés cette semaine</p>
+            </div>
+            <button onClick={() => navigate("/recherche")} className="section-link">
+              Voir tous les talents <ChevronRight size={16} />
+            </button>
           </div>
-          <button onClick={() => navigate("/recherche")} className="section-link">
-            Voir tous <ChevronRight size={16} />
-          </button>
+
+          <div className="talents-grid">
+            {(Array.isArray(talents) ? talents : []).map((t) => (
+              <TalentCard
+                key={t.id}
+                {...t}
+                isFavorite={favorites.includes(t.id)}
+                onToggleFavorite={(id) =>
+                  setFavorites((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]))
+                }
+              />
+            ))}
+          </div>
+
+          <div className="featured-cta-wrap">
+            <button onClick={() => navigate("/recherche")} className="btn-primary">
+              Voir tous les talents <ArrowRight size={16} />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="section">
+        <div className="section-center">
+          <h2 className="section-title">Comment ça marche ?</h2>
+          <p className="section-subtitle">Simple, rapide et sécurisé</p>
         </div>
 
-        <div className="talents-grid">
-          {featuredTalents.map((t) => (
-            <TalentCard
-              key={t.id}
-              {...t}
-              isFavorite={favorites.includes(t.id)}
-              onToggleFavorite={(id) =>
-                setFavorites((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]))
-              }
-            />
+        <div className="steps-grid">
+          {steps.map(({ step, title, desc }, i) => (
+            <div key={step} className={`step-item step-color-${i}`}>
+              <div className="step-num-badge">{step}</div>
+              <h3 className="step-title">{title}</h3>
+              <p className="step-desc">{desc}</p>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
-      <section className="testimonials-section">
-        <div className="testimonials-inner">
-          <div className="section-center">
-            <h2 className="section-title">Ce qu&apos;ils disent de nous</h2>
-          </div>
-          <div className="testimonials-grid">
-            {testimonials.map((t) => (
-              <div key={t.nom} className="testimonial-card">
-                <div className="testimonial-stars">
-                  {Array.from({ length: t.note }).map((_, i) => (
-                    <Star key={i} size={14} color="#f59e0b" fill="#f59e0b" />
-                  ))}
-                </div>
-                <p className="testimonial-text">&ldquo;{t.text}&rdquo;</p>
-                <div className="testimonial-author">
-                  <img src={t.avatar} alt={t.nom} className="testimonial-avatar" />
-                  <div>
-                    <div className="testimonial-name">{t.nom}</div>
-                    <div className="testimonial-role">{t.role}</div>
-                  </div>
+      {/* TÉMOIGNAGES CLIENTS */}
+      <section className="section testimonials-section">
+        <div className="section-center">
+          <h2 className="section-title">Ce que disent nos clients</h2>
+          <p className="section-subtitle">Des milliers d'utilisateurs satisfaits à travers le Togo</p>
+        </div>
+
+        <div className="testimonials-grid">
+          {(Array.isArray(reviews) ? reviews : []).map((r) => (
+            <div key={r.id} className="testimonial-card">
+              <Quote size={28} className="testimonial-quote-icon" />
+              <div className="testimonial-stars">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    size={14}
+                    className={i < r.note ? "testimonial-star-filled" : "testimonial-star-empty"}
+                  />
+                ))}
+              </div>
+              <p className="testimonial-text">"{r.commentaire}"</p>
+              <div className="testimonial-author">
+                <img src={r.avatar} alt={r.nom} className="testimonial-avatar" />
+                <div>
+                  <p className="testimonial-name">{r.nom}</p>
+                  <p className="testimonial-city">{r.ville}</p>
                 </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* CTA */}
-      <section className="cta-section hero-gradient">
+      <section className="cta-section">
+        <div className="cta-pattern" />
         <div className="cta-inner">
-          <h2 className="cta-title">Vous êtes un talent togolais ?</h2>
+          <h2 className="cta-title">Vous êtes un talent ? Rejoignez-nous !</h2>
           <p className="cta-text">
-            Créez votre profil professionnel gratuitement et commencez à recevoir des demandes dès aujourd&apos;hui.
+            Créez votre profil professionnel gratuit, publiez votre portfolio et connectez-vous
+            avec des milliers de clients potentiels au Togo et en Afrique.
           </p>
           <div className="cta-actions">
-            <button onClick={() => navigate("/inscription")} className="btn-amber-lg">
-              <Users size={18} />
-              Créer mon profil talent
+            <button onClick={() => navigate("/register")} className="btn-outline-white">
+              Créer mon profil gratuitement
             </button>
-            <button onClick={() => navigate("/recherche")} className="btn-outline-white">
-              Chercher un talent
+            <button onClick={() => navigate("/recherche")} className="btn-amber-cta">
+              Découvrir les talents
             </button>
           </div>
         </div>

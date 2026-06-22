@@ -1,20 +1,7 @@
-import { useNavigate } from "react-router-dom";
-import { Star, MapPin, Heart } from "lucide-react";
-import "../../assets/styles/Home.css";
-
-function Stars({ note }) {
-  return (
-    <span className="talent-stars">
-      {[1, 2, 3, 4, 5].map((s) => (
-        <Star
-          key={s}
-          size={12}
-          className={s <= Math.round(note) ? "talent-star-filled" : "talent-star-empty"}
-        />
-      ))}
-    </span>
-  );
-}
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Star, MapPin, CheckCircle, Heart } from "lucide-react";
+import "../../assets/styles/TalentCard.css";
 
 export default function TalentCard({
   id,
@@ -26,73 +13,85 @@ export default function TalentCard({
   tarif,
   avatar,
   portfolio,
-  disponible = true,
-  isFavorite = false,
+  disponible,
+  competences = [],
+  verifie = true,
+  isFavorite,
   onToggleFavorite,
 }) {
-  const navigate = useNavigate();
+  const [liked, setLiked] = useState(!!isFavorite);
+
+  const handleLike = () => {
+    setLiked(!liked);
+    onToggleFavorite?.(id);
+  };
 
   return (
-    <div className="talent-card" onClick={() => navigate(`/talents/${id}`)}>
+    <div className="talent-card">
       {/* Cover */}
       <div className="talent-card-cover">
-        {portfolio && <img src={portfolio} alt={`Portfolio de ${nom}`} />}
+        <img src={portfolio} alt={nom} className="talent-card-cover-img" />
+        <div className="talent-card-cover-gradient" />
 
-        {/* Dispo badge */}
-        <div className="talent-card-badge-wrap">
-          <span className={disponible ? "talent-badge-available" : "talent-badge-unavailable"}>
-            {disponible ? "Disponible" : "Indisponible"}
-          </span>
-        </div>
-
-        {/* Favorite */}
-        <button
-          className="talent-heart-btn"
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleFavorite?.(id);
-          }}
-          aria-label="Ajouter aux favoris"
-        >
-          <Heart size={15} className={isFavorite ? "talent-heart-filled" : "talent-heart-empty"} />
+        <button onClick={handleLike} className="talent-card-fav-btn" aria-label="Favori">
+          <Heart size={15} className={liked ? "talent-card-heart-liked" : "talent-card-heart"} />
         </button>
+
+        <span className="talent-card-category-badge">{categorie}</span>
       </div>
 
-      {/* Content */}
-      <div className="talent-card-content">
-        <div className="talent-card-top">
-          <img src={avatar} alt={nom} className="talent-card-avatar" />
-          <div className="talent-card-info">
-            <h3 className="talent-card-name">{nom}</h3>
-            <span className="talent-card-category">{categorie}</span>
+      {/* Body */}
+      <div className="talent-card-body">
+        {/* Avatar + name */}
+        <div className="talent-card-header">
+          <div className="talent-card-avatar-wrap">
+            <img src={avatar} alt={nom} className="talent-card-avatar" />
+            {disponible && <span className="talent-card-online-dot" />}
+          </div>
+          <div className="talent-card-identity">
+            <div className="talent-card-name-row">
+              <h3 className="talent-card-name">{nom}</h3>
+              {verifie && <CheckCircle size={14} className="talent-card-verified-icon" />}
+            </div>
+            <div className="talent-card-city">
+              <MapPin size={11} />
+              <span>{ville}</span>
+            </div>
           </div>
         </div>
 
+        {/* Rating */}
         <div className="talent-card-rating">
-          <Stars note={note} />
-          <span className="talent-card-rating-value">{note.toFixed(1)}</span>
+          <Star size={13} className="talent-card-star" />
+          <span className="talent-card-rating-value">{note}</span>
           <span className="talent-card-rating-count">({avis} avis)</span>
         </div>
 
-        <div className="talent-card-location">
-          <MapPin size={12} />
-          <span>{ville}</span>
-        </div>
+        {/* Skills */}
+        {competences.length > 0 && (
+          <div className="talent-card-skills">
+            {competences.slice(0, 3).map((skill) => (
+              <span key={skill} className="talent-card-skill-tag">
+                {skill}
+              </span>
+            ))}
+            {competences.length > 3 && (
+              <span className="talent-card-skill-more">+{competences.length - 3}</span>
+            )}
+          </div>
+        )}
 
+        {/* Footer */}
         <div className="talent-card-footer">
           <div>
             <span className="talent-card-price-label">À partir de</span>
-            <p className="talent-card-price">{tarif.toLocaleString("fr-FR")} FCFA</p>
+            <p className="talent-card-price-value">
+              {Number(tarif).toLocaleString("fr-FR")} FCFA
+            </p>
           </div>
-          <button
-            className="talent-card-cta"
-            onClick={(e) => {
-              e.stopPropagation();
-              navigate(`/talents/${id}`);
-            }}
-          >
+          <Link to={`/talents/${id}`} className="talent-card-cta">
             Voir profil
-          </button>
+          </Link>
         </div>
       </div>
     </div>

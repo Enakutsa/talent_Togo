@@ -1,0 +1,113 @@
+:root {
+    --green-700: #1a5c38;
+    --amber-700: #b5650f;
+    --amber-500: #d4841a;
+  }
+  
+  .footer {
+    background: #1c1410;
+    color: rgba(255, 255, 255, 0.65);
+  }
+  
+  .footer-top-bar {
+    height: 4px;
+    background: var(--green-700);
+  }
+  
+  .footer-inner {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 56px 24px 32px;
+  }
+  
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 36px;
+    margin-bottom: 40px;
+  }
+  
+  @media (min-width: 768px) {
+    .footer-grid { grid-template-columns: 1.4fr 1fr 1fr 1fr; }
+  }
+  
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  
+  .footer-brand-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--amber-500);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .footer-brand-icon span {
+    color: #1c1410;
+    font-weight: bold;
+    font-size: 14px;
+    font-family: Sora, sans-serif;
+  }
+  
+  .footer-brand-text {
+    font-weight: bold;
+    font-size: 18px;
+    color: #fff;
+    font-family: Sora, sans-serif;
+  }
+  
+  .footer-desc {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.55);
+    font-family: Inter, sans-serif;
+    max-width: 280px;
+  }
+  
+  .footer-col-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: #fff;
+    margin: 0 0 16px;
+    font-family: Sora, sans-serif;
+  }
+  
+  .footer-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .footer-link {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.55);
+    text-decoration: none;
+    font-family: Inter, sans-serif;
+    transition: color 0.15s;
+  }
+  
+  .footer-link:hover {
+    color: var(--amber-500);
+  }
+  
+  .footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 24px;
+    text-align: center;
+  }
+  
+  .footer-copyright {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.45);
+    font-family: Inter, sans-serif;
+    margin: 0;
+  }
