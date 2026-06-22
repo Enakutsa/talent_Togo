@@ -7,9 +7,11 @@ export default function App() {
   return (
     <>
       <Navbar />
+
       <Routes>
         <Route path="/" element={<Home />} />
       </Routes>
+
       <Footer />
     </>
   );

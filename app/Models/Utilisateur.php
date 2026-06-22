@@ -8,6 +8,49 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
+/**
+ * @property int $id
+ * @property string $nom
+ * @property string $prenom
+ * @property string $email
+ * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property string $mot_de_passe
+ * @property string $role
+ * @property bool $is_verified
+ * @property string|null $remember_token
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Avis> $avisDonnes
+ * @property-read int|null $avis_donnes_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\DemandePrestation> $demandesPrestation
+ * @property-read int|null $demandes_prestation_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Favori> $favoris
+ * @property-read int|null $favoris_count
+ * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property-read int|null $notifications_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Notification> $notificationsInternes
+ * @property-read int|null $notifications_internes_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Otp> $otps
+ * @property-read int|null $otps_count
+ * @property-read \App\Models\ProfilTalent|null $profilTalent
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Sanctum\PersonalAccessToken> $tokens
+ * @property-read int|null $tokens_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Utilisateur newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Utilisateur newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Utilisateur query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Utilisateur whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Utilisateur whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Utilisateur whereEmailVerifiedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Utilisateur whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Utilisateur whereIsVerified($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Utilisateur whereMotDePasse($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Utilisateur whereNom($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Utilisateur wherePrenom($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Utilisateur whereRememberToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Utilisateur whereRole($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Utilisateur whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Utilisateur extends Authenticatable
 {
     /** @use HasFactory<UtilisateurFactory> */
