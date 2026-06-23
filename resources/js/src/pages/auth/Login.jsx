@@ -1,45 +1,70 @@
 import { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { Mail, ArrowRight, ShieldCheck } from "lucide-react";
 import { login as loginApi, verifyLoginOtp, resendOtp } from "../../services/auth.service";
 import { AuthContext } from "../../context/AuthContext";
-import "../../assets/styles/Inscription.css";
+import "../../assets/styles/Login.css";
 
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useContext(AuthContext);
 
-  const [step, setStep] = useState("email");
+  const [step, setStep] = useState("credentials"); // "credentials" | "otp"
+  const [loading, setLoading] = useState(false);
+  const [generalError, setGeneralError] = useState("");
+  const [errors, setErrors] = useState({});
+
   const [email, setEmail] = useState("");
   const [utilisateurId, setUtilisateurId] = useState(null);
   const [code, setCode] = useState("");
 
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  // ✅ ETAPE 1 : EMAIL
-  const handleEmailSubmit = async (e) => {
+  // ✅ STEP EMAIL
+  const handleCredentialsSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setErrors({});
+    setGeneralError("");
     setLoading(true);
 
     try {
       const data = await loginApi({ email });
 
+      // ✅ IMPORTANT
       setUtilisateurId(data.utilisateur_id);
       setStep("otp");
 
     } catch (err) {
-      setError("Email introuvable ou erreur.");
+      console.log(err.response?.data);
+
+      if (err.response?.status === 422) {
+        setErrors(err.response.data.errors || {});
+      } else if (err.response?.status === 404) {
+        setGeneralError("Aucun compte trouvé avec cet email.");
+      } else {
+        setGeneralError("Une erreur est survenue. Veuillez réessayer.");
+      }
     } finally {
       setLoading(false);
     }
   };
 
-  // ✅ ETAPE 2 : OTP
+  // ✅ STEP OTP
   const handleOtpSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setGeneralError("");
     setLoading(true);
+
+    // ✅ sécurité
+    if (!utilisateurId) {
+      setGeneralError("Erreur utilisateur. Reconnectez-vous.");
+      setLoading(false);
+      return;
+    }
+
+    if (code.length !== 6) {
+      setGeneralError("Le code doit contenir 6 chiffres.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const data = await verifyLoginOtp({
@@ -47,13 +72,33 @@ export default function Login() {
         code,
       });
 
+      console.log("RESPONSE OTP :", data);
+
+      // ✅ CORRECTION PRINCIPALE
       login(data.data.utilisateur, data.data.token);
+
+      // ✅ stock token
       localStorage.setItem("token", data.data.token);
 
-      navigate("/dashboard");
+      // ✅ redirection
+      if (data.data.utilisateur.role === "talent") {
+        navigate("/talent/dashboard");
+      } else if (data.data.utilisateur.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/");
+      }
 
     } catch (err) {
-      setError("Code invalide ou expiré");
+      console.log("ERREUR OTP :", err.response?.data);
+
+      if (err.response?.status === 422) {
+        setGeneralError(err.response.data.message || "Code invalide ou expiré.");
+      } else if (err.response?.status === 429) {
+        setGeneralError("Trop de tentatives. Réessayez plus tard.");
+      } else {
+        setGeneralError("Erreur serveur. Réessayez.");
+      }
     } finally {
       setLoading(false);
     }
@@ -61,73 +106,135 @@ export default function Login() {
 
   // ✅ RESEND
   const handleResend = async () => {
-    await resendOtp(utilisateurId);
-    alert("Code renvoyé ✅");
+    setGeneralError("");
+
+    try {
+      await resendOtp(utilisateurId);
+      setGeneralError("✅ Nouveau code envoyé !");
+    } catch (err) {
+      setGeneralError("Impossible de renvoyer le code.");
+    }
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
+    <div className="login-bg">
+      <div className="login-wrap">
 
-        {/* ETAPE EMAIL */}
-        {step === "email" && (
-          <>
-            <h2>Connexion</h2>
+        {/* LOGO */}
+        <div className="login-logo-block">
+          <Link to="/" className="login-logo-link">
+            <div className="login-logo-icon">
+              <span>T</span>
+            </div>
+            <span className="login-logo-text">
+              Talent<span className="login-logo-accent">Togo</span>
+            </span>
+          </Link>
 
-            <form onSubmit={handleEmailSubmit}>
+          <p className="login-logo-tagline">
+            {step === "credentials"
+              ? "Content de vous revoir !"
+              : "Vérification de sécurité"}
+          </p>
+        </div>
 
-              <input
-                type="email"
-                placeholder="Entrer votre email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="input"
-              />
+        <div className="login-card">
 
-              <button className="btn-submit">
-                {loading ? "Envoi..." : "Recevoir code"}
-              </button>
+          {/* EMAIL */}
+          {step === "credentials" ? (
+            <>
+              <h1 className="login-card-title">Connexion</h1>
 
-            </form>
-          </>
-        )}
+              {generalError && (
+                <p className="form-error-banner-login">{generalError}</p>
+              )}
 
-        {/* ETAPE OTP */}
-        {step === "otp" && (
-          <>
-            <h2>Entrer le code OTP</h2>
+              <form onSubmit={handleCredentialsSubmit} className="login-form">
 
-            <form onSubmit={handleOtpSubmit}>
+                <div className="login-field">
+                  <label className="login-label">Adresse e-mail</label>
 
-              <input
-                type="text"
-                maxLength={6}
-                value={code}
-                onChange={(e) =>
-                  setCode(e.target.value.replace(/\D/g, ""))
-                }
-                className="input"
-                placeholder="Code OTP"
-              />
+                  <div className="login-input-wrap">
+                    <Mail size={17} />
+                    <input
+                      type="email"
+                      className="login-input"
+                      placeholder="email@example.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      autoFocus
+                    />
+                  </div>
 
-              <button className="btn-submit">
-                {loading ? "Vérification..." : "Valider"}
-              </button>
+                  {errors.email && (
+                    <span className="login-field-error">{errors.email[0]}</span>
+                  )}
+                </div>
 
-            </form>
+                <button className="btn-primary-login" disabled={loading}>
+                  {loading ? (
+                    <span className="login-spinner" />
+                  ) : (
+                    <>
+                      Recevoir le code <ArrowRight size={18} />
+                    </>
+                  )}
+                </button>
 
-            <button onClick={handleResend}>
-              Renvoyer code
-            </button>
-          </>
-        )}
+              </form>
 
-        {error && <p className="form-error-banner">{error}</p>}
+              <p className="login-bottom-text">
+                Pas encore de compte ?{" "}
+                <Link to="/register">S'inscrire</Link>
+              </p>
+            </>
+          ) : (
 
-        <p>
-          Pas de compte ? <Link to="/register">Inscription</Link>
-        </p>
+            /* OTP */
+            <>
+              <div className="login-otp-icon-wrap">
+                <ShieldCheck size={28} />
+              </div>
 
+              <h1 className="login-card-title">Vérification</h1>
+
+              {generalError && (
+                <p className="form-error-banner-login">{generalError}</p>
+              )}
+
+              <form onSubmit={handleOtpSubmit} className="login-form">
+
+                <input
+                  type="text"
+                  className="login-input login-otp-input"
+                  maxLength={6}
+                  value={code}
+                  onChange={(e) =>
+                    setCode(e.target.value.replace(/\D/g, ""))
+                  }
+                  placeholder="• • • • • •"
+                />
+
+                <button
+                  className="btn-primary-login"
+                  disabled={loading || code.length !== 6}
+                >
+                  {loading ? <span className="login-spinner" /> : "Vérifier"}
+                </button>
+
+              </form>
+
+              <p className="login-bottom-text">
+                Vous n'avez rien reçu ?{" "}
+                <button onClick={handleResend} className="login-link-button">
+                  Renvoyer le code
+                </button>
+              </p>
+            </>
+          )}
+
+        </div>
       </div>
     </div>
   );

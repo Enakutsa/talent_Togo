@@ -24,7 +24,14 @@ api.interceptors.request.use((config) => {
 
 // ✅ REGISTER
 export const register = async (data) => {
-  const res = await api.post("/auth/register", data);
+  const isFormData = data instanceof FormData;
+
+  const res = await api.post("/auth/register", data, {
+    headers: isFormData
+      ? { "Content-Type": "multipart/form-data" }
+      : { "Content-Type": "application/json" },
+  });
+
   return res.data;
 };
 
