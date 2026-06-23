@@ -8,23 +8,38 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('profils_talent', function (Blueprint $table) {
+        Schema::create('profils_talents', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('utilisateur_id')->unique()->constrained('utilisateurs')->onDelete('cascade');
-            $table->foreignId('categorie_id')->constrained('categories')->onDelete('cascade');
+
+            $table->foreignId('utilisateur_id')
+                ->unique()
+                ->constrained('utilisateurs')
+                ->onDelete('cascade');
+
+            $table->foreignId('categorie_id')
+                ->constrained('categories')
+                ->onDelete('cascade');
+
             $table->string('ville');
+
             $table->decimal('tarif_min', 10, 2)->nullable();
             $table->decimal('tarif_max', 10, 2)->nullable();
+
             $table->text('biographie')->nullable();
+
             $table->boolean('disponibilite')->default(true);
-            $table->enum('statut', ['en_attente', 'valide', 'rejete'])->default('en_attente');
+
+            $table->enum('statut', ['en_attente', 'valide', 'rejete'])
+                ->default('en_attente');
+
             $table->unsignedInteger('vues')->default(0);
+
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('profils_talent');
+        Schema::dropIfExists('profils_talents');
     }
 };
