@@ -34,6 +34,9 @@ return new class extends Migration
 
             $table->unsignedInteger('vues')->default(0);
 
+            // ✅ IMPORTANT (remplace ancienne migration add)
+            $table->string('categorie')->nullable();
+
             $table->timestamps();
         });
     }
