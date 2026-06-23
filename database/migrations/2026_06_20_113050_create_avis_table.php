@@ -10,12 +10,30 @@ return new class extends Migration
     {
         Schema::create('avis', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('client_id')->constrained('utilisateurs')->onDelete('cascade');
-            $table->foreignId('profil_talent_id')->constrained('profils_talent')->onDelete('cascade');
-            $table->foreignId('demande_prestation_id')->nullable()->constrained('demandes_prestation')->onDelete('set null');
+
+            // ✅ client
+            $table->foreignId('client_id')
+                ->constrained('utilisateurs')
+                ->cascadeOnDelete();
+
+            // ✅ profil talent (corrigé)
+            $table->foreignId('profil_talent_id')
+                ->constrained('profils_talents')
+                ->cascadeOnDelete();
+
+            // ✅ demande prestation
+            $table->foreignId('demande_prestation_id')
+                ->nullable()
+                ->constrained('demandes_prestation')
+                ->nullOnDelete();
+
             $table->unsignedTinyInteger('note');
+
             $table->text('commentaire')->nullable();
-            $table->enum('statut', ['visible', 'masque'])->default('visible');
+
+            $table->enum('statut', ['visible', 'masque'])
+                ->default('visible');
+
             $table->timestamps();
         });
     }

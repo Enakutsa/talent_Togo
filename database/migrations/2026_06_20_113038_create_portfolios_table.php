@@ -10,11 +10,19 @@ return new class extends Migration
     {
         Schema::create('portfolios', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('profil_talent_id')->constrained('profils_talent')->onDelete('cascade');
+
+            // ✅ CORRECTION ICI
+            $table->foreignId('profil_talent_id')
+                ->constrained('profils_talents')
+                ->cascadeOnDelete();
+
             $table->enum('type', ['image', 'video']);
+
             $table->string('media_url');
             $table->string('public_id');
+
             $table->text('description')->nullable();
+
             $table->timestamps();
         });
     }

@@ -61,14 +61,12 @@ class AuthController extends Controller
 
         // Règles supplémentaires uniquement si c'est un talent
         if ($request->role === 'talent') {
-            // ⚠️ categorie_id remplacé par categorie (texte libre)
-            // en attendant le Module 3 (Backend Profils & Catégories)
-            $rules['categorie'] = 'required|string|max:100';
+            $rules['categorie_id'] = 'required|exists:categories,id';
             $rules['ville'] = 'required|string|max:100';
             $rules['tarif_min'] = 'nullable|numeric|min:0';
             $rules['tarif_max'] = 'nullable|numeric|min:0';
             $rules['biographie'] = 'nullable|string|max:1000';
-            $rules['document_justificatif'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120'; // 5 Mo
+            $rules['document_justificatif'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:5120'; // 5 Mo
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -97,7 +95,7 @@ class AuthController extends Controller
 
                 ProfilTalent::create([
                     'utilisateur_id' => $utilisateur->id,
-                    'categorie' => $request->categorie,
+                    'categorie_id' => $request->categorie_id,
                     'ville' => $request->ville,
                     'tarif_min' => $request->tarif_min,
                     'tarif_max' => $request->tarif_max,

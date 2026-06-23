@@ -14,11 +14,12 @@ return new class extends Migration
             $table->foreignId('utilisateur_id')
                 ->unique()
                 ->constrained('utilisateurs')
-                ->onDelete('cascade');
+                ->cascadeOnDelete();
 
+            // ✅ relation avec categories (important)
             $table->foreignId('categorie_id')
                 ->constrained('categories')
-                ->onDelete('cascade');
+                ->cascadeOnDelete();
 
             $table->string('ville');
 
@@ -33,9 +34,6 @@ return new class extends Migration
                 ->default('en_attente');
 
             $table->unsignedInteger('vues')->default(0);
-
-            // ✅ IMPORTANT (remplace ancienne migration add)
-            $table->string('categorie')->nullable();
 
             $table->timestamps();
         });

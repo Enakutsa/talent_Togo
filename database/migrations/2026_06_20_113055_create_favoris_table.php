@@ -10,10 +10,20 @@ return new class extends Migration
     {
         Schema::create('favoris', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('client_id')->constrained('utilisateurs')->onDelete('cascade');
-            $table->foreignId('profil_talent_id')->constrained('profils_talent')->onDelete('cascade');
+
+            // ✅ client
+            $table->foreignId('client_id')
+                ->constrained('utilisateurs')
+                ->cascadeOnDelete();
+
+            // ✅ profil talent (corrigé)
+            $table->foreignId('profil_talent_id')
+                ->constrained('profils_talents') // ✅ correction ici
+                ->cascadeOnDelete();
+
             $table->timestamps();
 
+            // ✅ éviter doublons
             $table->unique(['client_id', 'profil_talent_id']);
         });
     }

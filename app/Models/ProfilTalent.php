@@ -57,10 +57,12 @@ class ProfilTalent extends Model
         'tarif_min',
         'tarif_max',
         'biographie',
+        'document_justificatif', // ✅ AJOUT ICI
         'disponibilite',
         'statut',
-        'vues',
+        'vues'
     ];
+    
 
     protected function casts(): array
     {

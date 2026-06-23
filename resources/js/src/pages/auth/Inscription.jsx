@@ -1,17 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  User,
-  Briefcase,
-  Mail,
-  Lock,
-  ArrowRight,
-  Check,
-  MapPin,
-  Tag,
-  DollarSign,
-  FileText,
-} from "lucide-react";
+import { User, Briefcase, Mail, Lock, ArrowRight, Check, MapPin, Tag, DollarSign, FileText } from "lucide-react";
 import { register } from "../../services/auth.service";
 import "../../assets/styles/Inscription.css";
 
@@ -56,9 +45,7 @@ export default function Inscription() {
     mot_de_passe_confirmation: "",
     categorie: "",
     ville: "",
-    tarif_min: "",
-    tarif_max: "",
-    biographie: "",
+    tarif: "",
   });
 
   const [document, setDocument] = useState(null);
@@ -95,24 +82,19 @@ export default function Inscription() {
       let payload;
 
       if (role === "talent") {
-        // FormData car on peut envoyer un fichier
+        // FormData car on envoie potentiellement un fichier
         payload = new FormData();
         payload.append("nom", form.nom);
         payload.append("prenom", form.prenom);
         payload.append("email", form.email);
         payload.append("mot_de_passe", form.mot_de_passe);
-        payload.append(
-          "mot_de_passe_confirmation",
-          form.mot_de_passe_confirmation
-        );
+        payload.append("mot_de_passe_confirmation", form.mot_de_passe_confirmation);
         payload.append("role", role);
         payload.append("categorie", form.categorie);
         payload.append("ville", form.ville);
-        if (form.tarif_min) payload.append("tarif_min", form.tarif_min);
-        if (form.tarif_max) payload.append("tarif_max", form.tarif_max);
-        if (form.biographie) payload.append("biographie", form.biographie);
+        payload.append("tarif", form.tarif);
         if (document) {
-          payload.append("document_justificatif", document);
+          payload.append("document", document);
         }
       } else {
         payload = {
@@ -127,7 +109,7 @@ export default function Inscription() {
 
       await register(payload);
 
-      // ✅ Pas de connexion auto : redirection vers /login
+      // ✅ Plus de connexion auto : on redirige vers /login
       navigate("/login");
     } catch (err) {
       if (err.response?.status === 422) {
@@ -153,40 +135,26 @@ export default function Inscription() {
               Talent<span className="auth-logo-accent">Togo</span>
             </span>
           </Link>
-          <p className="auth-logo-tagline">
-            Rejoignez la communauté des talents togolais
-          </p>
+          <p className="auth-logo-tagline">Rejoignez la communauté des talents togolais</p>
         </div>
 
         <div className="auth-card-2">
           <h1 className="auth-card-title">Créer un compte</h1>
-          <p className="auth-card-subtitle">
-            Choisissez votre profil pour commencer.
-          </p>
+          <p className="auth-card-subtitle">Choisissez votre profil pour commencer.</p>
 
-          {generalError && (
-            <p className="form-error-banner">{generalError}</p>
-          )}
+          {generalError && <p className="form-error-banner">{generalError}</p>}
 
           {/* Role selection */}
           <div className="role-cards-grid">
             <div
-              className={`role-card role-card-talent ${
-                role === "talent" ? "selected" : ""
-              }`}
+              className={`role-card role-card-talent ${role === "talent" ? "selected" : ""}`}
               onClick={() => setRole("talent")}
             >
-              <div
-                className={`role-icon-wrap ${
-                  role === "talent" ? "role-icon-active-talent" : ""
-                }`}
-              >
+              <div className={`role-icon-wrap ${role === "talent" ? "role-icon-active-talent" : ""}`}>
                 <Briefcase size={22} />
               </div>
               <h3 className="role-card-title">Je suis un Talent</h3>
-              <p className="role-card-desc">
-                Photographe, graphiste, couturier...
-              </p>
+              <p className="role-card-desc">Photographe, graphiste, couturier...</p>
               {role === "talent" && (
                 <div className="role-check-badge role-check-talent">
                   <Check size={11} />
@@ -195,16 +163,10 @@ export default function Inscription() {
             </div>
 
             <div
-              className={`role-card role-card-client ${
-                role === "client" ? "selected" : ""
-              }`}
+              className={`role-card role-card-client ${role === "client" ? "selected" : ""}`}
               onClick={() => setRole("client")}
             >
-              <div
-                className={`role-icon-wrap ${
-                  role === "client" ? "role-icon-active-client" : ""
-                }`}
-              >
+              <div className={`role-icon-wrap ${role === "client" ? "role-icon-active-client" : ""}`}>
                 <User size={22} />
               </div>
               <h3 className="role-card-title">Je suis un Client</h3>
@@ -232,9 +194,7 @@ export default function Inscription() {
                     required
                   />
                 </div>
-                {errors.prenom && (
-                  <span className="field-error">{errors.prenom[0]}</span>
-                )}
+                {errors.prenom && <span className="field-error">{errors.prenom[0]}</span>}
               </div>
 
               <div className="form-field">
@@ -250,9 +210,7 @@ export default function Inscription() {
                     required
                   />
                 </div>
-                {errors.nom && (
-                  <span className="field-error">{errors.nom[0]}</span>
-                )}
+                {errors.nom && <span className="field-error">{errors.nom[0]}</span>}
               </div>
             </div>
 
@@ -269,9 +227,7 @@ export default function Inscription() {
                   required
                 />
               </div>
-              {errors.email && (
-                <span className="field-error">{errors.email[0]}</span>
-              )}
+              {errors.email && <span className="field-error">{errors.email[0]}</span>}
             </div>
 
             <div className="form-field">
@@ -287,9 +243,7 @@ export default function Inscription() {
                   required
                 />
               </div>
-              {errors.mot_de_passe && (
-                <span className="field-error">{errors.mot_de_passe[0]}</span>
-              )}
+              {errors.mot_de_passe && <span className="field-error">{errors.mot_de_passe[0]}</span>}
             </div>
 
             <div className="form-field">
@@ -310,9 +264,7 @@ export default function Inscription() {
             {/* ===== Champs spécifiques Talent ===== */}
             {role === "talent" && (
               <div className="talent-fields-block">
-                <p className="talent-fields-title">
-                  Informations professionnelles
-                </p>
+                <p className="talent-fields-title">Informations professionnelles</p>
 
                 <div className="form-row">
                   <div className="form-field">
@@ -333,11 +285,7 @@ export default function Inscription() {
                         ))}
                       </select>
                     </div>
-                    {errors.categorie && (
-                      <span className="field-error">
-                        {errors.categorie[0]}
-                      </span>
-                    )}
+                    {errors.categorie && <span className="field-error">{errors.categorie[0]}</span>}
                   </div>
 
                   <div className="form-field">
@@ -358,58 +306,28 @@ export default function Inscription() {
                         ))}
                       </select>
                     </div>
-                    {errors.ville && (
-                      <span className="field-error">{errors.ville[0]}</span>
-                    )}
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-field">
-                    <label className="form-label">Tarif min (FCFA)</label>
-                    <div className="input-with-icon">
-                      <DollarSign className="input-icon" size={17} />
-                      <input
-                        type="number"
-                        min="0"
-                        className="input-field"
-                        placeholder="Ex: 10000"
-                        value={form.tarif_min}
-                        onChange={handleChange("tarif_min")}
-                      />
-                    </div>
-                    {errors.tarif_min && (
-                      <span className="field-error">
-                        {errors.tarif_min[0]}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="form-field">
-                    <label className="form-label">Tarif max (FCFA)</label>
-                    <div className="input-with-icon">
-                      <DollarSign className="input-icon" size={17} />
-                      <input
-                        type="number"
-                        min="0"
-                        className="input-field"
-                        placeholder="Ex: 50000"
-                        value={form.tarif_max}
-                        onChange={handleChange("tarif_max")}
-                      />
-                    </div>
-                    {errors.tarif_max && (
-                      <span className="field-error">
-                        {errors.tarif_max[0]}
-                      </span>
-                    )}
+                    {errors.ville && <span className="field-error">{errors.ville[0]}</span>}
                   </div>
                 </div>
 
                 <div className="form-field">
-                  <label className="form-label">
-                    Pièce justificative / Portfolio (PDF, image — optionnel)
-                  </label>
+                  <label className="form-label">Tarif indicatif (FCFA)</label>
+                  <div className="input-with-icon">
+                    <DollarSign className="input-icon" size={17} />
+                    <input
+                      type="number"
+                      min="0"
+                      className="input-field"
+                      placeholder="Ex: 15000"
+                      value={form.tarif}
+                      onChange={handleChange("tarif")}
+                    />
+                  </div>
+                  {errors.tarif && <span className="field-error">{errors.tarif[0]}</span>}
+                </div>
+
+                <div className="form-field">
+                  <label className="form-label">Pièce justificative / Portfolio (PDF, image)</label>
                   <label className="file-input-wrap">
                     <FileText className="input-icon" size={17} />
                     <span className="file-input-text">
@@ -422,20 +340,14 @@ export default function Inscription() {
                       className="file-input-hidden"
                     />
                   </label>
-                  {errors.document_justificatif && (
-                    <span className="field-error">
-                      {errors.document_justificatif[0]}
-                    </span>
-                  )}
+                  {errors.document && <span className="field-error">{errors.document[0]}</span>}
                 </div>
               </div>
             )}
 
             <label className="auth-checkbox-row">
               <div
-                className={`auth-checkbox ${
-                  agree ? "auth-checkbox-checked" : ""
-                }`}
+                className={`auth-checkbox ${agree ? "auth-checkbox-checked" : ""}`}
                 onClick={() => setAgree(!agree)}
               >
                 {agree && <Check size={12} />}

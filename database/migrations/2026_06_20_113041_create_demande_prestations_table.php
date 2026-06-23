@@ -10,12 +10,26 @@ return new class extends Migration
     {
         Schema::create('demandes_prestation', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('client_id')->constrained('utilisateurs')->onDelete('cascade');
-            $table->foreignId('profil_talent_id')->constrained('profils_talent')->onDelete('cascade');
-            $table->enum('statut', ['en_attente', 'acceptee', 'refusee', 'terminee'])->default('en_attente');
+
+            // ✅ lien client
+            $table->foreignId('client_id')
+                ->constrained('utilisateurs')
+                ->cascadeOnDelete();
+
+            // ✅ lien profil talent (CORRECT)
+            $table->foreignId('profil_talent_id')
+                ->constrained('profils_talents')
+                ->cascadeOnDelete();
+
+            $table->enum('statut', ['en_attente', 'acceptee', 'refusee', 'terminee'])
+                ->default('en_attente');
+
             $table->text('message_initial');
+
             $table->date('date_souhaitee')->nullable();
+
             $table->decimal('budget', 10, 2)->nullable();
+
             $table->timestamps();
         });
     }
