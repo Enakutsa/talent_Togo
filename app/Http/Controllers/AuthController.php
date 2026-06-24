@@ -47,7 +47,7 @@ class AuthController extends Controller
 
     /**
      * ✅ INSCRIPTION
-     * Si role = talent : crée aussi le ProfilTalent (catégorie, ville, tarifs, bio, document).
+     * Si role = talent : crée aussi le ProfilTalent (catégorie texte, ville, tarifs, bio, document).
      */
     public function register(Request $request)
     {
@@ -61,12 +61,13 @@ class AuthController extends Controller
 
         // Règles supplémentaires uniquement si c'est un talent
         if ($request->role === 'talent') {
-            $rules['categorie_id'] = 'required|exists:categories,id';
+            // ⚠️ categorie_id remplacé par categorie (texte libre) en attendant le Module 3
+            $rules['categorie'] = 'required|string|max:100';
             $rules['ville'] = 'required|string|max:100';
             $rules['tarif_min'] = 'nullable|numeric|min:0';
             $rules['tarif_max'] = 'nullable|numeric|min:0';
             $rules['biographie'] = 'nullable|string|max:1000';
-            $rules['document_justificatif'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:5120'; // 5 Mo
+            $rules['document_justificatif'] = 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120'; // 5 Mo
         }
 
         $validator = Validator::make($request->all(), $rules);
@@ -95,7 +96,7 @@ class AuthController extends Controller
 
                 ProfilTalent::create([
                     'utilisateur_id' => $utilisateur->id,
-                    'categorie_id' => $request->categorie_id,
+                    'categorie' => $request->categorie,
                     'ville' => $request->ville,
                     'tarif_min' => $request->tarif_min,
                     'tarif_max' => $request->tarif_max,
@@ -123,6 +124,7 @@ class AuthController extends Controller
 
     /**
      * ✅ LOGIN → EMAIL SEULEMENT + OTP
+     * Bloque les talents tant que leur compte n'est pas validé par un admin.
      */
     public function login(Request $request)
     {
@@ -138,6 +140,23 @@ class AuthController extends Controller
 
         if (!$utilisateur) {
             return response()->json(['message' => 'Email introuvable'], 404);
+        }
+
+        // ✅ Blocage des talents non validés
+        if ($utilisateur->role === 'talent') {
+            $profil = ProfilTalent::where('utilisateur_id', $utilisateur->id)->first();
+
+            if ($profil && $profil->statut === 'en_attente') {
+                return response()->json([
+                    'message' => 'Votre compte est en attente de validation par un administrateur.'
+                ], 403);
+            }
+
+            if ($profil && $profil->statut === 'rejete') {
+                return response()->json([
+                    'message' => 'Votre compte a été rejeté. Contactez le support pour plus d\'informations.'
+                ], 403);
+            }
         }
 
         $this->genererEtEnvoyerOtp($utilisateur, 'connexion');

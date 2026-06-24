@@ -1,13 +1,14 @@
 <?php
 
 namespace App\Models;
-
+use App\Models\Categorie;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * @property int $id
  * @property int $utilisateur_id
- * @property int $categorie_id
+ * @property int|null $categorie_id
+ * @property string|null $categorie
  * @property string $ville
  * @property numeric|null $tarif_min
  * @property numeric|null $tarif_max
@@ -20,7 +21,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $motif_rejet
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Avis> $avis
  * @property-read int|null $avis_count
- * @property-read \App\Models\Categorie $categorie
+ * @property-read \App\Models\Categorie $categorieRelation
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\DemandePrestation> $demandesPrestation
  * @property-read int|null $demandes_prestation_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Favori> $favoris
@@ -48,21 +49,22 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ProfilTalent extends Model
 {
-    protected $table = 'profils_talent';
+    protected $table = 'profils_talents'; // ✅ CORRIGÉ : avec le S
 
     protected $fillable = [
         'utilisateur_id',
         'categorie_id',
+        'categorie', // ✅ champ texte temporaire (Module 3 pas encore fait)
         'ville',
         'tarif_min',
         'tarif_max',
         'biographie',
-        'document_justificatif', // ✅ AJOUT ICI
+        'document_justificatif',
         'disponibilite',
         'statut',
+        'motif_rejet',
         'vues'
     ];
-    
 
     protected function casts(): array
     {
@@ -82,9 +84,10 @@ class ProfilTalent extends Model
     }
 
     /**
-     * Relation : un profil talent appartient à une catégorie.
+     * Relation : un profil talent appartient à une catégorie (table categories).
+     * Reste utilisable plus tard pour le Module 3, actuellement souvent null.
      */
-    public function categorie()
+    public function categorieRelation()
     {
         return $this->belongsTo(Categorie::class, 'categorie_id');
     }
@@ -125,4 +128,13 @@ class ProfilTalent extends Model
     {
         return $this->statut === 'valide';
     }
+
+    
+
+public function categorie()
+{
+    return $this->belongsTo(Categorie::class, 'categorie_id');
 }
+}
+
+

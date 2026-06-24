@@ -39,6 +39,12 @@ export default function Login() {
         setErrors(err.response.data.errors || {});
       } else if (err.response?.status === 404) {
         setGeneralError("Aucun compte trouvé avec cet email.");
+      } else if (err.response?.status === 403) {
+        // ✅ Compte talent en attente de validation ou rejeté
+        setGeneralError(
+          err.response.data.message ||
+            "Votre compte n'est pas encore activé."
+        );
       } else {
         setGeneralError("Une erreur est survenue. Veuillez réessayer.");
       }

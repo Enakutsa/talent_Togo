@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Database\Factories\UtilisateurFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -51,7 +54,7 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Utilisateur whereUpdatedAt($value)
  * @mixin \Eloquent
  */
-class Utilisateur extends Authenticatable
+class Utilisateur extends Authenticatable implements FilamentUser, HasName
 {
     /** @use HasFactory<UtilisateurFactory> */
     use HasFactory, Notifiable, HasApiTokens;
@@ -103,6 +106,22 @@ class Utilisateur extends Authenticatable
     public function getAuthPassword()
     {
         return $this->mot_de_passe;
+    }
+
+    /**
+     * Restreint l'accès au panel Filament aux seuls administrateurs.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Nom affiché par Filament (widget de compte, menu utilisateur...).
+     */
+    public function getFilamentName(): string
+    {
+        return trim($this->prenom . ' ' . $this->nom);
     }
 
     /**
