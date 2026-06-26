@@ -311,7 +311,7 @@ export default function Home() {
       <section className="cta-section">
         <div className="cta-pattern" />
         <div className="cta-inner">
-          <h2 className="cta-title">Vous êtes un talent ? Rejoignez-nous !</h2>
+          <h2 className="cta-title">Vous êtes un talent ? Rejoignez-nous  Espoir!</h2>
           <p className="cta-text">
             Créez votre profil professionnel gratuit, publiez votre portfolio et connectez-vous
             avec des milliers de clients potentiels au Togo et en Afrique.
