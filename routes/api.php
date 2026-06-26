@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategorieController;
+use App\Http\Controllers\StatsController;
+use App\Http\Controllers\TalentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,3 +43,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 Route::get('/categories', [CategorieController::class, 'index']);
+
+
+
+
+Route::get('/stats', [StatsController::class, 'index']);
+Route::get('/talents', [TalentController::class, 'index']);
+Route::get('/talents/{talent}', [TalentController::class, 'show']);

@@ -88,7 +88,8 @@ export default function Home() {
       .catch(() => {});
 
     getStats()
-      .then((data) => {
+      .then((res) => {
+        const data = res?.data ?? res;
         if (!data) return;
         setStats([
           { key: "talents", icon: Users, label: "Talents inscrits", value: data.talents ?? "500+" },
@@ -311,13 +312,13 @@ export default function Home() {
       <section className="cta-section">
         <div className="cta-pattern" />
         <div className="cta-inner">
-          <h2 className="cta-title">Vous êtes un talent ? Rejoignez-nous  Espoir!</h2>
+          <h2 className="cta-title">Vous êtes un talent ? Rejoignez-nous !</h2>
           <p className="cta-text">
             Créez votre profil professionnel gratuit, publiez votre portfolio et connectez-vous
             avec des milliers de clients potentiels au Togo et en Afrique.
           </p>
           <div className="cta-actions">
-            <button onClick={() => navigate("/register")} className="btn-outline-white">
+            <button onClick={() => navigate("/inscription")} className="btn-outline-white">
               Créer mon profil gratuitement
             </button>
             <button onClick={() => navigate("/recherche")} className="btn-amber-cta">

@@ -1,4 +1,4 @@
-import api from "./auth.service";
+import api from "./api";
 
 /**
  * Récupère les catégories de services disponibles.
@@ -11,10 +11,10 @@ export async function getCategories() {
 
 /**
  * Récupère les talents mis en avant (profils vérifiés/les mieux notés).
- * GET /api/talents/featured
+ * GET /api/talents?featured=1
  */
 export async function getFeaturedTalents() {
-  const response = await api.get("/talents/featured");
+  const response = await api.get("/talents", { params: { featured: 1 } });
   return response.data;
 }
 
@@ -30,10 +30,10 @@ export async function getStats() {
 
 /**
  * Récupère les avis/témoignages mis en avant sur la page d'accueil.
- * GET /api/avis/featured
+ * GET /api/avis?limit=6
  */
 export async function getReviews() {
-  const response = await api.get("/avis/featured");
+  const response = await api.get("/avis", { params: { limit: 6 } });
   return response.data;
 }
 

@@ -95,6 +95,18 @@
   font-family: Inter, sans-serif;
 }
 
+/* ===== Bandeau info talent (validation 48h) ===== */
+.talent-info-banner {
+  background-color: #fff7e6;
+  border-left: 4px solid #f0ad4e;
+  color: #6b4e16;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  margin: 16px 0;
+  font-family: Inter, sans-serif;
+}
+
 /* ===== Cartes de rôle ===== */
 .role-cards-grid {
   display: grid;
@@ -214,8 +226,11 @@
   font-family: Inter, sans-serif;
 }
 
+/* Conteneur des inputs avec icône (et bouton oeil pour les mots de passe) */
 .input-with-icon {
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
 .input-icon {
@@ -237,6 +252,10 @@
   transition: border-color 0.2s;
 }
 
+.input-with-icon .input-field {
+  padding-right: 40px; /* laisse la place au bouton oeil quand présent */
+}
+
 .input-field:focus {
   outline: none;
   border-color: #166534;
@@ -248,6 +267,25 @@
   font-size: 12px;
   margin-top: 4px;
   font-family: Inter, sans-serif;
+}
+
+/* Bouton oeil afficher/masquer mot de passe */
+.password-toggle-btn {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #888;
+  padding: 0;
+}
+
+.password-toggle-btn:hover {
+  color: #1e7e34;
 }
 
 /* ===== Checkbox CGU ===== */
@@ -401,6 +439,13 @@
   cursor: pointer;
 }
 
+.textarea-field {
+  padding-left: 14px;
+  resize: vertical;
+  min-height: 90px;
+  font-family: inherit;
+}
+
 .file-input-wrap {
   display: flex;
   align-items: center;
@@ -427,9 +472,53 @@
   text-overflow: ellipsis;
 }
 
+/* ===== Dropzones (document & photo) ===== */
+.dropzone-wrap {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 2px dashed #b8d8b8;
+  border-radius: 10px;
+  padding: 28px 16px;
+  background-color: #f6fbf4;
+  cursor: pointer;
+  transition: border-color 0.2s, background-color 0.2s;
+  text-align: center;
+}
+
+.dropzone-wrap:hover {
+  border-color: #1e7e34;
+  background-color: #effaf0;
+}
+
+.dropzone-icon {
+  color: #1e7e34;
+  margin-bottom: 4px;
+}
+
+.dropzone-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #222;
+}
+
+.dropzone-subtitle {
+  font-size: 12px;
+  color: #888;
+}
+
+/* Input file invisible, confiné dans son conteneur positionné (dropzone-wrap ou file-input-wrap) */
 .file-input-hidden {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
   opacity: 0;
   cursor: pointer;
+  margin: 0;
+  padding: 0;
 }

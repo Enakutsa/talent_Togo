@@ -7,7 +7,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Actions\Action;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class UtilisateursTable
@@ -17,86 +17,74 @@ class UtilisateursTable
         return $table
             ->columns([
                 TextColumn::make('nom')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable()
+                    ->weight('semibold'),
 
                 TextColumn::make('prenom')
-                    ->searchable(),
+                    ->searchable()
+                    ->sortable(),
 
                 TextColumn::make('email')
-                    ->label('Email address')
-                    ->searchable(),
+                    ->label('E-mail')
+                    ->searchable()
+                    ->icon('heroicon-o-envelope')
+                    ->copyable(),
+
+                TextColumn::make('telephone')
+                    ->label('Téléphone')
+                    ->searchable()
+                    ->icon('heroicon-o-phone')
+                    ->copyable()
+                    ->placeholder('—'),
 
                 TextColumn::make('role')
-                    ->searchable(),
-
-                // ✅ AJOUT VALIDATION
-                IconColumn::make('is_validated')
-                    ->label('Validé')
-                    ->boolean(),
-
-                // ✅ AJOUT REJET
-                IconColumn::make('is_rejected')
-                    ->label('Rejeté')
-                    ->boolean(),
+                    ->label('Rôle')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'admin' => 'danger',
+                        'talent' => 'warning',
+                        'client' => 'success',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'admin' => 'Administrateur',
+                        'talent' => 'Talent',
+                        'client' => 'Client',
+                        default => $state,
+                    })
+                    ->searchable()
+                    ->sortable(),
 
                 IconColumn::make('is_verified')
+                    ->label('Vérifié')
                     ->boolean(),
 
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Inscrit le')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Mis à jour le')
+                    ->dateTime('d/m/Y H:i')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-
+            ->defaultSort('created_at', 'desc')
             ->filters([
-                //
+                SelectFilter::make('role')
+                    ->label('Rôle')
+                    ->options([
+                        'admin' => 'Administrateur',
+                        'talent' => 'Talent',
+                        'client' => 'Client',
+                    ]),
             ])
-
             ->recordActions([
-
                 EditAction::make(),
-
-                // ✅ BOUTON VALIDER
-                Action::make('valider')
-                    ->label('Valider')
-                    ->color('success')
-                    ->icon('heroicon-o-check')
-                    ->visible(fn ($record) =>
-                        $record->role === 'talent' &&
-                        !$record->is_validated &&
-                        !$record->is_rejected
-                    )
-                    ->action(function ($record) {
-                        $record->update([
-                            'is_validated' => true,
-                            'is_rejected' => false,
-                        ]);
-                    }),
-
-                // ❌ BOUTON REJETER
-                Action::make('rejeter')
-                    ->label('Rejeter')
-                    ->color('danger')
-                    ->icon('heroicon-o-x-mark')
-                    ->visible(fn ($record) =>
-                        $record->role === 'talent' &&
-                        !$record->is_rejected &&
-                        !$record->is_validated
-                    )
-                    ->action(function ($record) {
-                        $record->update([
-                            'is_validated' => false,
-                            'is_rejected' => true,
-                        ]);
-                    }),
-
             ])
-
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

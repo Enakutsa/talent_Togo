@@ -33,6 +33,12 @@ class ProfilTalentForm
                             ->searchable()
                             ->preload()
                             ->required(),
+
+                        TextInput::make('utilisateur.telephone')
+                            ->label('Téléphone')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->formatStateUsing(fn ($record) => $record?->utilisateur?->telephone),
                     ]),
 
                 Section::make('Informations professionnelles')
@@ -62,8 +68,17 @@ class ProfilTalentForm
                             ->rows(4),
                     ]),
 
-                Section::make('Document justificatif')
+                Section::make('Photo et document justificatif')
+                    ->columns(2)
                     ->components([
+                        FileUpload::make('photo')
+                            ->label('Photo de profil')
+                            ->disk('public')
+                            ->directory('photos_talents')
+                            ->image()
+                            ->avatar()
+                            ->acceptedFileTypes(['image/jpeg', 'image/png']),
+
                         FileUpload::make('document_justificatif')
                             ->label('Document (CNI, certificat, portfolio...)')
                             ->disk('public')
