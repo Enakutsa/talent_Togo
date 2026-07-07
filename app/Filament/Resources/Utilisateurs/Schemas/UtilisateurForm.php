@@ -11,6 +11,29 @@ use Filament\Schemas\Schema;
 
 class UtilisateurForm
 {
+    // Même liste que le formulaire d'inscription React (Inscription.jsx),
+    // pour rester cohérent entre les deux points de saisie.
+    private const VILLES_TOGO = [
+        'Lomé',
+        'Aného',
+        'Tsévié',
+        'Vogan',
+        'Tabligbo',
+        'Notsé',
+        'Kpalimé',
+        'Atakpamé',
+        'Amlamé',
+        'Badou',
+        'Sotouboua',
+        'Sokodé',
+        'Bassar',
+        'Kara',
+        'Niamtougou',
+        'Kandé',
+        'Mango',
+        'Dapaong',
+    ];
+
     public static function configure(Schema $schema): Schema
     {
         return $schema
@@ -46,7 +69,8 @@ class UtilisateurForm
                             ])
                             ->default('client')
                             ->required()
-                            ->native(false),
+                            ->native(false)
+                            ->live(),
 
                         TextInput::make('mot_de_passe')
                             ->label('Mot de passe')
@@ -62,6 +86,25 @@ class UtilisateurForm
 
                         DateTimePicker::make('email_verified_at')
                             ->label('E-mail vérifié le'),
+                    ]),
+
+                // Visibles uniquement pour un compte Talent
+                Section::make('Profil talent')
+                    ->columns(2)
+                    ->visible(fn ($get) => $get('role') === 'talent')
+                    ->components([
+                        Select::make('categorie_id')
+                            ->label('Catégorie')
+                            ->relationship('categorie', 'nom')
+                            ->searchable()
+                            ->preload()
+                            ->required(fn ($get) => $get('role') === 'talent'),
+
+                        Select::make('ville')
+                            ->label('Ville')
+                            ->options(array_combine(self::VILLES_TOGO, self::VILLES_TOGO))
+                            ->searchable()
+                            ->required(fn ($get) => $get('role') === 'talent'),
                     ]),
             ]);
     }

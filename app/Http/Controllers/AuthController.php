@@ -22,8 +22,7 @@ class AuthController extends Controller
     {
         Otp::where('utilisateur_id', $utilisateur->id)
             ->where('type', $type)
-            ->where('utilise', false)
-            ->update(['utilise' => true]);
+            ->delete();
 
         $code = (string) random_int(100000, 999999);
 
@@ -57,16 +56,6 @@ class AuthController extends Controller
 
     /**
      * ✅ INSCRIPTION
-     *
-     * Champs communs (Talent + Client) :
-     *   nom, prenom, email, telephone, mot_de_passe, role
-     *
-     * Champs supplémentaires Talent uniquement (tous stockés dans utilisateurs) :
-     *   document_justificatif, categorie_id, ville
-     *
-     * Après inscription :
-     *   - Talent  → statut "en_attente", ProfilTalent (vide) créé pour le reste du profil
-     *   - Client  → statut "actif", pas de ProfilTalent
      */
     public function register(Request $request)
     {
@@ -120,8 +109,6 @@ class AuthController extends Controller
                 'ville'                 => $request->role === 'talent' ? $request->ville : null,
             ]);
 
-            // Créer le ProfilTalent (categorie/ville vivent désormais sur Utilisateur)
-            // Le reste — bio, tarifs, photo, portfolio — sera complété plus tard
             if ($request->role === 'talent') {
                 ProfilTalent::create([
                     'utilisateur_id' => $utilisateur->id,
@@ -133,7 +120,6 @@ class AuthController extends Controller
             return $utilisateur;
         });
 
-        // Notifie les admins qu'un talent attend validation
         if ($utilisateur->role === 'talent') {
             $this->notifierAdminsNouveauTalent($utilisateur);
         }
@@ -145,7 +131,7 @@ class AuthController extends Controller
             'data'    => [
                 'utilisateur' => $utilisateur,
                 'token'       => $token,
-                'redirect'    => $utilisateur->role === 'talent' ? 'login' : 'login',
+                'redirect'    => 'login',
             ]
         ], 201);
     }
@@ -169,7 +155,10 @@ class AuthController extends Controller
             return response()->json(['message' => 'Email introuvable'], 404);
         }
 
-        // Bloque la connexion d'un talent non encore validé ou désactivé
+        if ($utilisateur->isAdmin()) {
+            return response()->json(['message' => 'Email introuvable'], 404);
+        }
+
         if ($utilisateur->isTalent()) {
             if ($utilisateur->statut !== 'valide') {
                 $message = match ($utilisateur->statut) {
@@ -209,8 +198,6 @@ class AuthController extends Controller
 
         $otp = Otp::where('utilisateur_id', $utilisateur->id)
             ->where('type', 'connexion')
-            ->where('code', $request->code)
-            ->where('utilise', false)
             ->latest()
             ->first();
 
@@ -218,28 +205,43 @@ class AuthController extends Controller
             return response()->json(['message' => 'Code invalide'], 422);
         }
 
-        if ($otp->tentatives >= 5) {
-            return response()->json(['message' => 'Trop de tentatives'], 429);
+        // ⛔ Bloqué après 2 tentatives incorrectes
+        if ($otp->estBloque()) {
+            $secondes = $otp->secondesRestantes();
+            return response()->json([
+                'message'     => "Trop de tentatives. Réessayez dans {$secondes} secondes.",
+                'retry_after' => $secondes,
+            ], 429);
         }
 
-        $otp->increment('tentatives');
+        // Code incorrect
+        if ($otp->code !== $request->code) {
+            $otp->tentatives++;
 
-        if ($otp->expire_a < now()) {
+            if ($otp->tentatives >= 2) {
+                $otp->bloque_jusqua = now()->addSeconds(30);
+            }
+
+            $otp->save();
+
+            return response()->json(['message' => 'Code invalide'], 422);
+        }
+
+        // Code expiré
+        if ($otp->estExpire()) {
             return response()->json(['message' => 'Code expiré'], 422);
         }
 
-        $otp->update(['utilise' => true]);
+        // ✅ Code correct — nettoyage
         Otp::where('utilisateur_id', $utilisateur->id)->delete();
 
         $token = $utilisateur->createToken('auth_token')->plainTextToken;
 
-        // Détermine la redirection selon le rôle et l'état du profil
-        $redirect = 'dashboard';
+        // Redirection selon rôle et état du profil
+        $redirect = '/';
         if ($utilisateur->isTalent()) {
             $profil = $utilisateur->profilTalent;
             $redirect = ($profil && $profil->estComplet()) ? 'talent/dashboard' : 'talent/profil/creer';
-        } elseif ($utilisateur->isClient()) {
-            $redirect = 'dashboard';
         } elseif ($utilisateur->isAdmin()) {
             $redirect = 'admin';
         }
@@ -269,6 +271,10 @@ class AuthController extends Controller
 
         $utilisateur = Utilisateur::find($request->utilisateur_id);
 
+        if ($utilisateur->isAdmin()) {
+            return response()->json(['message' => 'Email introuvable'], 404);
+        }
+
         $this->genererEtEnvoyerOtp($utilisateur, 'connexion');
 
         return response()->json([
@@ -284,13 +290,6 @@ class AuthController extends Controller
 
     /**
      * ✅ MISE À JOUR DU PROFIL (infos de base uniquement)
-     *
-     * nom, prenom, telephone → modifiables directement
-     * mot de passe           → modifiable en fournissant l'ancien + le nouveau
-     *
-     * L'email n'est pas modifiable ici (impacterait l'auth par OTP).
-     * Les champs spécifiques au profil Talent (categorie, ville, bio, tarifs,
-     * photo, portfolio) relèvent d'un ProfilTalentController dédié.
      */
     public function update(Request $request)
     {
@@ -339,9 +338,6 @@ class AuthController extends Controller
 
     /**
      * ✅ SUPPRESSION DU COMPTE
-     *
-     * Protégée par la saisie du mot de passe. Un admin ne peut pas
-     * se supprimer lui-même via cette route (géré depuis Filament).
      */
     public function destroy(Request $request)
     {
@@ -374,7 +370,6 @@ class AuthController extends Controller
 
             if ($utilisateur->isTalent()) {
                 $profil = $utilisateur->profilTalent;
-
                 if ($profil) {
                     $profil->portfolios()->delete();
                     $profil->avis()->delete();

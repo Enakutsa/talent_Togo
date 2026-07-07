@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Mail, ArrowRight, ShieldCheck } from "lucide-react";
 import { login as loginApi, verifyLoginOtp, resendOtp } from "../../services/auth.service";
@@ -18,6 +18,31 @@ export default function Login() {
   const [utilisateurId, setUtilisateurId] = useState(null);
   const [code, setCode] = useState("");
 
+  // Décompte du blocage (en secondes) après 5 tentatives ratées
+  const [blockedSeconds, setBlockedSeconds] = useState(0);
+  const intervalRef = useRef(null);
+
+  // ✅ Correction bug : dépendance sur la valeur, pas sur une expression booléenne
+  useEffect(() => {
+    if (blockedSeconds <= 0) {
+      clearInterval(intervalRef.current);
+      return;
+    }
+
+    intervalRef.current = setInterval(() => {
+      setBlockedSeconds((s) => {
+        if (s <= 1) {
+          clearInterval(intervalRef.current);
+          setGeneralError("");
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(intervalRef.current);
+  }, [blockedSeconds]); // ✅ corrigé
+
   // ✅ STEP EMAIL
   const handleCredentialsSubmit = async (e) => {
     e.preventDefault();
@@ -27,23 +52,16 @@ export default function Login() {
 
     try {
       const data = await loginApi({ email });
-
-      // ✅ IMPORTANT
       setUtilisateurId(data.utilisateur_id);
       setStep("otp");
-
     } catch (err) {
-      console.log(err.response?.data);
-
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors || {});
       } else if (err.response?.status === 404) {
         setGeneralError("Aucun compte trouvé avec cet email.");
       } else if (err.response?.status === 403) {
-        // ✅ Compte talent en attente de validation ou rejeté
         setGeneralError(
-          err.response.data.message ||
-            "Votre compte n'est pas encore activé."
+          err.response.data.message || "Votre compte n'est pas encore activé."
         );
       } else {
         setGeneralError("Une erreur est survenue. Veuillez réessayer.");
@@ -57,51 +75,58 @@ export default function Login() {
   const handleOtpSubmit = async (e) => {
     e.preventDefault();
     setGeneralError("");
-    setLoading(true);
 
-    // ✅ sécurité
     if (!utilisateurId) {
       setGeneralError("Erreur utilisateur. Reconnectez-vous.");
-      setLoading(false);
       return;
     }
 
     if (code.length !== 6) {
       setGeneralError("Le code doit contenir 6 chiffres.");
-      setLoading(false);
       return;
     }
+
+    if (blockedSeconds > 0) return;
+
+    const codeEnvoye = code;
+    setCode("");
+    setLoading(true);
 
     try {
       const data = await verifyLoginOtp({
         utilisateur_id: utilisateurId,
-        code,
+        code: codeEnvoye,
       });
 
-      console.log("RESPONSE OTP :", data);
-
-      // ✅ CORRECTION PRINCIPALE
+      // Sauvegarde du token et de l'utilisateur dans le contexte
       login(data.data.utilisateur, data.data.token);
-
-      // ✅ stock token
       localStorage.setItem("token", data.data.token);
 
-      // ✅ redirection
-      if (data.data.utilisateur.role === "talent") {
-        navigate("/talent/dashboard");
-      } else if (data.data.utilisateur.role === "admin") {
+      // ✅ Redirection basée sur ce que le backend décide
+      const redirect = data.data.redirect;
+
+      if (redirect === "admin") {
         navigate("/admin");
+      } else if (redirect === "talent/profil/creer") {
+        navigate("/talent/profil/creer");
+      } else if (redirect === "talent/dashboard") {
+        navigate("/talent/dashboard");
       } else {
+        // Client ou fallback
         navigate("/");
       }
 
     } catch (err) {
-      console.log("ERREUR OTP :", err.response?.data);
+      const status = err.response?.status;
+      const retryAfter = err.response?.data?.retry_after;
 
-      if (err.response?.status === 422) {
-        setGeneralError(err.response.data.message || "Code invalide ou expiré.");
-      } else if (err.response?.status === 429) {
+      if (status === 429 && retryAfter) {
+        setBlockedSeconds(retryAfter);
+        setGeneralError("");
+      } else if (status === 429) {
         setGeneralError("Trop de tentatives. Réessayez plus tard.");
+      } else if (status === 422) {
+        setGeneralError(err.response.data.message || "Code invalide ou expiré.");
       } else {
         setGeneralError("Erreur serveur. Réessayez.");
       }
@@ -112,6 +137,7 @@ export default function Login() {
 
   // ✅ RESEND
   const handleResend = async () => {
+    if (blockedSeconds > 0) return;
     setGeneralError("");
 
     try {
@@ -156,10 +182,8 @@ export default function Login() {
               )}
 
               <form onSubmit={handleCredentialsSubmit} className="login-form">
-
                 <div className="login-field">
                   <label className="login-label">Adresse e-mail</label>
-
                   <div className="login-input-wrap">
                     <Mail size={17} />
                     <input
@@ -172,7 +196,6 @@ export default function Login() {
                       autoFocus
                     />
                   </div>
-
                   {errors.email && (
                     <span className="login-field-error">{errors.email[0]}</span>
                   )}
@@ -187,7 +210,6 @@ export default function Login() {
                     </>
                   )}
                 </button>
-
               </form>
 
               <p className="login-bottom-text">
@@ -204,36 +226,50 @@ export default function Login() {
               </div>
 
               <h1 className="login-card-title">Vérification</h1>
+              <p className="login-card-subtitle">
+                Un code à 6 chiffres a été envoyé à <strong>{email}</strong>
+              </p>
 
-              {generalError && (
+              {blockedSeconds > 0 && (
+                <p className="form-error-banner-login">
+                  Trop de tentatives. Réessayez dans {blockedSeconds}s.
+                </p>
+              )}
+              {blockedSeconds === 0 && generalError && (
                 <p className="form-error-banner-login">{generalError}</p>
               )}
 
               <form onSubmit={handleOtpSubmit} className="login-form">
-
                 <input
                   type="text"
                   className="login-input login-otp-input"
                   maxLength={6}
                   value={code}
-                  onChange={(e) =>
-                    setCode(e.target.value.replace(/\D/g, ""))
-                  }
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
                   placeholder="• • • • • •"
+                  disabled={blockedSeconds > 0}
+                  autoFocus
                 />
 
                 <button
                   className="btn-primary-login"
-                  disabled={loading || code.length !== 6}
+                  disabled={loading || code.length !== 6 || blockedSeconds > 0}
                 >
-                  {loading ? <span className="login-spinner" /> : "Vérifier"}
+                  {loading
+                    ? <span className="login-spinner" />
+                    : blockedSeconds > 0
+                    ? `Réessayez dans ${blockedSeconds}s`
+                    : "Vérifier"}
                 </button>
-
               </form>
 
               <p className="login-bottom-text">
                 Vous n'avez rien reçu ?{" "}
-                <button onClick={handleResend} className="login-link-button">
+                <button
+                  onClick={handleResend}
+                  className="login-link-button"
+                  disabled={blockedSeconds > 0}
+                >
                   Renvoyer le code
                 </button>
               </p>

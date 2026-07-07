@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { verifyLoginOtp, resendOtp } from "../../services/auth.service";
 import "../../assets/styles/Otp.css";
@@ -12,11 +12,35 @@ export default function VerifyOtp() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  // Décompte du blocage (en secondes) après 5 tentatives ratées
+  const [blockedSeconds, setBlockedSeconds] = useState(0);
+  const intervalRef = useRef(null);
+
   const utilisateur_id = localStorage.getItem("user_id");
+
+  // Fait défiler le décompte toutes les secondes tant que blockedSeconds > 0
+  useEffect(() => {
+    if (blockedSeconds <= 0) {
+      clearInterval(intervalRef.current);
+      return;
+    }
+
+    intervalRef.current = setInterval(() => {
+      setBlockedSeconds((s) => {
+        if (s <= 1) {
+          clearInterval(intervalRef.current);
+          setError("");
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(intervalRef.current);
+  }, [blockedSeconds > 0]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     setSuccess("");
 
     if (!code) {
@@ -24,12 +48,19 @@ export default function VerifyOtp() {
       return;
     }
 
+    if (blockedSeconds > 0) {
+      return;
+    }
+
+    const codeEnvoye = code;
+    setCode(""); // ✅ le code saisi disparaît dès qu'on clique, succès ou échec
+    setError("");
     setLoading(true);
 
     try {
       const data = await verifyLoginOtp({
         utilisateur_id,
-        code,
+        code: codeEnvoye,
       });
 
       localStorage.setItem("token", data.data.token);
@@ -41,10 +72,16 @@ export default function VerifyOtp() {
       }, 1000);
 
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-        "Code invalide ou expiré"
-      );
+      const status = err.response?.status;
+      const retryAfter = err.response?.data?.retry_after;
+
+      if (status === 429 && retryAfter) {
+        // Déclenche le décompte "Réessayez dans Xs"
+        setBlockedSeconds(retryAfter);
+        setError(""); // le message vient du rendu du décompte, pas d'un texte figé
+      } else {
+        setError(err.response?.data?.message || "Code invalide ou expiré");
+      }
     } finally {
       setLoading(false);
     }
@@ -75,7 +112,12 @@ export default function VerifyOtp() {
           Entrez le code envoyé à votre email
         </p>
 
-        {error && <p className="otp-error">{error}</p>}
+        {blockedSeconds > 0 && (
+          <p className="otp-error">
+            Trop de tentatives. Réessayez dans {blockedSeconds}s.
+          </p>
+        )}
+        {blockedSeconds === 0 && error && <p className="otp-error">{error}</p>}
         {success && <p className="otp-success">{success}</p>}
 
         <form onSubmit={handleSubmit} className="otp-form">
@@ -87,15 +129,20 @@ export default function VerifyOtp() {
             value={code}
             onChange={(e) => setCode(e.target.value)}
             className="otp-input"
+            disabled={blockedSeconds > 0}
           />
 
-          <button className="otp-btn" disabled={loading}>
-            {loading ? "Vérification..." : "Valider"}
+          <button className="otp-btn" disabled={loading || blockedSeconds > 0}>
+            {loading
+              ? "Vérification..."
+              : blockedSeconds > 0
+              ? `Réessayez dans ${blockedSeconds}s`
+              : "Valider"}
           </button>
 
         </form>
 
-        <button className="otp-resend" onClick={handleResend}>
+        <button className="otp-resend" onClick={handleResend} disabled={blockedSeconds > 0}>
           {resending ? "Envoi..." : "Renvoyer le code"}
         </button>
 
