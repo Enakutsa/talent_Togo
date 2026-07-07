@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Models\Categorie;
 use Illuminate\Database\Eloquent\Model;
 
 class ProfilTalent extends Model
@@ -11,16 +10,11 @@ class ProfilTalent extends Model
 
     protected $fillable = [
         'utilisateur_id',
-        'categorie_id',
-        'ville',
         'tarif_min',
         'tarif_max',
         'biographie',
-        'document_justificatif',
         'photo',
         'disponibilite',
-        'statut',
-        'motif_rejet',
         'vues',
     ];
 
@@ -28,61 +22,45 @@ class ProfilTalent extends Model
     {
         return [
             'disponibilite' => 'boolean',
-            'tarif_min' => 'decimal:2',
-            'tarif_max' => 'decimal:2',
+            'tarif_min'     => 'decimal:2',
+            'tarif_max'     => 'decimal:2',
         ];
     }
 
-    /**
-     * Relation : un profil talent appartient à un utilisateur.
-     */
+    // ===== RELATIONS =====
+
     public function utilisateur()
     {
         return $this->belongsTo(Utilisateur::class, 'utilisateur_id');
     }
 
-    /**
-     * Relation : un profil talent appartient à une catégorie (table categories).
-     */
-    public function categorie()
-    {
-        return $this->belongsTo(Categorie::class, 'categorie_id');
-    }
-
-    /**
-     * Relation : un profil talent possède plusieurs éléments de portfolio.
-     */
     public function portfolios()
     {
         return $this->hasMany(Portfolio::class, 'profil_talent_id');
     }
 
-    /**
-     * Relation : un profil talent reçoit plusieurs demandes de prestation.
-     */
     public function demandesPrestation()
     {
         return $this->hasMany(DemandePrestation::class, 'profil_talent_id');
     }
 
-    /**
-     * Relation : un profil talent reçoit plusieurs avis.
-     */
     public function avis()
     {
         return $this->hasMany(Avis::class, 'profil_talent_id');
     }
 
-    /**
-     * Relation : un profil talent peut être mis en favori par plusieurs clients.
-     */
     public function favoris()
     {
         return $this->hasMany(Favori::class, 'profil_talent_id');
     }
 
-    public function estValide(): bool
+    // ===== HELPERS =====
+
+    // ⚠️ categorie_id et ville vivent maintenant sur Utilisateur.
+    public function estComplet(): bool
     {
-        return $this->statut === 'valide';
+        return !is_null($this->utilisateur?->ville)
+            && !is_null($this->utilisateur?->categorie_id)
+            && !is_null($this->photo);
     }
 }

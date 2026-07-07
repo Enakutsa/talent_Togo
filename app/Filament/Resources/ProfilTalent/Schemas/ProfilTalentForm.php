@@ -39,6 +39,22 @@ class ProfilTalentForm
                             ->disabled()
                             ->dehydrated(false)
                             ->formatStateUsing(fn ($record) => $record?->utilisateur?->telephone),
+
+                        // ℹ️ Lecture seule : le statut du compte vit maintenant sur
+                        // Utilisateur. On l'affiche ici pour info, mais toute action
+                        // (Valider/Rejeter/Activer/Désactiver) se fait depuis la
+                        // resource "Utilisateurs".
+                        TextInput::make('utilisateur.statut')
+                            ->label('Statut du compte')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->formatStateUsing(fn ($record) => match ($record?->utilisateur?->statut) {
+                                'valide' => 'Validé',
+                                'en_attente' => 'En attente',
+                                'rejete' => 'Rejeté',
+                                'desactive' => 'Désactivé',
+                                default => $record?->utilisateur?->statut ?? '—',
+                            }),
                     ]),
 
                 Section::make('Informations professionnelles')
@@ -68,8 +84,7 @@ class ProfilTalentForm
                             ->rows(4),
                     ]),
 
-                Section::make('Photo et document justificatif')
-                    ->columns(2)
+                Section::make('Photo de profil')
                     ->components([
                         FileUpload::make('photo')
                             ->label('Photo de profil')
@@ -78,41 +93,16 @@ class ProfilTalentForm
                             ->image()
                             ->avatar()
                             ->acceptedFileTypes(['image/jpeg', 'image/png']),
-
-                        FileUpload::make('document_justificatif')
-                            ->label('Document (CNI, certificat, portfolio...)')
-                            ->disk('public')
-                            ->directory('documents_justificatifs')
-                            ->acceptedFileTypes(['application/pdf', 'image/jpeg', 'image/png'])
-                            ->downloadable()
-                            ->openable()
-                            ->previewable(true),
                     ]),
 
-                Section::make('Modération')
+                Section::make('Statistiques')
                     ->columns(2)
                     ->components([
-                        Select::make('statut')
-                            ->options([
-                                'en_attente' => 'En attente',
-                                'valide' => 'Validé',
-                                'rejete' => 'Rejeté',
-                            ])
-                            ->default('en_attente')
-                            ->required()
-                            ->native(false),
-
                         TextInput::make('vues')
                             ->numeric()
                             ->default(0)
                             ->disabled()
                             ->dehydrated(),
-
-                        Textarea::make('motif_rejet')
-                            ->label('Motif de rejet')
-                            ->columnSpanFull()
-                            ->rows(3)
-                            ->visible(fn ($get) => $get('statut') === 'rejete'),
                     ]),
             ]);
     }

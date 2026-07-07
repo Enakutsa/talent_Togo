@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\DB;
 class AuthController extends Controller
 {
     /**
-     * ✅ Génère OTP
+     * ✅ Génère et envoie un OTP par email
      */
     private function genererEtEnvoyerOtp(Utilisateur $utilisateur, string $type): void
     {
@@ -29,11 +29,11 @@ class AuthController extends Controller
 
         Otp::create([
             'utilisateur_id' => $utilisateur->id,
-            'code' => $code,
-            'type' => $type,
-            'expire_a' => now()->addMinutes(10),
-            'utilise' => false,
-            'tentatives' => 0
+            'code'           => $code,
+            'type'           => $type,
+            'expire_a'       => now()->addMinutes(10),
+            'utilise'        => false,
+            'tentatives'     => 0,
         ]);
 
         try {
@@ -42,7 +42,7 @@ class AuthController extends Controller
     }
 
     /**
-     * ✅ Envoie un email à tous les administrateurs.
+     * ✅ Notifie les admins qu'un nouveau talent attend validation
      */
     private function notifierAdminsNouveauTalent(Utilisateur $talent): void
     {
@@ -57,32 +57,41 @@ class AuthController extends Controller
 
     /**
      * ✅ INSCRIPTION
-     * Si role = talent : crée aussi le ProfilTalent (catégorie, ville, tarifs, bio, document, photo).
+     *
+     * Champs communs (Talent + Client) :
+     *   nom, prenom, email, telephone, mot_de_passe, role
+     *
+     * Champs supplémentaires Talent uniquement (tous stockés dans utilisateurs) :
+     *   document_justificatif, categorie_id, ville
+     *
+     * Après inscription :
+     *   - Talent  → statut "en_attente", ProfilTalent (vide) créé pour le reste du profil
+     *   - Client  → statut "actif", pas de ProfilTalent
      */
     public function register(Request $request)
     {
         $rules = [
-            'nom' => 'required|string|max:100',
-            'prenom' => 'required|string|max:100',
-            'email' => 'required|email|unique:utilisateurs,email|regex:/^[\w.+-]+@gmail\.com$/i',
-            'telephone' => 'required|string|regex:/^[0-9]{8}$/',
+            'nom'          => 'required|string|max:100',
+            'prenom'       => 'required|string|max:100',
+            'email'        => 'required|email|unique:utilisateurs,email|regex:/^[\w.+-]+@gmail\.com$/i',
+            'telephone'    => 'required|string|regex:/^[0-9]{8}$/',
             'mot_de_passe' => 'required|min:8|confirmed',
-            'role' => 'required|in:talent,client',
+            'role'         => 'required|in:talent,client',
         ];
 
         if ($request->role === 'talent') {
-            $rules['categorie_id'] = 'required|exists:categories,id';
-            $rules['ville'] = 'required|string|max:100';
-            $rules['tarif_min'] = 'nullable|numeric|min:0|max:99999999';
-            $rules['tarif_max'] = 'nullable|numeric|min:0|max:99999999|gte:tarif_min';
-            $rules['biographie'] = 'nullable|string|max:1000';
             $rules['document_justificatif'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:5120';
-            $rules['photo'] = 'nullable|image|mimes:jpg,jpeg,png|max:3072'; // 3 Mo
+            $rules['categorie_id']          = 'required|exists:categories,id';
+            $rules['ville']                 = 'required|string|max:100';
         }
 
         $validator = Validator::make($request->all(), $rules, [
-            'email.regex' => 'L\'adresse e-mail doit obligatoirement être une adresse Gmail (@gmail.com).',
-            'telephone.regex' => 'Le numéro de téléphone doit contenir exactement 8 chiffres.',
+            'email.regex'                    => 'L\'adresse e-mail doit être une adresse Gmail (@gmail.com).',
+            'telephone.regex'                => 'Le numéro de téléphone doit contenir exactement 8 chiffres.',
+            'document_justificatif.required' => 'Le document justificatif est obligatoire pour les talents.',
+            'categorie_id.required'          => 'Veuillez choisir une catégorie.',
+            'categorie_id.exists'            => 'Catégorie invalide.',
+            'ville.required'                 => 'Veuillez indiquer votre ville.',
         ]);
 
         if ($validator->fails()) {
@@ -90,49 +99,41 @@ class AuthController extends Controller
         }
 
         $utilisateur = DB::transaction(function () use ($request) {
+
+            $documentPath = null;
+            if ($request->hasFile('document_justificatif')) {
+                $documentPath = $request->file('document_justificatif')
+                    ->store('documents_justificatifs', 'public');
+            }
+
             $utilisateur = Utilisateur::create([
-                'nom' => $request->nom,
-                'prenom' => $request->prenom,
-                'email' => $request->email,
-                'telephone' => $request->telephone,
-                'mot_de_passe' => Hash::make($request->mot_de_passe),
-                'role' => $request->role,
-                'is_verified' => true,
+                'nom'                   => $request->nom,
+                'prenom'                => $request->prenom,
+                'email'                 => $request->email,
+                'telephone'             => $request->telephone,
+                'mot_de_passe'          => Hash::make($request->mot_de_passe),
+                'role'                  => $request->role,
+                'is_verified'           => true,
+                'document_justificatif' => $documentPath,
+                'statut'                => $request->role === 'talent' ? 'en_attente' : 'actif',
+                'categorie_id'          => $request->role === 'talent' ? $request->categorie_id : null,
+                'ville'                 => $request->role === 'talent' ? $request->ville : null,
             ]);
 
+            // Créer le ProfilTalent (categorie/ville vivent désormais sur Utilisateur)
+            // Le reste — bio, tarifs, photo, portfolio — sera complété plus tard
             if ($request->role === 'talent') {
-                $documentPath = null;
-                $photoPath = null;
-
-                if ($request->hasFile('document_justificatif')) {
-                    $documentPath = $request->file('document_justificatif')
-                        ->store('documents_justificatifs', 'public');
-                }
-
-                if ($request->hasFile('photo')) {
-                    $photoPath = $request->file('photo')
-                        ->store('photos_talents', 'public');
-                }
-
                 ProfilTalent::create([
                     'utilisateur_id' => $utilisateur->id,
-                    'categorie_id' => $request->categorie_id,
-                    'ville' => $request->ville,
-                    'tarif_min' => $request->tarif_min,
-                    'tarif_max' => $request->tarif_max,
-                    'biographie' => $request->biographie,
-                    'document_justificatif' => $documentPath,
-                    'photo' => $photoPath,
-                    'disponibilite' => true,
-                    'statut' => 'en_attente',
-                    'vues' => 0,
+                    'disponibilite'  => false,
+                    'vues'           => 0,
                 ]);
             }
 
             return $utilisateur;
         });
 
-        // Notifie les administrateurs (hors transaction, pour ne pas bloquer si l'email échoue)
+        // Notifie les admins qu'un talent attend validation
         if ($utilisateur->role === 'talent') {
             $this->notifierAdminsNouveauTalent($utilisateur);
         }
@@ -141,15 +142,16 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => [
+            'data'    => [
                 'utilisateur' => $utilisateur,
-                'token' => $token
+                'token'       => $token,
+                'redirect'    => $utilisateur->role === 'talent' ? 'login' : 'login',
             ]
         ], 201);
     }
 
     /**
-     * ✅ LOGIN → EMAIL SEULEMENT + OTP
+     * ✅ LOGIN → OTP par email
      */
     public function login(Request $request)
     {
@@ -167,15 +169,13 @@ class AuthController extends Controller
             return response()->json(['message' => 'Email introuvable'], 404);
         }
 
-        // Bloque la connexion d'un talent non encore validé
+        // Bloque la connexion d'un talent non encore validé ou désactivé
         if ($utilisateur->isTalent()) {
-            $profil = $utilisateur->profilTalent;
-
-            if (!$profil || $profil->statut !== 'valide') {
-                $message = match ($profil?->statut) {
-                    'rejete' => 'Votre profil a été refusé. Motif : ' . ($profil->motif_rejet ?? 'non précisé'),
-                    'desactive' => 'Votre compte a été désactivé par un administrateur. Contactez le support pour plus d\'informations.',
-                    default => 'Votre compte est en attente de validation par un administrateur.',
+            if ($utilisateur->statut !== 'valide') {
+                $message = match ($utilisateur->statut) {
+                    'rejete'    => 'Votre profil a été refusé. Motif : ' . ($utilisateur->motif_rejet ?? 'non précisé'),
+                    'desactive' => 'Votre compte a été désactivé par un administrateur. Contactez le support.',
+                    default     => 'Votre compte est en attente de validation par un administrateur.',
                 };
 
                 return response()->json(['message' => $message], 403);
@@ -185,27 +185,27 @@ class AuthController extends Controller
         $this->genererEtEnvoyerOtp($utilisateur, 'connexion');
 
         return response()->json([
-            'success' => true,
-            'message' => 'OTP envoyé',
-            'utilisateur_id' => $utilisateur->id
+            'success'        => true,
+            'message'        => 'OTP envoyé',
+            'utilisateur_id' => $utilisateur->id,
         ]);
     }
 
     /**
-     * ✅ VERIFY OTP
+     * ✅ VÉRIFICATION OTP
      */
     public function verifyLoginOtp(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'utilisateur_id' => 'required|exists:utilisateurs,id',
-            'code' => 'required|string|size:6',
+            'code'           => 'required|string|size:6',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $utilisateur = Utilisateur::find($request->utilisateur_id);
+        $utilisateur = Utilisateur::with('profilTalent')->find($request->utilisateur_id);
 
         $otp = Otp::where('utilisateur_id', $utilisateur->id)
             ->where('type', 'connexion')
@@ -233,11 +233,23 @@ class AuthController extends Controller
 
         $token = $utilisateur->createToken('auth_token')->plainTextToken;
 
+        // Détermine la redirection selon le rôle et l'état du profil
+        $redirect = 'dashboard';
+        if ($utilisateur->isTalent()) {
+            $profil = $utilisateur->profilTalent;
+            $redirect = ($profil && $profil->estComplet()) ? 'talent/dashboard' : 'talent/profil/creer';
+        } elseif ($utilisateur->isClient()) {
+            $redirect = 'dashboard';
+        } elseif ($utilisateur->isAdmin()) {
+            $redirect = 'admin';
+        }
+
         return response()->json([
             'success' => true,
-            'data' => [
+            'data'    => [
                 'utilisateur' => $utilisateur,
-                'token' => $token
+                'token'       => $token,
+                'redirect'    => $redirect,
             ]
         ]);
     }
@@ -261,13 +273,130 @@ class AuthController extends Controller
 
         return response()->json([
             'success' => true,
-            'message' => 'Nouveau code envoyé'
+            'message' => 'Nouveau code envoyé',
         ]);
     }
 
     public function me(Request $request)
     {
-        return response()->json($request->user());
+        return response()->json($request->user()->load('profilTalent'));
+    }
+
+    /**
+     * ✅ MISE À JOUR DU PROFIL (infos de base uniquement)
+     *
+     * nom, prenom, telephone → modifiables directement
+     * mot de passe           → modifiable en fournissant l'ancien + le nouveau
+     *
+     * L'email n'est pas modifiable ici (impacterait l'auth par OTP).
+     * Les champs spécifiques au profil Talent (categorie, ville, bio, tarifs,
+     * photo, portfolio) relèvent d'un ProfilTalentController dédié.
+     */
+    public function update(Request $request)
+    {
+        $utilisateur = $request->user();
+
+        $rules = [
+            'nom'       => 'sometimes|required|string|max:100',
+            'prenom'    => 'sometimes|required|string|max:100',
+            'telephone' => 'sometimes|required|string|regex:/^[0-9]{8}$/',
+        ];
+
+        $changePassword = $request->filled('nouveau_mot_de_passe');
+
+        if ($changePassword) {
+            $rules['mot_de_passe_actuel']  = 'required|string';
+            $rules['nouveau_mot_de_passe'] = 'required|string|min:8|confirmed';
+        }
+
+        $validator = Validator::make($request->all(), $rules, [
+            'telephone.regex' => 'Le numéro de téléphone doit contenir exactement 8 chiffres.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        if ($changePassword && !Hash::check($request->mot_de_passe_actuel, $utilisateur->mot_de_passe)) {
+            return response()->json([
+                'errors' => ['mot_de_passe_actuel' => ['Mot de passe actuel incorrect.']],
+            ], 422);
+        }
+
+        $utilisateur->fill($request->only(['nom', 'prenom', 'telephone']));
+
+        if ($changePassword) {
+            $utilisateur->mot_de_passe = Hash::make($request->nouveau_mot_de_passe);
+        }
+
+        $utilisateur->save();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $utilisateur->fresh()->load('profilTalent'),
+        ]);
+    }
+
+    /**
+     * ✅ SUPPRESSION DU COMPTE
+     *
+     * Protégée par la saisie du mot de passe. Un admin ne peut pas
+     * se supprimer lui-même via cette route (géré depuis Filament).
+     */
+    public function destroy(Request $request)
+    {
+        $utilisateur = $request->user();
+
+        if ($utilisateur->isAdmin()) {
+            return response()->json([
+                'message' => 'Un compte administrateur ne peut pas être supprimé depuis cette interface.',
+            ], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'mot_de_passe' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        if (!Hash::check($request->mot_de_passe, $utilisateur->mot_de_passe)) {
+            return response()->json([
+                'errors' => ['mot_de_passe' => ['Mot de passe incorrect.']],
+            ], 422);
+        }
+
+        DB::transaction(function () use ($utilisateur) {
+            $utilisateur->tokens()->delete();
+            $utilisateur->otps()->delete();
+            $utilisateur->notificationsInternes()->delete();
+
+            if ($utilisateur->isTalent()) {
+                $profil = $utilisateur->profilTalent;
+
+                if ($profil) {
+                    $profil->portfolios()->delete();
+                    $profil->avis()->delete();
+                    $profil->favoris()->delete();
+                    $profil->demandesPrestation()->delete();
+                    $profil->delete();
+                }
+            }
+
+            if ($utilisateur->isClient()) {
+                $utilisateur->demandesPrestation()->delete();
+                $utilisateur->favoris()->delete();
+                $utilisateur->avisDonnes()->delete();
+            }
+
+            $utilisateur->delete();
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Compte supprimé avec succès.',
+        ]);
     }
 
     public function logout(Request $request)

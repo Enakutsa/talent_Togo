@@ -15,8 +15,8 @@ class TalentController extends Controller
     public function index(Request $request)
     {
         $query = ProfilTalent::query()
-            ->where('statut', 'valide')
-            ->with(['utilisateur', 'categorie']);
+            ->whereHas('utilisateur', fn ($q) => $q->where('statut', 'valide'))
+            ->with(['utilisateur.categorie']);
 
         if ($request->boolean('featured')) {
             $query->orderByDesc('vues')->limit(6);
@@ -38,7 +38,12 @@ class TalentController extends Controller
      */
     public function show(ProfilTalent $talent)
     {
-        $talent->load(['utilisateur', 'categorie']);
+        $talent->load(['utilisateur.categorie']);
+
+        // On ne montre pas un profil dont le compte n'est plus "valide"
+        // (rejeté, en_attente, désactivé)
+        abort_unless($talent->utilisateur?->statut === 'valide', 404);
+
         $talent->increment('vues');
 
         return response()->json([
@@ -50,6 +55,8 @@ class TalentController extends Controller
     /**
      * Formate un ProfilTalent dans le shape attendu par TalentCard.jsx
      * (nom, categorie, ville, note, avis, tarif, avatar, portfolio, disponible, competences).
+     *
+     * ⚠️ categorie et ville vivent désormais sur Utilisateur, pas ProfilTalent.
      */
     private function formatTalent(ProfilTalent $profil): array
     {
@@ -61,8 +68,8 @@ class TalentController extends Controller
         return [
             'id' => $profil->id,
             'nom' => trim(($profil->utilisateur->prenom ?? '') . ' ' . ($profil->utilisateur->nom ?? '')),
-            'categorie' => $profil->categorie->nom ?? '—',
-            'ville' => $profil->ville,
+            'categorie' => $profil->utilisateur->categorie->nom ?? '—',
+            'ville' => $profil->utilisateur->ville ?? null,
             'note' => 0,
             'avis' => 0,
             'tarif' => (float) ($profil->tarif_min ?? 0),

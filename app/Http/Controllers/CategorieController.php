@@ -6,12 +6,22 @@ use App\Models\Categorie;
 
 class CategorieController extends Controller
 {
+    /**
+     * Liste des catégories, pour peupler le <select> à l'inscription
+     * et afficher le nombre de talents validés par catégorie sur la
+     * page de recherche.
+     * GET /api/categories
+     */
     public function index()
     {
         $categories = Categorie::query()
             ->withCount(['profils' => function ($query) {
-                $query->where('statut', 'valide');
+                // ⚠️ 'statut' vit maintenant sur Utilisateur, pas ProfilTalent
+                $query->whereHas('utilisateur', function ($q) {
+                    $q->where('statut', 'valide');
+                });
             }])
+            ->orderBy('nom')
             ->get()
             ->map(function ($cat) {
                 return [

@@ -7,27 +7,37 @@ import {
   Lock,
   ArrowRight,
   Check,
-  MapPin,
-  Tag,
-  DollarSign,
-  FileText,
   Phone,
   Eye,
   EyeOff,
   UploadCloud,
+  Tag,
+  MapPin,
 } from "lucide-react";
-import api, { register } from "../../services/auth.service";
+import { register } from "../../services/auth.service";
+import { getCategories } from "../../services/categorie.service";
 import "../../assets/styles/Inscription.css";
 
-const VILLES = [
+// Principales villes du Togo, du Sud au Nord
+const VILLES_TOGO = [
   "Lomé",
-  "Kara",
-  "Sokodé",
+  "Aného",
+  "Tsévié",
+  "Vogan",
+  "Tabligbo",
+  "Notsé",
   "Kpalimé",
   "Atakpamé",
+  "Amlamé",
+  "Badou",
+  "Sotouboua",
+  "Sokodé",
+  "Bassar",
+  "Kara",
+  "Niamtougou",
+  "Kandé",
+  "Mango",
   "Dapaong",
-  "Tsévié",
-  "Autre",
 ];
 
 export default function Inscription() {
@@ -38,40 +48,31 @@ export default function Inscription() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
-
-  const [categories, setCategories] = useState([]);
-
   const [showPassword, setShowPassword] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+
+  const [categories, setCategories] = useState([]);
 
   const [form, setForm] = useState({
     prenom: "",
     nom: "",
     email: "",
+    telephone: "",
     mot_de_passe: "",
     mot_de_passe_confirmation: "",
     categorie_id: "",
     ville: "",
-    telephone: "",
-    tarif_min: "",
-    tarif_max: "",
-    biographie: "",
   });
 
   const [document, setDocument] = useState(null);
-  const [photo, setPhoto] = useState(null);
 
-  // Charge les vraies catégories depuis l'API au montage du composant
+  // Charge les catégories une seule fois (utile seulement pour les talents,
+  // mais on précharge dès l'arrivée sur la page pour éviter un délai
+  // au moment où l'utilisateur choisit "Talent")
   useEffect(() => {
-    api
-      .get("/categories")
-      .then((res) => {
-        const list = res.data?.data;
-        if (Array.isArray(list)) setCategories(list);
-      })
-      .catch(() => {
-        // En cas d'échec, la liste reste vide ; le select affichera juste "Choisir..."
-      });
+    getCategories()
+      .then((res) => setCategories(res?.data || []))
+      .catch(() => setCategories([]));
   }, []);
 
   const handleChange = (field) => (e) => {
@@ -80,10 +81,6 @@ export default function Inscription() {
 
   const handleFileChange = (e) => {
     setDocument(e.target.files[0] || null);
-  };
-
-  const handlePhotoChange = (e) => {
-    setPhoto(e.target.files[0] || null);
   };
 
   const handleSubmit = async (e) => {
@@ -107,12 +104,16 @@ export default function Inscription() {
       setGeneralError("Le numéro de téléphone doit contenir exactement 8 chiffres.");
       return;
     }
-    if (role === "talent" && (!form.categorie_id || !form.ville)) {
-      setGeneralError("Veuillez renseigner votre catégorie et votre ville.");
+    if (role === "talent" && !document) {
+      setGeneralError("Veuillez joindre un document justificatif.");
       return;
     }
-    if (role === "talent" && !photo) {
-      setGeneralError("Veuillez ajouter une photo de profil.");
+    if (role === "talent" && !form.categorie_id) {
+      setGeneralError("Veuillez choisir votre catégorie de service.");
+      return;
+    }
+    if (role === "talent" && !form.ville.trim()) {
+      setGeneralError("Veuillez indiquer votre ville.");
       return;
     }
 
@@ -126,24 +127,13 @@ export default function Inscription() {
         payload.append("nom", form.nom);
         payload.append("prenom", form.prenom);
         payload.append("email", form.email);
+        payload.append("telephone", form.telephone);
         payload.append("mot_de_passe", form.mot_de_passe);
-        payload.append(
-          "mot_de_passe_confirmation",
-          form.mot_de_passe_confirmation
-        );
+        payload.append("mot_de_passe_confirmation", form.mot_de_passe_confirmation);
         payload.append("role", role);
+        payload.append("document_justificatif", document);
         payload.append("categorie_id", form.categorie_id);
         payload.append("ville", form.ville);
-        if (form.telephone) payload.append("telephone", form.telephone);
-        if (form.tarif_min) payload.append("tarif_min", form.tarif_min);
-        if (form.tarif_max) payload.append("tarif_max", form.tarif_max);
-        if (form.biographie) payload.append("biographie", form.biographie);
-        if (document) {
-          payload.append("document_justificatif", document);
-        }
-        if (photo) {
-          payload.append("photo", photo);
-        }
       } else {
         payload = {
           nom: form.nom,
@@ -156,8 +146,16 @@ export default function Inscription() {
         };
       }
 
-      await register(payload);
-      navigate("/login");
+      const res = await register(payload);
+
+      // Redirection selon le rôle
+      if (res?.data?.redirect === "profil") {
+        // Talent → compléter le profil
+        navigate("/talent/profil/creer");
+      } else {
+        // Client → page de connexion
+        navigate("/login");
+      }
     } catch (err) {
       console.error("Erreur inscription:", err.response?.data || err.message);
       if (err.response?.status === 422) {
@@ -195,6 +193,7 @@ export default function Inscription() {
 
           {generalError && <p className="form-error-banner">{generalError}</p>}
 
+          {/* Sélection du rôle */}
           <div className="role-cards-grid">
             <div
               className={`role-card role-card-talent ${role === "talent" ? "selected" : ""}`}
@@ -236,6 +235,8 @@ export default function Inscription() {
           )}
 
           <form onSubmit={handleSubmit} className="auth-form-2">
+
+            {/* Prénom + Nom */}
             <div className="form-row">
               <div className="form-field">
                 <label className="form-label">Prénom</label>
@@ -270,6 +271,7 @@ export default function Inscription() {
               </div>
             </div>
 
+            {/* Email */}
             <div className="form-field">
               <label className="form-label">Adresse e-mail</label>
               <div className="input-with-icon">
@@ -286,6 +288,7 @@ export default function Inscription() {
               {errors.email && <span className="field-error">{errors.email[0]}</span>}
             </div>
 
+            {/* Téléphone */}
             <div className="form-field">
               <label className="form-label">Téléphone</label>
               <div className="input-with-icon">
@@ -302,11 +305,10 @@ export default function Inscription() {
                   required
                 />
               </div>
-              {errors.telephone && (
-                <span className="field-error">{errors.telephone[0]}</span>
-              )}
+              {errors.telephone && <span className="field-error">{errors.telephone[0]}</span>}
             </div>
 
+            {/* Mot de passe */}
             <div className="form-field">
               <label className="form-label">Mot de passe</label>
               <div className="input-with-icon">
@@ -331,6 +333,7 @@ export default function Inscription() {
               {errors.mot_de_passe && <span className="field-error">{errors.mot_de_passe[0]}</span>}
             </div>
 
+            {/* Confirmer mot de passe */}
             <div className="form-field">
               <label className="form-label">Confirmer le mot de passe</label>
               <div className="input-with-icon">
@@ -354,154 +357,81 @@ export default function Inscription() {
               </div>
             </div>
 
+            {/* Catégorie + Ville (Talent uniquement) */}
             {role === "talent" && (
-              <div className="talent-fields-block">
-                <p className="talent-fields-title">Informations professionnelles</p>
-
-                <div className="form-row">
-                  <div className="form-field">
-                    <label className="form-label">Catégorie</label>
-                    <div className="input-with-icon">
-                      <Tag className="input-icon" size={17} />
-                      <select
-                        className="input-field select-field"
-                        value={form.categorie_id}
-                        onChange={handleChange("categorie_id")}
-                        required
-                      >
-                        <option value="">Choisir...</option>
-                        {categories.map((cat) => (
-                          <option key={cat.id} value={cat.id}>
-                            {cat.nom}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    {errors.categorie_id && (
-                      <span className="field-error">{errors.categorie_id[0]}</span>
-                    )}
-                  </div>
-
-                  <div className="form-field">
-                    <label className="form-label">Ville</label>
-                    <div className="input-with-icon">
-                      <MapPin className="input-icon" size={17} />
-                      <select
-                        className="input-field select-field"
-                        value={form.ville}
-                        onChange={handleChange("ville")}
-                        required
-                      >
-                        <option value="">Choisir...</option>
-                        {VILLES.map((v) => (
-                          <option key={v} value={v}>
-                            {v}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    {errors.ville && <span className="field-error">{errors.ville[0]}</span>}
-                  </div>
-                </div>
-
-                <div className="form-row">
-                  <div className="form-field">
-                    <label className="form-label">Tarif min (FCFA)</label>
-                    <div className="input-with-icon">
-                      <DollarSign className="input-icon" size={17} />
-                      <input
-                        type="number"
-                        min="0"
-                        max="99999999"
-                        className="input-field"
-                        placeholder="Ex: 10000"
-                        value={form.tarif_min}
-                        onChange={handleChange("tarif_min")}
-                      />
-                    </div>
-                    {errors.tarif_min && <span className="field-error">{errors.tarif_min[0]}</span>}
-                  </div>
-
-                  <div className="form-field">
-                    <label className="form-label">Tarif max (FCFA)</label>
-                    <div className="input-with-icon">
-                      <DollarSign className="input-icon" size={17} />
-                      <input
-                        type="number"
-                        min="0"
-                        max="99999999"
-                        className="input-field"
-                        placeholder="Ex: 50000"
-                        value={form.tarif_max}
-                        onChange={handleChange("tarif_max")}
-                      />
-                    </div>
-                    {errors.tarif_max && <span className="field-error">{errors.tarif_max[0]}</span>}
-                  </div>
-                </div>
-
+              <div className="form-row">
                 <div className="form-field">
-                  <label className="form-label">
-                    Biographie / Présentation (optionnel)
-                  </label>
-                  <textarea
-                    className="input-field textarea-field"
-                    rows={4}
-                    placeholder="Parlez de votre parcours, votre expérience, votre style de travail..."
-                    value={form.biographie}
-                    onChange={handleChange("biographie")}
-                  />
-                  {errors.biographie && (
-                    <span className="field-error">{errors.biographie[0]}</span>
+                  <label className="form-label">Catégorie de service</label>
+                  <div className="input-with-icon">
+                    <Tag className="input-icon" size={17} />
+                    <select
+                      className="input-field"
+                      value={form.categorie_id}
+                      onChange={handleChange("categorie_id")}
+                      required
+                    >
+                      <option value="">Sélectionnez une catégorie</option>
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.nom}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {errors.categorie_id && (
+                    <span className="field-error">{errors.categorie_id[0]}</span>
                   )}
                 </div>
 
                 <div className="form-field">
-                  <label className="form-label">
-                    Pièce justificative / Portfolio (PDF, image — optionnel)
-                  </label>
-                  <label className="dropzone-wrap">
-                    <input
-                      type="file"
-                      accept=".pdf,.jpg,.jpeg,.png"
-                      onChange={handleFileChange}
-                      className="file-input-hidden"
-                    />
-                    <UploadCloud className="dropzone-icon" size={28} />
-                    <span className="dropzone-title">
-                      {document ? document.name : "Cliquez pour uploader"}
-                    </span>
-                    <span className="dropzone-subtitle">
-                      Registre de commerce (RCCM) ou CNI (JPG, PNG, PDF — max 5 MB)
-                    </span>
-                  </label>
-                  {errors.document_justificatif && (
-                    <span className="field-error">{errors.document_justificatif[0]}</span>
-                  )}
-                </div>
-
-                <div className="form-field">
-                  <label className="form-label">Photo de profil</label>
-                  <label className="dropzone-wrap">
-                    <input
-                      type="file"
-                      accept=".jpg,.jpeg,.png"
-                      onChange={handlePhotoChange}
-                      className="file-input-hidden"
-                    />
-                    <UploadCloud className="dropzone-icon" size={28} />
-                    <span className="dropzone-title">
-                      {photo ? photo.name : "Cliquez pour uploader"}
-                    </span>
-                    <span className="dropzone-subtitle">
-                      Photo de profil claire et récente (JPG, PNG — max 3 MB)
-                    </span>
-                  </label>
-                  {errors.photo && <span className="field-error">{errors.photo[0]}</span>}
+                  <label className="form-label">Ville</label>
+                  <div className="input-with-icon">
+                    <MapPin className="input-icon" size={17} />
+                    <select
+                      className="input-field"
+                      value={form.ville}
+                      onChange={handleChange("ville")}
+                      required
+                    >
+                      <option value="">Sélectionnez une ville</option>
+                      {VILLES_TOGO.map((ville) => (
+                        <option key={ville} value={ville}>
+                          {ville}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {errors.ville && <span className="field-error">{errors.ville[0]}</span>}
                 </div>
               </div>
             )}
 
+            {/* Document justificatif (Talent uniquement) */}
+            {role === "talent" && (
+              <div className="form-field">
+                <label className="form-label">Pièce justificative</label>
+                <label className="dropzone-wrap">
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileChange}
+                    className="file-input-hidden"
+                  />
+                  <UploadCloud className="dropzone-icon" size={28} />
+                  <span className="dropzone-title">
+                    {document ? document.name : "Cliquez pour uploader"}
+                  </span>
+                  <span className="dropzone-subtitle">
+                    RCCM, CNI ou carte professionnelle (JPG, PNG, PDF — max 5 MB)
+                  </span>
+                </label>
+                {errors.document_justificatif && (
+                  <span className="field-error">{errors.document_justificatif[0]}</span>
+                )}
+              </div>
+            )}
+
+            {/* CGU */}
             <label className="auth-checkbox-row">
               <div
                 className={`auth-checkbox ${agree ? "auth-checkbox-checked" : ""}`}
@@ -521,7 +451,11 @@ export default function Inscription() {
               </span>
             </label>
 
-            <button type="submit" className="btn-primary-auth" disabled={loading || !role || !agree}>
+            <button
+              type="submit"
+              className="btn-primary-auth"
+              disabled={loading || !role || !agree}
+            >
               {loading ? (
                 <span className="auth-spinner" />
               ) : (
