@@ -279,8 +279,14 @@ export default function TalentDashboard() {
 // Réutilise la même logique que ProfilCreer.jsx (édition), mais sans
 // le logo/tagline d'inscription : ici on est déjà dans le dashboard.
 // ============================================
+const VILLES_TOGO = [
+  "Lomé", "Aného", "Tsévié", "Vogan", "Tabligbo", "Notsé", "Kpalimé",
+  "Atakpamé", "Amlamé", "Badou", "Sotouboua", "Sokodé", "Bassar",
+  "Kara", "Niamtougou", "Kandé", "Mango", "Dapaong",
+];
+
 function ProfilSection() {
-  const { user } = useContext(AuthContext);
+  const { user, setUser } = useContext(AuthContext);
   const fileInputRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
@@ -296,19 +302,31 @@ function ProfilSection() {
   const [categories, setCategories] = useState([]);
 
   const [form, setForm] = useState({
+    prenom: "",
+    nom: "",
+    email: "",
+    telephone: "",
+    categorie_id: "",
+    ville: "",
     biographie: "",
     tarif_min: "",
     tarif_max: "",
     disponibilite: true,
   });
 
-  // Charge les vraies données enregistrées (pas seulement AuthContext)
+  // Charge les vraies données enregistrées
   useEffect(() => {
     getProfilTalent()
       .then((res) => {
         const p = res.data;
         setPhotoUrl(p.photo);
         setForm({
+          prenom: p.prenom ?? "",
+          nom: p.nom ?? "",
+          email: p.email ?? "",
+          telephone: p.telephone ?? "",
+          categorie_id: p.categorie_id ?? "",
+          ville: p.ville ?? "",
           biographie: p.biographie ?? "",
           tarif_min: p.tarif_min ?? "",
           tarif_max: p.tarif_max ?? "",
@@ -319,15 +337,11 @@ function ProfilSection() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Charge la liste des catégories pour convertir categorie_id -> nom
   useEffect(() => {
     getCategories()
       .then((res) => setCategories(res?.data || []))
       .catch(() => setCategories([]));
   }, []);
-
-  const nomCategorie =
-    categories.find((c) => String(c.id) === String(user?.categorie_id))?.nom || "";
 
   useEffect(() => {
     return () => {
@@ -349,6 +363,12 @@ function ProfilSection() {
     setSaving(true);
 
     const payload = new FormData();
+    payload.append("prenom", form.prenom);
+    payload.append("nom", form.nom);
+    payload.append("email", form.email);
+    payload.append("telephone", form.telephone);
+    payload.append("categorie_id", form.categorie_id);
+    payload.append("ville", form.ville);
     payload.append("biographie", form.biographie);
     payload.append("tarif_min", form.tarif_min);
     payload.append("tarif_max", form.tarif_max);
@@ -395,22 +415,14 @@ function ProfilSection() {
       <div className="profil-creer-card profil-creer-card-embedded">
         <div className="profil-creer-card-top">
           <p className="profil-creer-subtitle">
-            Les informations d'inscription ne sont pas modifiables ici.
+            Cliquez sur "Modifier" pour mettre à jour vos informations.
           </p>
           {!isEditing ? (
-            <button
-              type="button"
-              className="btn-secondary-profil-creer"
-              onClick={() => setIsEditing(true)}
-            >
+            <button type="button" className="btn-secondary-profil-creer" onClick={() => setIsEditing(true)}>
               Modifier
             </button>
           ) : (
-            <button
-              type="button"
-              className="btn-secondary-profil-creer"
-              onClick={() => setIsEditing(false)}
-            >
+            <button type="button" className="btn-secondary-profil-creer" onClick={() => setIsEditing(false)}>
               Annuler
             </button>
           )}
@@ -430,21 +442,11 @@ function ProfilSection() {
                 <div className="profil-creer-photo-placeholder"><User size={26} /></div>
               )}
               {isEditing && (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="profil-creer-photo-btn"
-                >
+                <button type="button" onClick={() => fileInputRef.current?.click()} className="profil-creer-photo-btn">
                   <Camera size={13} />
                 </button>
               )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png"
-                onChange={handlePhotoChange}
-                className="hidden"
-              />
+              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" onChange={handlePhotoChange} className="hidden" />
             </div>
             <div>
               <p className="profil-creer-photo-label">Photo de profil</p>
@@ -452,65 +454,110 @@ function ProfilSection() {
             </div>
           </div>
 
-          {/* ── Infos de compte (toujours grisées) ── */}
+          {/* ── Informations de compte (modifiables si isEditing) ── */}
           <div className="profil-creer-section-title">Informations de compte</div>
 
           <div className="profil-creer-row">
             <div className="profil-creer-field">
-              <label className="profil-creer-label profil-creer-label-disabled">Prénom</label>
+              <label className="profil-creer-label">Prénom</label>
               <div className="profil-creer-input-icon">
                 <User size={16} className="profil-creer-icon" />
-                <input type="text" className="profil-creer-input profil-creer-input-disabled" value={user?.prenom || ""} disabled />
+                <input
+                  type="text"
+                  className={`profil-creer-input ${!isEditing ? "profil-creer-input-disabled" : ""}`}
+                  value={form.prenom}
+                  onChange={(e) => setForm({ ...form, prenom: e.target.value })}
+                  disabled={!isEditing}
+                />
               </div>
             </div>
             <div className="profil-creer-field">
-              <label className="profil-creer-label profil-creer-label-disabled">Nom</label>
+              <label className="profil-creer-label">Nom</label>
               <div className="profil-creer-input-icon">
                 <User size={16} className="profil-creer-icon" />
-                <input type="text" className="profil-creer-input profil-creer-input-disabled" value={user?.nom || ""} disabled />
+                <input
+                  type="text"
+                  className={`profil-creer-input ${!isEditing ? "profil-creer-input-disabled" : ""}`}
+                  value={form.nom}
+                  onChange={(e) => setForm({ ...form, nom: e.target.value })}
+                  disabled={!isEditing}
+                />
               </div>
             </div>
           </div>
 
           <div className="profil-creer-row">
             <div className="profil-creer-field">
-              <label className="profil-creer-label profil-creer-label-disabled">Email</label>
+              <label className="profil-creer-label">Email</label>
               <div className="profil-creer-input-icon">
                 <Mail size={16} className="profil-creer-icon" />
-                <input type="text" className="profil-creer-input profil-creer-input-disabled" value={user?.email || ""} disabled />
+                <input
+                  type="email"
+                  className={`profil-creer-input ${!isEditing ? "profil-creer-input-disabled" : ""}`}
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  disabled={!isEditing}
+                />
               </div>
             </div>
             <div className="profil-creer-field">
-              <label className="profil-creer-label profil-creer-label-disabled">Téléphone</label>
+              <label className="profil-creer-label">Téléphone</label>
               <div className="profil-creer-input-icon">
                 <Phone size={16} className="profil-creer-icon" />
-                <input type="text" className="profil-creer-input profil-creer-input-disabled" value={user?.telephone || ""} disabled />
+                <input
+                  type="text"
+                  maxLength={8}
+                  className={`profil-creer-input ${!isEditing ? "profil-creer-input-disabled" : ""}`}
+                  value={form.telephone}
+                  onChange={(e) => setForm({ ...form, telephone: e.target.value.replace(/\D/g, "").slice(0, 8) })}
+                  disabled={!isEditing}
+                />
               </div>
             </div>
           </div>
 
           <div className="profil-creer-row">
             <div className="profil-creer-field">
-              <label className="profil-creer-label profil-creer-label-disabled">Catégorie</label>
+              <label className="profil-creer-label">Catégorie</label>
               <div className="profil-creer-input-icon">
                 <Tag size={16} className="profil-creer-icon" />
-                <input type="text" className="profil-creer-input profil-creer-input-disabled" value={nomCategorie} disabled />
+                <select
+                  className={`profil-creer-input ${!isEditing ? "profil-creer-input-disabled" : ""}`}
+                  value={form.categorie_id}
+                  onChange={(e) => setForm({ ...form, categorie_id: e.target.value })}
+                  disabled={!isEditing}
+                >
+                  <option value="">Sélectionnez</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.nom}</option>
+                  ))}
+                </select>
               </div>
             </div>
             <div className="profil-creer-field">
-              <label className="profil-creer-label profil-creer-label-disabled">Ville</label>
+              <label className="profil-creer-label">Ville</label>
               <div className="profil-creer-input-icon">
                 <MapPin size={16} className="profil-creer-icon" />
-                <input type="text" className="profil-creer-input profil-creer-input-disabled" value={user?.ville || ""} disabled />
+                <select
+                  className={`profil-creer-input ${!isEditing ? "profil-creer-input-disabled" : ""}`}
+                  value={form.ville}
+                  onChange={(e) => setForm({ ...form, ville: e.target.value })}
+                  disabled={!isEditing}
+                >
+                  <option value="">Sélectionnez</option>
+                  {VILLES_TOGO.map((v) => (
+                    <option key={v} value={v}>{v}</option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
 
-          {/* ── Infos pro (modifiables si isEditing) ── */}
+          {/* ── Infos professionnelles ── */}
           <div className="profil-creer-section-title">Informations professionnelles</div>
 
           <div className="profil-creer-field">
-            <label className={`profil-creer-label ${!isEditing ? "profil-creer-label-disabled" : ""}`}>Biographie</label>
+            <label className="profil-creer-label">Biographie</label>
             <textarea
               rows={4}
               maxLength={2000}
@@ -524,26 +571,24 @@ function ProfilSection() {
 
           <div className="profil-creer-row">
             <div className="profil-creer-field">
-              <label className={`profil-creer-label ${!isEditing ? "profil-creer-label-disabled" : ""}`}>Tarif minimum (FCFA)</label>
+              <label className="profil-creer-label">Tarif minimum (FCFA)</label>
               <input
                 type="number"
                 min="0"
                 max="99999999"
                 className={`profil-creer-input ${!isEditing ? "profil-creer-input-disabled" : ""}`}
-                placeholder="Ex: 10 000"
                 value={form.tarif_min}
                 onChange={(e) => setForm({ ...form, tarif_min: e.target.value })}
                 disabled={!isEditing}
               />
             </div>
             <div className="profil-creer-field">
-              <label className={`profil-creer-label ${!isEditing ? "profil-creer-label-disabled" : ""}`}>Tarif maximum (FCFA)</label>
+              <label className="profil-creer-label">Tarif maximum (FCFA)</label>
               <input
                 type="number"
                 min="0"
                 max="99999999"
                 className={`profil-creer-input ${!isEditing ? "profil-creer-input-disabled" : ""}`}
-                placeholder="Ex: 100 000"
                 value={form.tarif_max}
                 onChange={(e) => setForm({ ...form, tarif_max: e.target.value })}
                 disabled={!isEditing}
@@ -552,7 +597,7 @@ function ProfilSection() {
           </div>
 
           <div className="profil-creer-field">
-            <label className={`profil-creer-label ${!isEditing ? "profil-creer-label-disabled" : ""}`}>Disponibilité</label>
+            <label className="profil-creer-label">Disponibilité</label>
             <div className="profil-creer-dispo-wrap">
               <button
                 type="button"
