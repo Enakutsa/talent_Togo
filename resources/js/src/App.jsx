@@ -7,6 +7,7 @@ import Home from "./pages/commun/Home";
 import Inscription from "./pages/auth/Inscription";
 import Login from "./pages/auth/Login";
 import VerifyOtp from "./pages/auth/VerifyOtp"; // ✅ ajouté
+import Profil from "./pages/talent/Profil"; // ✅ ajouté
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
         <Route path="/register" element={<Inscription />} />
         <Route path="/login" element={<Login />} />
         <Route path="/verify-otp" element={<VerifyOtp />} /> {/* ✅ OTP */}
+        <Route path="/talent/profil" element={<Profil />} /> {/* ✅ Profil talent */}
       </Routes>
 
       <Footer />
