@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProfilTalent;
-use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -11,18 +10,15 @@ use Illuminate\Validation\Rule;
 
 class ProfilTalentController extends Controller
 {
-    /**
-     * Vérifie que l'utilisateur connecté est bien un talent, sinon 403.
-     */
     private function assertTalent(Request $request): void
     {
         abort_unless($request->user()->isTalent(), 403, 'Réservé aux talents.');
     }
 
     /**
-     * Construit l'URL affichable d'une photo, qu'elle soit déjà une URL
-     * Cloudinary complète (nouvelles photos) ou un ancien chemin de
-     * stockage local (photos uploadées avant la migration vers Cloudinary).
+     * Construit l'URL affichable d'une photo, qu'elle soit une URL
+     * Cloudinary complète (anciennes photos migrées entre-temps) ou
+     * un chemin de stockage local (nouveau comportement par défaut).
      */
     private function resolvePhotoUrl(?string $photo): ?string
     {
@@ -30,19 +26,13 @@ class ProfilTalentController extends Controller
             return null;
         }
 
-        // Déjà une URL complète (Cloudinary) -> on la retourne telle quelle
         if (str_starts_with($photo, 'http://') || str_starts_with($photo, 'https://')) {
             return $photo;
         }
 
-        // Ancien chemin de stockage local -> on reconstruit l'URL comme avant
         return asset('storage/' . $photo);
     }
 
-    /**
-     * Récupère le profil du talent connecté.
-     * GET /api/talent/profil
-     */
     public function show(Request $request)
     {
         $this->assertTalent($request);
@@ -79,10 +69,6 @@ class ProfilTalentController extends Controller
         ]);
     }
 
-    /**
-     * Crée/complète le profil du talent connecté.
-     * POST /api/talent/profil
-     */
     public function update(Request $request)
     {
         $this->assertTalent($request);
@@ -122,7 +108,6 @@ class ProfilTalentController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // ── Mise à jour du profil pro ──
         $profilData = $request->only(['tarif_min', 'tarif_max', 'biographie']);
 
         if ($request->has('disponibilite')) {
@@ -130,26 +115,19 @@ class ProfilTalentController extends Controller
         }
 
         if ($request->hasFile('photo')) {
-            $cloudinary = app(CloudinaryService::class);
-
-            // Supprime l'ancienne photo selon son origine
-            if ($profil->photo_public_id) {
-                // Ancienne photo déjà sur Cloudinary
-                $cloudinary->delete($profil->photo_public_id, 'image');
-            } elseif ($profil->photo) {
-                // Ancienne photo en stockage local (avant migration Cloudinary)
+            // Supprime l'ancienne photo locale si elle existe (les anciennes
+            // photos Cloudinary ne sont pas supprimées automatiquement ici,
+            // vu qu'on ne veut plus dépendre de ce service).
+            if ($profil->photo && !str_starts_with($profil->photo, 'http')) {
                 Storage::disk('public')->delete($profil->photo);
             }
 
-            $upload = $cloudinary->upload($request->file('photo'), 'talenttogo/photos_talents', 'image');
-
-            $profilData['photo'] = $upload['url'];
-            $profilData['photo_public_id'] = $upload['public_id'];
+            $profilData['photo'] = $request->file('photo')->store('photos_talents', 'public');
+            $profilData['photo_public_id'] = null; // on n'utilise plus Cloudinary ici
         }
 
         $profil->update($profilData);
 
-        // ── Mise à jour des infos de compte ──
         $utilisateurData = $request->only(['prenom', 'nom', 'email', 'telephone', 'categorie_id', 'ville']);
         $utilisateurData = array_filter($utilisateurData, fn($v) => $v !== null && $v !== '');
 

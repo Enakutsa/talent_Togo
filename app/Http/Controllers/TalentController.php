@@ -8,6 +8,24 @@ use Illuminate\Http\Request;
 class TalentController extends Controller
 {
     /**
+     * Construit l'URL affichable d'une photo, qu'elle soit une URL
+     * Cloudinary complète (anciennes photos) ou un chemin de stockage
+     * local (nouveau comportement par défaut).
+     */
+    private function resolvePhotoUrl(?string $photo): ?string
+    {
+        if (!$photo) {
+            return null;
+        }
+
+        if (str_starts_with($photo, 'http://') || str_starts_with($photo, 'https://')) {
+            return $photo;
+        }
+
+        return asset('storage/' . $photo);
+    }
+
+    /**
      * Liste des talents validés.
      * GET /api/talents
      * GET /api/talents?featured=1  -> les mieux notés / les plus récents (limité à 6)
@@ -40,8 +58,6 @@ class TalentController extends Controller
     {
         $talent->load(['utilisateur.categorie', 'portfolios']);
 
-        // On ne montre pas un profil dont le compte n'est plus "valide"
-        // (rejeté, en_attente, désactivé)
         abort_unless($talent->utilisateur?->statut === 'valide', 404);
 
         $talent->increment('vues');
@@ -55,19 +71,12 @@ class TalentController extends Controller
     /**
      * Formate un ProfilTalent dans le shape attendu par TalentCard.jsx
      * (nom, categorie, ville, note, avis, tarif, avatar, portfolio, disponible, competences).
-     *
-     * ⚠️ categorie et ville vivent désormais sur Utilisateur, pas ProfilTalent.
      */
     private function formatTalent(ProfilTalent $profil): array
     {
-        // ⚠️ asset() génère une URL absolue (http://host:port/storage/...)
-        // contrairement à Storage::url() qui renvoie une URL relative,
-        // inutilisable quand le frontend tourne sur un port différent (ex: Vite).
-        $photoUrl = $profil->photo ? asset('storage/' . $profil->photo) : null;
+        $photoUrl = $this->resolvePhotoUrl($profil->photo);
 
         // Image de couverture = la plus récente réalisation "image" du portfolio.
-        // ⚠️ 'image' et non 'photo' — doit matcher l'enum de la migration Portfolio.
-        // Si le talent n'a encore rien publié, on retombe sur sa photo de profil.
         $couverture = $profil->portfolios
             ->where('type', 'image')
             ->sortByDesc('created_at')
