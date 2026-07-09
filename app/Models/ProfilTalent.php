@@ -14,6 +14,7 @@ class ProfilTalent extends Model
         'tarif_max',
         'biographie',
         'photo',
+        'photo_public_id',
         'disponibilite',
         'vues',
     ];

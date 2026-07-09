@@ -283,9 +283,27 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * ✅ UTILISATEUR CONNECTÉ (résout l'URL de la photo, ancienne ou Cloudinary)
+     */
     public function me(Request $request)
     {
-        return response()->json($request->user()->load('profilTalent'));
+        $utilisateur = $request->user()->load('profilTalent');
+        $profil = $utilisateur->profilTalent;
+
+        $photoUrl = null;
+        if ($profil && $profil->photo) {
+            $photoUrl = (str_starts_with($profil->photo, 'http://') || str_starts_with($profil->photo, 'https://'))
+                ? $profil->photo
+                : asset('storage/' . $profil->photo);
+        }
+
+        $utilisateurData = $utilisateur->toArray();
+        $utilisateurData['profilTalent'] = $profil
+            ? array_merge($profil->toArray(), ['photo' => $photoUrl])
+            : null;
+
+        return response()->json($utilisateurData);
     }
 
     /**

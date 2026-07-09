@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProfilTalent;
 use App\Models\Utilisateur;
 
 class StatsController extends Controller
@@ -11,9 +10,13 @@ class StatsController extends Controller
     {
         $talents = Utilisateur::where('role', 'talent')->count();
         $clients = Utilisateur::where('role', 'client')->count();
-        $villes = ProfilTalent::where('statut', 'valide')->distinct('ville')->count('ville');
 
-        // Adaptez selon votre table de prestations/demandes si disponible
+        $villes = Utilisateur::where('role', 'talent')
+            ->where('statut', 'valide')
+            ->whereNotNull('ville')
+            ->distinct('ville')
+            ->count('ville');
+
         $prestations = class_exists(\App\Models\DemandePrestation::class)
             ? \App\Models\DemandePrestation::count()
             : 0;

@@ -37,7 +37,9 @@ export default function TalentCard({
           <Heart size={15} className={liked ? "talent-card-heart-liked" : "talent-card-heart"} />
         </button>
 
-        <span className="talent-card-category-badge">{categorie}</span>
+        <span className={`talent-card-dispo-badge ${disponible ? "dispo-badge-on" : "dispo-badge-off"}`}>
+          {disponible ? "Disponible" : "Indisponible"}
+        </span>
       </div>
 
       {/* Body */}
@@ -53,9 +55,13 @@ export default function TalentCard({
               <h3 className="talent-card-name">{nom}</h3>
               {verifie && <CheckCircle size={14} className="talent-card-verified-icon" />}
             </div>
-            <div className="talent-card-city">
-              <MapPin size={11} />
-              <span>{ville}</span>
+            <div className="talent-card-meta-row">
+              <span className="talent-card-category">{categorie}</span>
+              <span className="talent-card-meta-dot">·</span>
+              <span className="talent-card-city">
+                <MapPin size={11} />
+                {ville}
+              </span>
             </div>
           </div>
         </div>

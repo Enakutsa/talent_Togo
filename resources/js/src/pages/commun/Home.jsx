@@ -5,7 +5,7 @@ import TalentCard from "../../components/talent/TalentCard";
 import { getFeaturedTalents, getStats, getCategories, getReviews } from "../../services/talent.service";
 import {
   Search, MapPin, Camera, Palette, Scissors, Music2, Film, Package2, Brush, Star,
-  ArrowRight, Users, Briefcase, Globe, ChevronRight, Quote
+  ArrowRight, Users, Briefcase, Globe, ChevronRight, Quote, Sparkles
 } from "lucide-react";
 import "../../assets/styles/Home.css";
 
@@ -22,7 +22,7 @@ const CATEGORY_ICONS = {
   Danseur: Star,
 };
 
-/* ===== Données de secours (tant que le backend /talents, /stats, /categories, /avis n'existe pas) ===== */
+/* ===== Données de secours (utilisées uniquement si l'API échoue vraiment) ===== */
 const FALLBACK_CATEGORIES = [
   { label: "Photographe", count: 48 },
   { label: "Graphiste", count: 32 },
@@ -65,32 +65,34 @@ export default function Home() {
   const [city, setCity] = useState("");
   const [favorites, setFavorites] = useState([]);
 
-  const [categories, setCategories] = useState(FALLBACK_CATEGORIES);
-  const [talents, setTalents] = useState(FALLBACK_TALENTS);
-  const [stats, setStats] = useState(FALLBACK_STATS);
-  const [reviews, setReviews] = useState(FALLBACK_REVIEWS);
+  // null = en cours de chargement (affiche un skeleton, jamais de fausses données)
+  const [categories, setCategories] = useState(null);
+  const [talents, setTalents] = useState(null);
+  const [stats, setStats] = useState(null);
+  const [reviews, setReviews] = useState(null);
 
-  // Chargement temps réel depuis l'API. Si une route n'existe pas encore
-  // côté backend, on garde silencieusement les données de secours.
   useEffect(() => {
     getCategories()
       .then((data) => {
         const list = Array.isArray(data) ? data : data?.data;
-        if (Array.isArray(list) && list.length) setCategories(list);
+        setCategories(Array.isArray(list) && list.length ? list : FALLBACK_CATEGORIES);
       })
-      .catch(() => {});
+      .catch(() => setCategories(FALLBACK_CATEGORIES));
 
     getFeaturedTalents()
       .then((data) => {
         const list = Array.isArray(data) ? data : data?.data;
-        if (Array.isArray(list) && list.length) setTalents(list);
+        setTalents(Array.isArray(list) && list.length ? list : FALLBACK_TALENTS);
       })
-      .catch(() => {});
+      .catch(() => setTalents(FALLBACK_TALENTS));
 
     getStats()
       .then((res) => {
         const data = res?.data ?? res;
-        if (!data) return;
+        if (!data) {
+          setStats(FALLBACK_STATS);
+          return;
+        }
         setStats([
           { key: "talents", icon: Users, label: "Talents inscrits", value: data.talents ?? "500+" },
           { key: "clients", icon: Briefcase, label: "Clients actifs", value: data.clients ?? "1 200+" },
@@ -98,14 +100,14 @@ export default function Home() {
           { key: "villes", icon: Globe, label: "Villes couvertes", value: data.villes ?? "6" },
         ]);
       })
-      .catch(() => {});
+      .catch(() => setStats(FALLBACK_STATS));
 
     getReviews()
       .then((data) => {
         const list = Array.isArray(data) ? data : data?.data;
-        if (Array.isArray(list) && list.length) setReviews(list);
+        setReviews(Array.isArray(list) && list.length ? list : FALLBACK_REVIEWS);
       })
-      .catch(() => {});
+      .catch(() => setReviews(FALLBACK_REVIEWS));
   }, []);
 
   const handleSearch = (e) => {
@@ -125,7 +127,8 @@ export default function Home() {
 
         <div className="hero-inner">
           <div className="hero-badge">
-            <span>🇹🇬 La plateforme des talents togolais</span>
+            <Sparkles size={14} />
+            <span>La plateforme des talents togolais</span>
           </div>
 
           <h1 className="hero-title">
@@ -179,15 +182,19 @@ export default function Home() {
       {/* STATS */}
       <section className="stats-section">
         <div className="stats-grid">
-          {stats.map(({ key, icon: Icon, label, value }) => (
-            <div key={key} className="stat-item">
-              <div className="stat-icon-wrap">
-                <Icon size={22} />
-              </div>
-              <span className="stat-value">{value}</span>
-              <span className="stat-label">{label}</span>
-            </div>
-          ))}
+          {stats === null
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="stat-item-skeleton" />
+              ))
+            : stats.map(({ key, icon: Icon, label, value }) => (
+                <div key={key} className="stat-item">
+                  <div className="stat-icon-wrap">
+                    <Icon size={22} />
+                  </div>
+                  <span className="stat-value">{value}</span>
+                  <span className="stat-label">{label}</span>
+                </div>
+              ))}
         </div>
       </section>
 
@@ -204,22 +211,26 @@ export default function Home() {
         </div>
 
         <div className="categories-grid">
-          {(Array.isArray(categories) ? categories : []).map(({ label, count }) => {
-            const Icon = CATEGORY_ICONS[label] || Star;
-            return (
-              <button
-                key={label}
-                onClick={() => navigate(`/recherche?categorie=${encodeURIComponent(label)}`)}
-                className="category-card"
-              >
-                <div className="category-icon-wrap">
-                  <Icon size={22} />
-                </div>
-                <h3 className="category-label">{label}</h3>
-                <p className="category-count">{count} talents</p>
-              </button>
-            );
-          })}
+          {categories === null
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="category-card-skeleton" />
+              ))
+            : categories.map(({ label, count }) => {
+                const Icon = CATEGORY_ICONS[label] || Star;
+                return (
+                  <button
+                    key={label}
+                    onClick={() => navigate(`/recherche?categorie=${encodeURIComponent(label)}`)}
+                    className="category-card"
+                  >
+                    <div className="category-icon-wrap">
+                      <Icon size={22} />
+                    </div>
+                    <h3 className="category-label">{label}</h3>
+                    <p className="category-count">{count} talents</p>
+                  </button>
+                );
+              })}
         </div>
       </section>
 
@@ -237,16 +248,20 @@ export default function Home() {
           </div>
 
           <div className="talents-grid">
-            {(Array.isArray(talents) ? talents : []).map((t) => (
-              <TalentCard
-                key={t.id}
-                {...t}
-                isFavorite={favorites.includes(t.id)}
-                onToggleFavorite={(id) =>
-                  setFavorites((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]))
-                }
-              />
-            ))}
+            {talents === null
+              ? Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="talent-card-skeleton" />
+                ))
+              : talents.map((t) => (
+                  <TalentCard
+                    key={t.id}
+                    {...t}
+                    isFavorite={favorites.includes(t.id)}
+                    onToggleFavorite={(id) =>
+                      setFavorites((f) => (f.includes(id) ? f.filter((x) => x !== id) : [...f, id]))
+                    }
+                  />
+                ))}
           </div>
 
           <div className="featured-cta-wrap">
@@ -283,28 +298,32 @@ export default function Home() {
         </div>
 
         <div className="testimonials-grid">
-          {(Array.isArray(reviews) ? reviews : []).map((r) => (
-            <div key={r.id} className="testimonial-card">
-              <Quote size={28} className="testimonial-quote-icon" />
-              <div className="testimonial-stars">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    size={14}
-                    className={i < r.note ? "testimonial-star-filled" : "testimonial-star-empty"}
-                  />
-                ))}
-              </div>
-              <p className="testimonial-text">"{r.commentaire}"</p>
-              <div className="testimonial-author">
-                <img src={r.avatar} alt={r.nom} className="testimonial-avatar" />
-                <div>
-                  <p className="testimonial-name">{r.nom}</p>
-                  <p className="testimonial-city">{r.ville}</p>
+          {reviews === null
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="testimonial-card-skeleton" />
+              ))
+            : reviews.map((r) => (
+                <div key={r.id} className="testimonial-card">
+                  <Quote size={28} className="testimonial-quote-icon" />
+                  <div className="testimonial-stars">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        size={14}
+                        className={i < r.note ? "testimonial-star-filled" : "testimonial-star-empty"}
+                      />
+                    ))}
+                  </div>
+                  <p className="testimonial-text">"{r.commentaire}"</p>
+                  <div className="testimonial-author">
+                    <img src={r.avatar} alt={r.nom} className="testimonial-avatar" />
+                    <div>
+                      <p className="testimonial-name">{r.nom}</p>
+                      <p className="testimonial-city">{r.ville}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              ))}
         </div>
       </section>
 

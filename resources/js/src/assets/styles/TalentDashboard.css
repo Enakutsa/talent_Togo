@@ -159,13 +159,14 @@
   .td-profile-trigger {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     border: none;
     background: none;
     cursor: pointer;
-    padding: 4px 6px 4px 4px;
+    padding: 4px 8px 4px 4px;
     border-radius: 999px;
     transition: background 0.15s ease;
+    white-space: nowrap;
   }
   
   .td-profile-trigger:hover {
@@ -173,8 +174,9 @@
   }
   
   .td-topnav-avatar {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
     border-radius: 50%;
     background: #ecfdf3;
     color: #166534;
@@ -182,28 +184,31 @@
     align-items: center;
     justify-content: center;
     font-weight: 600;
-    font-size: 12.5px;
+    font-size: 13px;
     position: relative;
     overflow: hidden;
     flex-shrink: 0;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #e5e7eb;
   }
-  
   .td-topnav-avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
+    display: block;
   }
-  
+
   .td-dispo-dot {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    border: 2px solid #fff;
-  }
-  
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  z-index: 1;
+}
   .dispo-on {
     background: #22c55e;
   }
@@ -215,6 +220,7 @@
   .td-chevron {
     color: #9ca3af;
     transition: transform 0.15s ease;
+    flex-shrink: 0;
   }
   
   .td-chevron-open {

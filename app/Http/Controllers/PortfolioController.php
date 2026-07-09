@@ -83,7 +83,7 @@ class PortfolioController extends Controller
 
         $file = $request->file('fichier');
         $isVideo = str_starts_with($file->getMimeType(), 'video');
-        $type = $isVideo ? 'video' : 'photo';
+        $type = $isVideo ? 'video' : 'image'; // doit matcher l'enum de la migration ('image', 'video')
 
         try {
             $upload = $this->cloudinary()->upload(

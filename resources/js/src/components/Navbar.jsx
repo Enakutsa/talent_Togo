@@ -6,8 +6,7 @@ import "../assets/styles/Navbar.css";
 
 const links = [
   { href: "/", label: "Accueil" },
-  { href: "/talents", label: "Talents" },
-  { href: "/messages", label: "Messages" },
+  { href: "/recherche", label: "Trouver un talent" },
 ];
 
 export default function Navbar() {

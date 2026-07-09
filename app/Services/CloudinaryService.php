@@ -37,6 +37,7 @@ class CloudinaryService
         $result = $this->cloudinary->uploadApi()->upload($file->getRealPath(), [
             'folder' => $folder,
             'resource_type' => $resourceType,
+            'timeout' => 30, // évite d'attendre 60s en cas de coupure réseau
         ]);
 
         return [
