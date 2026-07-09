@@ -6,6 +6,7 @@ use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\ProfilTalentController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\TalentController;
+use App\Http\Controllers\PortfolioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -68,3 +69,13 @@ Route::get('/categories', [CategorieController::class, 'index']);
 Route::get('/stats', [StatsController::class, 'index']);
 Route::get('/talents', [TalentController::class, 'index']);
 Route::get('/talents/{talent}', [TalentController::class, 'show']);
+
+
+//--------------------------------------------------------------------------
+// PORTFOLIO (CRUD) — Réservé au rôle "talent" (vérifié dans le contrôleur)
+//--------------------------------------------------------------------------
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/talent/portfolio', [PortfolioController::class, 'index']);
+    Route::post('/talent/portfolio', [PortfolioController::class, 'store']);
+    Route::delete('/talent/portfolio/{id}', [PortfolioController::class, 'destroy']);
+});

@@ -1,163 +1,18 @@
 import { useState, useContext, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
-import {
-  ClipboardList, MessageSquare, Star, Eye, TrendingUp, ChevronRight,
-  User, Camera, Mail, Phone, MapPin, Tag,
-} from "lucide-react";
+import { User, Camera, Mail, Phone, MapPin, Tag } from "lucide-react";
 import { getProfilTalent, updateProfilTalent } from "../../services/profilTalent.service";
 import { getCategories } from "../../services/categorie.service";
-import TalentTopNav, { NAV_ITEMS } from "../../components/TalentTopNav";
-import "../../assets/styles/TalentDashboard.css";
 import "../../assets/styles/ProfilCreer.css";
 
-// ── Données factices (seront remplacées par l'API) ──────────────────────────
-const STATS = [
-  { label: "Vues du profil",  value: "128",  sub: "+12 cette semaine", icon: Eye,           color: "blue"   },
-  { label: "Demandes reçues", value: "14",   sub: "3 en attente",      icon: ClipboardList, color: "orange" },
-  { label: "Avis clients",    value: "4.8★", sub: "24 avis",           icon: Star,          color: "yellow" },
-  { label: "Taux de réponse", value: "92%",  sub: "Excellent",         icon: TrendingUp,    color: "green"  },
-];
-
-const DEMANDES_RECENTES = [
-  { id: 1, client: "Akosua M.",  service: "Séance photo mariage",    date: "Aujourd'hui", statut: "en_attente" },
-  { id: 2, client: "Yao K.",     service: "Portrait professionnel",  date: "Hier",        statut: "acceptee"  },
-  { id: 3, client: "Afi D.",     service: "Photos événement",        date: "Il y a 2j",   statut: "en_attente" },
-];
-
-const MESSAGES_RECENTS = [
-  { id: 1, nom: "Akosua M.", message: "Bonjour, êtes-vous disponible le 15 juillet ?", heure: "10:24", non_lu: true  },
-  { id: 2, nom: "Koffi A.",  message: "Merci pour votre réponse rapide !",              heure: "Hier",  non_lu: false },
-  { id: 3, nom: "Esther L.", message: "Pouvez-vous m'envoyer vos tarifs ?",             heure: "Hier",  non_lu: true  },
-];
-
-export default function TalentDashboard() {
-  const location = useLocation();
-  const { user } = useContext(AuthContext);
-  const [activeKey, setActiveKey] = useState("dashboard");
-
-  // Arrivée depuis TalentTopNav avec un onglet précis à ouvrir
-  // (ex: clic sur "Profil" depuis la page Portfolio -> state.activeKey = "profil")
-  useEffect(() => {
-    if (location.state?.activeKey) {
-      setActiveKey(location.state.activeKey);
-    }
-  }, [location.state]);
-
-  const statutColor = { en_attente: "orange", acceptee: "green", refusee: "red" };
-  const statutLabel = { en_attente: "En attente", acceptee: "Acceptée", refusee: "Refusée" };
-
-  return (
-    <div className="td-root">
-      <TalentTopNav activeKey={activeKey} />
-
-      <main className="td-main">
-
-        {/* ── PAGE : Dashboard ── */}
-        {activeKey === "dashboard" && (
-          <div className="td-page">
-            <div className="td-page-header">
-              <div>
-                <h1 className="td-page-title">Bonjour, {user?.prenom || "Talent"} 👋</h1>
-                <p className="td-page-sub">Voici un résumé de votre activité aujourd'hui.</p>
-              </div>
-            </div>
-
-            <div className="td-stats-grid">
-              {STATS.map(({ label, value, sub, icon: Icon, color }) => (
-                <div key={label} className={`td-stat-card td-stat-${color}`}>
-                  <div className={`td-stat-icon-wrap td-stat-icon-${color}`}>
-                    <Icon size={20} />
-                  </div>
-                  <div>
-                    <p className="td-stat-value">{value}</p>
-                    <p className="td-stat-label">{label}</p>
-                    <p className="td-stat-sub">{sub}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="td-two-cols">
-              <div className="td-card">
-                <div className="td-card-header">
-                  <h2 className="td-card-title">Demandes récentes</h2>
-                  <button className="td-card-link" onClick={() => setActiveKey("demandes")}>
-                    Voir tout <ChevronRight size={14} />
-                  </button>
-                </div>
-                <div className="td-card-body">
-                  {DEMANDES_RECENTES.map((d) => (
-                    <div key={d.id} className="td-demande-row">
-                      <div className="td-demande-avatar">{d.client[0]}</div>
-                      <div className="td-demande-info">
-                        <p className="td-demande-client">{d.client}</p>
-                        <p className="td-demande-service">{d.service}</p>
-                      </div>
-                      <div className="td-demande-right">
-                        <span className={`td-statut td-statut-${statutColor[d.statut]}`}>
-                          {statutLabel[d.statut]}
-                        </span>
-                        <p className="td-demande-date">{d.date}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="td-card">
-                <div className="td-card-header">
-                  <h2 className="td-card-title">Messages récents</h2>
-                  <button className="td-card-link" onClick={() => setActiveKey("messages")}>
-                    Voir tout <ChevronRight size={14} />
-                  </button>
-                </div>
-                <div className="td-card-body">
-                  {MESSAGES_RECENTS.map((m) => (
-                    <div key={m.id} className={`td-msg-row ${m.non_lu ? "td-msg-unread" : ""}`}>
-                      <div className="td-demande-avatar">{m.nom[0]}</div>
-                      <div className="td-demande-info">
-                        <p className="td-demande-client">{m.nom} {m.non_lu && <span className="td-unread-dot" />}</p>
-                        <p className="td-demande-service td-msg-preview">{m.message}</p>
-                      </div>
-                      <p className="td-demande-date">{m.heure}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── PAGE : Profil ── */}
-        {activeKey === "profil" && <ProfilSection />}
-
-        {/* ── Autres pages internes (placeholders) ── */}
-        {activeKey !== "dashboard" && activeKey !== "profil" && (
-          <div className="td-page td-placeholder">
-            <div className="td-placeholder-inner">
-              {(() => { const Item = NAV_ITEMS.find(n => n.key === activeKey); return Item ? <Item.icon size={40} /> : null; })()}
-              <h2>{NAV_ITEMS.find(n => n.key === activeKey)?.label}</h2>
-              <p>Cette section est en cours de développement.</p>
-            </div>
-          </div>
-        )}
-
-      </main>
-    </div>
-  );
-}
-
-// ============================================
-// Section Profil — affichée dans l'onglet "Profil" du dashboard.
-// ============================================
 const VILLES_TOGO = [
   "Lomé", "Aného", "Tsévié", "Vogan", "Tabligbo", "Notsé", "Kpalimé",
   "Atakpamé", "Amlamé", "Badou", "Sotouboua", "Sokodé", "Bassar",
   "Kara", "Niamtougou", "Kandé", "Mango", "Dapaong",
 ];
 
-function ProfilSection() {
+export default function Profil() {
+  const { user } = useContext(AuthContext);
   const fileInputRef = useRef(null);
 
   const [loading, setLoading] = useState(true);
@@ -173,6 +28,10 @@ function ProfilSection() {
   const [categories, setCategories] = useState([]);
 
   const [form, setForm] = useState({
+    prenom: "",
+    nom: "",
+    email: "",
+    telephone: "",
     categorie_id: "",
     ville: "",
     biographie: "",
@@ -187,6 +46,10 @@ function ProfilSection() {
         const p = res.data;
         setPhotoUrl(p.photo);
         setForm({
+          prenom: p.prenom ?? "",
+          nom: p.nom ?? "",
+          email: p.email ?? "",
+          telephone: p.telephone ?? "",
           categorie_id: p.categorie_id ?? "",
           ville: p.ville ?? "",
           biographie: p.biographie ?? "",
@@ -225,6 +88,10 @@ function ProfilSection() {
     setSaving(true);
 
     const payload = new FormData();
+    payload.append("prenom", form.prenom);
+    payload.append("nom", form.nom);
+    payload.append("email", form.email);
+    payload.append("telephone", form.telephone);
     payload.append("categorie_id", form.categorie_id);
     payload.append("ville", form.ville);
     payload.append("biographie", form.biographie);
@@ -311,7 +178,66 @@ function ProfilSection() {
             </div>
           </div>
 
-          <div className="profil-creer-section-title">Informations professionnelles</div>
+          <div className="profil-creer-section-title">Informations de compte</div>
+
+          <div className="profil-creer-row">
+            <div className="profil-creer-field">
+              <label className="profil-creer-label">Prénom</label>
+              <div className="profil-creer-input-icon">
+                <User size={16} className="profil-creer-icon" />
+                <input
+                  type="text"
+                  className={`profil-creer-input ${!isEditing ? "profil-creer-input-disabled" : ""}`}
+                  value={form.prenom}
+                  onChange={(e) => setForm({ ...form, prenom: e.target.value })}
+                  disabled={!isEditing}
+                />
+              </div>
+            </div>
+            <div className="profil-creer-field">
+              <label className="profil-creer-label">Nom</label>
+              <div className="profil-creer-input-icon">
+                <User size={16} className="profil-creer-icon" />
+                <input
+                  type="text"
+                  className={`profil-creer-input ${!isEditing ? "profil-creer-input-disabled" : ""}`}
+                  value={form.nom}
+                  onChange={(e) => setForm({ ...form, nom: e.target.value })}
+                  disabled={!isEditing}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="profil-creer-row">
+            <div className="profil-creer-field">
+              <label className="profil-creer-label">Email</label>
+              <div className="profil-creer-input-icon">
+                <Mail size={16} className="profil-creer-icon" />
+                <input
+                  type="email"
+                  className={`profil-creer-input ${!isEditing ? "profil-creer-input-disabled" : ""}`}
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  disabled={!isEditing}
+                />
+              </div>
+            </div>
+            <div className="profil-creer-field">
+              <label className="profil-creer-label">Téléphone</label>
+              <div className="profil-creer-input-icon">
+                <Phone size={16} className="profil-creer-icon" />
+                <input
+                  type="text"
+                  maxLength={8}
+                  className={`profil-creer-input ${!isEditing ? "profil-creer-input-disabled" : ""}`}
+                  value={form.telephone}
+                  onChange={(e) => setForm({ ...form, telephone: e.target.value.replace(/\D/g, "").slice(0, 8) })}
+                  disabled={!isEditing}
+                />
+              </div>
+            </div>
+          </div>
 
           <div className="profil-creer-row">
             <div className="profil-creer-field">
@@ -349,6 +275,8 @@ function ProfilSection() {
               </div>
             </div>
           </div>
+
+          <div className="profil-creer-section-title">Informations professionnelles</div>
 
           <div className="profil-creer-field">
             <label className="profil-creer-label">Biographie</label>
