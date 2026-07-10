@@ -25,6 +25,11 @@ export default function Navbar() {
     navigate("/");
   };
 
+  const dashboardPath =
+    user?.role === "talent" ? "/talent/dashboard" :
+    user?.role === "client" ? "/client/dashboard" :
+    "/admin";
+
   return (
     <nav className="navbar">
       <div className="navbar-inner">
@@ -84,7 +89,7 @@ export default function Navbar() {
                     <Link to="/profile" className="navbar-dropdown-link" onClick={() => setProfileOpen(false)}>
                       <User size={15} /> Mon profil
                     </Link>
-                    <Link to="/admin" className="navbar-dropdown-link" onClick={() => setProfileOpen(false)}>
+                    <Link to={dashboardPath} className="navbar-dropdown-link" onClick={() => setProfileOpen(false)}>
                       <LayoutDashboard size={15} /> Tableau de bord
                     </Link>
                     <Link to="/settings" className="navbar-dropdown-link" onClick={() => setProfileOpen(false)}>
@@ -135,7 +140,7 @@ export default function Navbar() {
               <Link to="/profile" onClick={() => setMenuOpen(false)} className="navbar-mobile-link">
                 Mon profil
               </Link>
-              <Link to="/admin" onClick={() => setMenuOpen(false)} className="navbar-mobile-link">
+              <Link to={dashboardPath} onClick={() => setMenuOpen(false)} className="navbar-mobile-link">
                 Tableau de bord
               </Link>
               <button onClick={handleLogout} className="navbar-mobile-link navbar-mobile-logout">

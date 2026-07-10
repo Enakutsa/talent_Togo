@@ -1,6 +1,8 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { Star, MapPin, CheckCircle, Heart } from "lucide-react";
+import { AuthContext } from "../../context/AuthContext";
+import { toggleFavori } from "../../services/favori.service";
 import "../../assets/styles/TalentCard.css";
 
 export default function TalentCard({
@@ -19,21 +21,58 @@ export default function TalentCard({
   isFavorite,
   onToggleFavorite,
 }) {
+  const { isAuthenticated } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [liked, setLiked] = useState(!!isFavorite);
+  const [togglingFav, setTogglingFav] = useState(false);
 
-  const handleLike = () => {
-    setLiked(!liked);
-    onToggleFavorite?.(id);
+  const handleLike = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isAuthenticated) {
+      navigate("/login", { state: { from: `/talents/${id}` } });
+      return;
+    }
+
+    if (togglingFav) return;
+    setTogglingFav(true);
+
+    // Optimistic update : on change l'affichage tout de suite,
+    // on annule si l'appel échoue.
+    const previous = liked;
+    setLiked(!previous);
+
+    try {
+      const res = await toggleFavori(id);
+      setLiked(res.is_favorite);
+      onToggleFavorite?.(id);
+    } catch {
+      setLiked(previous); // rollback en cas d'échec
+    } finally {
+      setTogglingFav(false);
+    }
+  };
+
+  const handleVoirProfil = (e) => {
+    if (!isAuthenticated) {
+      e.preventDefault();
+      navigate("/login", { state: { from: `/talents/${id}` } });
+    }
   };
 
   return (
     <div className="talent-card">
-      {/* Cover */}
       <div className="talent-card-cover">
         <img src={portfolio} alt={nom} className="talent-card-cover-img" />
         <div className="talent-card-cover-gradient" />
 
-        <button onClick={handleLike} className="talent-card-fav-btn" aria-label="Favori">
+        <button
+          onClick={handleLike}
+          className="talent-card-fav-btn"
+          aria-label="Favori"
+          disabled={togglingFav}
+        >
           <Heart size={15} className={liked ? "talent-card-heart-liked" : "talent-card-heart"} />
         </button>
 
@@ -42,9 +81,7 @@ export default function TalentCard({
         </span>
       </div>
 
-      {/* Body */}
       <div className="talent-card-body">
-        {/* Avatar + name */}
         <div className="talent-card-header">
           <div className="talent-card-avatar-wrap">
             <img src={avatar} alt={nom} className="talent-card-avatar" />
@@ -66,14 +103,12 @@ export default function TalentCard({
           </div>
         </div>
 
-        {/* Rating */}
         <div className="talent-card-rating">
           <Star size={13} className="talent-card-star" />
           <span className="talent-card-rating-value">{note}</span>
           <span className="talent-card-rating-count">({avis} avis)</span>
         </div>
 
-        {/* Skills */}
         {competences.length > 0 && (
           <div className="talent-card-skills">
             {competences.slice(0, 3).map((skill) => (
@@ -87,7 +122,6 @@ export default function TalentCard({
           </div>
         )}
 
-        {/* Footer */}
         <div className="talent-card-footer">
           <div>
             <span className="talent-card-price-label">À partir de</span>
@@ -95,9 +129,9 @@ export default function TalentCard({
               {Number(tarif).toLocaleString("fr-FR")} FCFA
             </p>
           </div>
-          <Link to={`/talents/${id}`} className="talent-card-cta">
+          <a href={`/talents/${id}`} onClick={handleVoirProfil} className="talent-card-cta">
             Voir profil
-          </Link>
+          </a>
         </div>
       </div>
     </div>

@@ -13,6 +13,10 @@ import ProfilCreer from "./pages/talent/ProfilCreer";
 import TalentDashboard from "./pages/talent/TalentDashboard";
 import Portfolio from "./pages/talent/Portfolio";
 import DetailTalent from "./pages/client/DetailTalent";
+import ClientDashboard from "./pages/client/ClientDashboard";
+import Favoris from "./pages/client/Favoris";
+import Messages from "./pages/client/Messages";
+import DemandesEnvoyees from "./pages/client/DemandesEnvoyees";
 
 function PublicLayout({ children }) {
   return (
@@ -43,9 +47,16 @@ export default function App() {
           }
         />
 
+        {/* ── Espace talent ── */}
         <Route path="/talent/profil/creer" element={<ProtectedRoute><ProfilCreer /></ProtectedRoute>} />
         <Route path="/talent/dashboard" element={<ProtectedRoute><TalentDashboard /></ProtectedRoute>} />
         <Route path="/talent/portfolio" element={<ProtectedRoute><Portfolio /></ProtectedRoute>} />
+
+        {/* ── Espace client ── */}
+        <Route path="/client/dashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
+        <Route path="/client/favoris" element={<ProtectedRoute><Favoris /></ProtectedRoute>} />
+        <Route path="/client/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
+        <Route path="/client/demandes" element={<ProtectedRoute><DemandesEnvoyees /></ProtectedRoute>} />
 
         <Route
           path="*"

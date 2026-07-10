@@ -7,6 +7,8 @@ use App\Http\Controllers\ProfilTalentController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\TalentController;
 use App\Http\Controllers\PortfolioController;
+use App\Http\Controllers\FavoriController;
+use App\Http\Controllers\DemandePrestationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -78,4 +80,25 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/talent/portfolio', [PortfolioController::class, 'index']);
     Route::post('/talent/portfolio', [PortfolioController::class, 'store']);
     Route::delete('/talent/portfolio/{id}', [PortfolioController::class, 'destroy']);
+});
+
+
+//--------------------------------------------------------------------------
+// FAVORIS (CRUD) — Réservé au rôle "client" (vérifié dans le contrôleur)
+//--------------------------------------------------------------------------
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/client/favoris', [FavoriController::class, 'index']);
+    Route::post('/client/favoris/{talentId}', [FavoriController::class, 'toggle']);
+});
+
+//--------------------------------------------------------------------------
+// DEMANDES DE PRESTATION (CRUD) — Réservé aux rôles "client" et "talent" (vérifié dans le contrôleur)
+//--------------------------------------------------------------------------
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/client/demandes', [DemandePrestationController::class, 'indexClient']);
+    Route::post('/client/demandes', [DemandePrestationController::class, 'store']);
+
+    Route::get('/talent/demandes', [DemandePrestationController::class, 'indexTalent']);
+    Route::patch('/talent/demandes/{id}', [DemandePrestationController::class, 'repondre']);
 });

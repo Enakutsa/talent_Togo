@@ -1,0 +1,558 @@
+/* ============================================
+   CLIENT DASHBOARD — TOP NAV
+   ============================================ */
+
+   .cd-root {
+    min-height: 100vh;
+    background: #f9fafb;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+  
+  /* ============================================
+     TOP NAVBAR
+     ============================================ */
+  
+  .cd-topnav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 20px;
+    height: 64px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .cd-topnav-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  
+  .cd-logo-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: #ea580c;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  
+  .cd-logo-text {
+    font-weight: 700;
+    font-size: 16px;
+    color: #111827;
+  }
+  
+  .cd-logo-accent {
+    color: #ea580c;
+  }
+  
+  /* Liens de nav */
+  
+  .cd-topnav-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    justify-content: center;
+    overflow-x: auto;
+    scrollbar-width: none;
+    min-width: 0;
+  }
+  
+  .cd-topnav-links::-webkit-scrollbar {
+    display: none;
+  }
+  
+  .cd-topnav-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    background: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #4b5563;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  
+  .cd-topnav-link:hover {
+    background: #f3f4f6;
+    color: #111827;
+  }
+  
+  .cd-topnav-link-active {
+    background: #fff7ed;
+    color: #ea580c;
+  }
+  
+  .cd-topnav-badge {
+    background: #ea580c;
+    color: #fff;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 999px;
+    line-height: 1.4;
+  }
+  
+  /* Zone droite */
+  
+  .cd-topnav-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  
+  .cd-icon-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    border: none;
+    background: none;
+    color: #4b5563;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s ease;
+  }
+  
+  .cd-icon-btn:hover {
+    background: #f3f4f6;
+  }
+  
+  .cd-bell-dot {
+    position: absolute;
+    top: 7px;
+    right: 8px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #dc2626;
+    border: 1.5px solid #fff;
+  }
+  
+  /* Avatar + menu profil */
+  
+  .cd-profile-menu {
+    position: relative;
+    margin-left: 4px;
+  }
+  
+  .cd-profile-trigger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    padding: 4px 8px 4px 4px;
+    border-radius: 999px;
+    transition: background 0.15s ease;
+    white-space: nowrap;
+  }
+  
+  .cd-profile-trigger:hover {
+    background: #f3f4f6;
+  }
+  
+  .cd-topnav-avatar {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    border-radius: 50%;
+    background: #fff7ed;
+    color: #ea580c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 13px;
+    flex-shrink: 0;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 1px #e5e7eb;
+  }
+  
+  .cd-chevron {
+    color: #9ca3af;
+    transition: transform 0.15s ease;
+    flex-shrink: 0;
+  }
+  
+  .cd-chevron-open {
+    transform: rotate(180deg);
+  }
+  
+  /* Dropdown profil */
+  
+  .cd-profile-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 220px;
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    padding: 8px;
+    z-index: 60;
+  }
+  
+  .cd-profile-dropdown-header {
+    padding: 8px 10px 10px;
+    border-bottom: 1px solid #f1f5f4;
+    margin-bottom: 6px;
+  }
+  
+  .cd-profile-dropdown-name {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+  
+  .cd-profile-dropdown-role {
+    font-size: 12px;
+    color: #ea580c;
+    margin: 2px 0 0;
+    font-weight: 500;
+  }
+  
+  .cd-profile-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 9px 10px;
+    border: none;
+    background: none;
+    border-radius: 8px;
+    font-size: 13.5px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease;
+  }
+  
+  .cd-profile-dropdown-item:hover {
+    background: #f3f4f6;
+  }
+  
+  .cd-profile-dropdown-logout {
+    color: #dc2626;
+  }
+  
+  .cd-profile-dropdown-logout:hover {
+    background: #fef2f2;
+  }
+  
+  /* Bouton menu mobile */
+  
+  .cd-mobile-menu-btn {
+    display: none;
+    border: none;
+    background: none;
+    color: #374151;
+    cursor: pointer;
+    padding: 4px;
+  }
+  
+  /* Nav mobile déroulante */
+  
+  .cd-mobile-nav {
+    display: none;
+    flex-direction: column;
+    background: #fff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 8px;
+    position: sticky;
+    top: 64px;
+    z-index: 49;
+  }
+  
+  .cd-mobile-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 11px 12px;
+    border: none;
+    background: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    text-align: left;
+  }
+  
+  .cd-mobile-nav-item:hover {
+    background: #f3f4f6;
+  }
+  
+  /* ============================================
+     MAIN CONTENT
+     ============================================ */
+  
+  .cd-main {
+    min-height: calc(100vh - 64px);
+  }
+  
+  .cd-page {
+    padding: 32px 36px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .cd-page-header {
+    margin-bottom: 24px;
+  }
+  
+  .cd-page-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 4px;
+  }
+  
+  .cd-page-sub {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0;
+  }
+  
+  .cd-error {
+    color: #dc2626;
+    background: #fef2f2;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    margin-bottom: 16px;
+  }
+  
+  /* ============================================
+     FAVORIS
+     ============================================ */
+  
+  .cd-favoris-empty {
+    border: 2px dashed #d1d5db;
+    border-radius: 16px;
+    padding: 48px 24px;
+    text-align: center;
+    color: #9ca3af;
+  }
+  
+  .cd-favoris-empty svg {
+    color: #d1d5db;
+    margin-bottom: 12px;
+  }
+  
+  .cd-favoris-empty-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 4px;
+  }
+  
+  .cd-favoris-empty-sub {
+    font-size: 13px;
+    margin: 0;
+  }
+  
+  .cd-favoris-empty-sub a {
+    color: #ea580c;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  
+  .cd-favoris-empty-sub a:hover {
+    text-decoration: underline;
+  }
+  
+  .cd-favoris-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  
+  .cd-favori-card {
+    background: #fff;
+    border: 1px solid #eef0ef;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+  
+  .cd-favori-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  
+  .cd-favori-header h3 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+  }
+  
+  .cd-favori-dispo {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  
+  .cd-favori-dispo.on {
+    background: #ecfdf3;
+    color: #166534;
+  }
+  
+  .cd-favori-dispo.off {
+    background: #f3f4f6;
+    color: #6b7280;
+  }
+  
+  .cd-favori-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: #6b7280;
+    margin-bottom: 14px;
+  }
+  
+  .cd-favori-meta > span:first-child {
+    color: #ea580c;
+    font-weight: 500;
+  }
+  
+  .cd-favori-dot {
+    color: #d1d5db;
+  }
+  
+  .cd-favori-city {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  
+  .cd-favori-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f4;
+  }
+  
+  .cd-favori-price {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+  }
+  
+  .cd-favori-cta {
+    background: #ea580c;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 8px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+  }
+  
+  .cd-favori-cta:hover {
+    background: #c2410c;
+  }
+  
+  /* ============================================
+     PLACEHOLDER
+     ============================================ */
+  
+  .cd-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+  }
+  
+  .cd-placeholder-inner {
+    text-align: center;
+    color: #9ca3af;
+  }
+  
+  .cd-placeholder-inner svg {
+    margin-bottom: 12px;
+    color: #d1d5db;
+  }
+  
+  .cd-placeholder-inner h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #4b5563;
+    margin: 0 0 6px;
+  }
+  
+  .cd-placeholder-inner p {
+    font-size: 14px;
+    margin: 0;
+  }
+  
+  /* ============================================
+     RESPONSIVE
+     ============================================ */
+  
+  @media (max-width: 1024px) {
+    .cd-topnav-links {
+      display: none;
+    }
+  
+    .cd-mobile-menu-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  
+    .cd-mobile-nav {
+      display: flex;
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .cd-page {
+      padding: 20px 18px;
+    }
+  
+    .cd-topnav {
+      padding: 0 16px;
+    }
+  
+    .cd-favoris-grid {
+      grid-template-columns: 1fr;
+    }
+  }
