@@ -1,282 +1,512 @@
+/* ── Page ─────────────────────────────────────────────────────────────────── */
 .rc-page {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 1.5rem 4rem;
-  }
-  
-  .rc-header {
-    margin-bottom: 1.5rem;
-  }
-  
-  .rc-title {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: #111827;
-  }
-  
-  .rc-sub {
-    color: #6b7280;
-    font-size: 0.9rem;
-    margin-top: 0.25rem;
-    margin-bottom: 1.25rem;
-  }
-  
-  .rc-search-bar {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    background: #ffffff;
-    border: 2px solid #e5e7eb;
-    border-radius: 14px;
-    padding: 0.6rem 1rem;
-  }
-  
-  .rc-search-icon {
-    color: #9ca3af;
-    flex-shrink: 0;
-  }
-  
-  .rc-search-input {
-    flex: 1;
-    border: none;
-    outline: none;
-    font-size: 0.9rem;
-    background: transparent;
-  }
-  
-  .rc-filter-toggle {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.5rem 0.9rem;
-    border-radius: 10px;
-    border: none;
-    background: #f3f4f6;
-    color: #374151;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  
-  .rc-filter-toggle:hover {
-    background: #e5e7eb;
-  }
-  
-  .rc-filter-count {
-    background: #7c3aed;
-    color: #ffffff;
-    border-radius: 999px;
-    font-size: 0.7rem;
-    padding: 0.05rem 0.4rem;
-  }
-  
-  .rc-filters-panel {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: flex-end;
-    background: #ffffff;
-    border: 1px solid #f3f4f6;
-    border-radius: 14px;
-    padding: 1.25rem;
-    margin-bottom: 1.5rem;
-  }
-  
-  .rc-filter-field {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-    min-width: 150px;
-  }
-  
-  .rc-filter-field label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #6b7280;
-  }
-  
-  .rc-filter-field select,
-  .rc-filter-field input {
-    padding: 0.55rem 0.7rem;
-    border: 2px solid #e5e7eb;
-    border-radius: 10px;
-    font-size: 0.85rem;
-    outline: none;
-  }
-  
-  .rc-filter-field select:focus,
-  .rc-filter-field input:focus {
-    border-color: #7c3aed;
-  }
-  
-  .rc-checkbox-field {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.85rem;
-    color: #374151;
-    cursor: pointer;
-    padding-bottom: 0.55rem;
-  }
-  
-  .rc-reset-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    background: none;
-    border: none;
-    color: #b91c1c;
-    font-size: 0.8rem;
-    font-weight: 600;
-    cursor: pointer;
-    padding-bottom: 0.55rem;
-  }
-  
-  .rc-status {
-    text-align: center;
-    color: #6b7280;
-    font-size: 0.9rem;
-    padding: 3rem 0;
-  }
-  
-  .rc-status-error {
-    color: #b91c1c;
-  }
-  
-  .rc-empty {
-    text-align: center;
-    padding: 4rem 0;
-  }
-  
-  .rc-empty-title {
-    font-weight: 600;
-    color: #374151;
-  }
-  
-  .rc-empty-sub {
-    color: #9ca3af;
-    font-size: 0.85rem;
-    margin-top: 0.3rem;
-  }
-  
-  .rc-results-count {
-    color: #6b7280;
-    font-size: 0.85rem;
-    margin-bottom: 1rem;
-  }
-  
-  .rc-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 1.25rem;
-  }
-  
-  .rc-card {
-    display: block;
-    background: #ffffff;
-    border: 1px solid #f3f4f6;
-    border-radius: 16px;
-    overflow: hidden;
-    text-decoration: none;
-    color: inherit;
-    transition: box-shadow 0.15s ease, transform 0.15s ease;
-  }
-  
-  .rc-card:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-    transform: translateY(-2px);
-  }
-  
-  .rc-card-image-wrap {
-    position: relative;
-    aspect-ratio: 4 / 3;
-    background: #f3f4f6;
-  }
-  
-  .rc-card-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  
-  .rc-card-image-placeholder {
-    width: 100%;
-    height: 100%;
-    background: #e5e7eb;
-  }
-  
-  .rc-card-dispo-badge {
-    position: absolute;
-    top: 0.6rem;
-    right: 0.6rem;
-    background: #059669;
-    color: #ffffff;
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 0.2rem 0.55rem;
-    border-radius: 999px;
-  }
-  
-  .rc-card-body {
-    padding: 0.9rem 1rem 1.1rem;
-  }
-  
-  .rc-card-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-  }
-  
-  .rc-card-nom {
-    font-weight: 700;
-    color: #111827;
-    font-size: 0.95rem;
-  }
-  
-  .rc-card-note {
-    display: flex;
-    align-items: center;
-    gap: 0.2rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #111827;
-    flex-shrink: 0;
-  }
-  
-  .rc-card-star {
-    color: #f59e0b;
-    fill: #f59e0b;
-  }
-  
-  .rc-card-avis-count {
-    color: #9ca3af;
-    font-weight: 400;
-  }
-  
-  .rc-card-categorie {
-    color: #7c3aed;
-    font-size: 0.8rem;
-    font-weight: 500;
-    margin-top: 0.2rem;
-  }
-  
-  .rc-card-ville {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    color: #6b7280;
-    font-size: 0.78rem;
-    margin-top: 0.3rem;
-  }
-  
-  .rc-card-tarif {
-    margin-top: 0.5rem;
-    font-size: 0.8rem;
-    color: #6b7280;
-  }
-  
-  .rc-card-tarif strong {
-    color: #111827;
-  }
+  min-height: 100vh;
+  background: #f9fafb;
+  font-family: Inter, sans-serif;
+}
+
+/* ── Hero ────────────────────────────────────────────────────────────────── */
+.rc-hero {
+  background: linear-gradient(135deg, #14532d, #166534, #15803d);
+  padding: 56px 24px 48px;
+}
+
+.rc-hero-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.rc-hero-title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #fff;
+  font-family: Sora, sans-serif;
+  margin: 0 0 10px;
+}
+
+.rc-hero-sub {
+  font-size: 15px;
+  color: #bbf7d0;
+  margin: 0 0 28px;
+}
+
+.rc-hero-search {
+  display: flex;
+  gap: 10px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.rc-hero-search-field {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+}
+
+.rc-search-icon-hero { color: #9ca3af; flex-shrink: 0; }
+
+.rc-hero-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  color: #111827;
+  background: transparent;
+  font-family: Inter, sans-serif;
+}
+
+.rc-hero-search-input::placeholder { color: #9ca3af; }
+
+.rc-clear-btn {
+  background: none;
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.rc-clear-btn:hover { color: #6b7280; }
+
+.rc-hero-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  font-family: Inter, sans-serif;
+}
+
+.rc-hero-filter-btn:hover {
+  border-color: #166534;
+  color: #166534;
+}
+
+.rc-filter-badge {
+  background: #166534;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 20px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* ── Corps ───────────────────────────────────────────────────────────────── */
+.rc-body { max-width: 1200px; margin: 0 auto; padding: 32px 24px 60px; }
+
+.rc-layout { display: flex; gap: 28px; align-items: flex-start; }
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+.rc-sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #f3f4f6;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  display: none;
+}
+
+.rc-sidebar-open { display: block; }
+
+.rc-sidebar-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  font-family: Sora, sans-serif;
+  margin: 0 0 20px;
+}
+
+.rc-filter-group { margin-bottom: 20px; }
+
+.rc-filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rc-budget-val {
+  font-size: 12px;
+  font-weight: 700;
+  color: #166534;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Catégories */
+.rc-cat-list { display: flex; flex-direction: column; gap: 2px; }
+
+.rc-cat-btn {
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: none;
+  background: none;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: Inter, sans-serif;
+}
+
+.rc-cat-btn:hover   { background: #f0fdf4; color: #166534; }
+.rc-cat-active      { background: #dcfce7 !important; color: #166534 !important; font-weight: 600; }
+
+/* Select */
+.rc-select-wrap { position: relative; }
+
+.rc-select {
+  width: 100%;
+  padding: 10px 32px 10px 12px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 13px;
+  appearance: none;
+  outline: none;
+  background: #fff;
+  color: #374151;
+  cursor: pointer;
+  font-family: Inter, sans-serif;
+  transition: border-color 0.2s;
+}
+
+.rc-select:focus { border-color: #166534; }
+
+.rc-select-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+  pointer-events: none;
+}
+
+/* Range */
+.rc-range {
+  width: 100%;
+  accent-color: #166534;
+  cursor: pointer;
+}
+
+.rc-range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 4px;
+}
+
+/* Checkbox */
+.rc-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.rc-checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  border: 2px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.rc-checkbox-on {
+  background: #166534;
+  border-color: #166534;
+}
+
+.rc-checkbox-label {
+  font-size: 13px;
+  color: #374151;
+}
+
+/* Reset */
+.rc-reset-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px;
+  border: 1.5px solid #bbf7d0;
+  border-radius: 10px;
+  background: #fff;
+  color: #166534;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: background 0.2s;
+  font-family: Inter, sans-serif;
+}
+
+.rc-reset-btn:hover { background: #f0fdf4; }
+
+/* ── Résultats ───────────────────────────────────────────────────────────── */
+.rc-results { flex: 1; min-width: 0; }
+
+.rc-results-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.rc-results-count {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.rc-results-num {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+
+/* Chips */
+.rc-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+
+.rc-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #166534;
+  background: #dcfce7;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.rc-chip button {
+  background: none;
+  border: none;
+  color: #4ade80;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+
+.rc-chip button:hover { color: #166534; }
+
+/* Grille */
+.rc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+/* Skeleton */
+.rc-skeleton {
+  height: 280px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, #f3f4f6 25%, #e9eaec 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: rc-shimmer 1.5s infinite;
+}
+
+@keyframes rc-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Erreur */
+.rc-status-error {
+  text-align: center;
+  color: #dc2626;
+  font-size: 14px;
+  padding: 40px 0;
+}
+
+/* Empty */
+.rc-empty {
+  text-align: center;
+  padding: 60px 20px;
+}
+
+.rc-empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: #dcfce7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4ade80;
+  margin: 0 auto 16px;
+}
+
+.rc-empty-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+  font-family: Sora, sans-serif;
+  margin: 0 0 6px;
+}
+
+.rc-empty-sub {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0 0 20px;
+}
+
+.rc-empty-reset {
+  padding: 10px 24px;
+  background: #166534;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: Sora, sans-serif;
+}
+
+/* ── Carte talent ─────────────────────────────────────────────────────────── */
+.rc-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #f3f4f6;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.rc-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+}
+
+.rc-card-image-wrap {
+  position: relative;
+  aspect-ratio: 4/3;
+  background: #f3f4f6;
+  overflow: hidden;
+}
+
+.rc-card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.rc-card:hover .rc-card-image { transform: scale(1.04); }
+
+.rc-card-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+}
+
+.rc-card-dispo-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.rc-card-body { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 4px; }
+
+.rc-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.rc-card-nom {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  font-family: Sora, sans-serif;
+  margin: 0;
+}
+
+.rc-card-note {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+  white-space: nowrap;
+}
+
+.rc-card-star { color: #f59e0b; fill: #f59e0b; }
+
+.rc-card-avis-count { font-size: 11px; color: #9ca3af; font-weight: 400; }
+
+.rc-card-categorie {
+  font-size: 12px;
+  color: #166534;
+  font-weight: 500;
+  margin: 0;
+}
+
+.rc-card-ville {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+}
+
+.rc-card-tarif {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 4px 0 0;
+}
+
+.rc-card-tarif strong {
+  color: #111827;
+  font-weight: 700;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (min-width: 1024px) {
+  .rc-sidebar { display: block; }
+}
+
+@media (max-width:

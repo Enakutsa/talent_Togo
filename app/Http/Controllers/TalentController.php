@@ -41,7 +41,7 @@ class TalentController extends Controller
      * GET /api/talents?featured=1                        → les plus vus, limité à 6
      * GET /api/talents?categorie_id=3                     → filtre par catégorie
      * GET /api/talents?ville=Lomé                         → filtre par ville
-     * GET /api/talents?q=koffi                             → recherche par nom/prénom
+     * GET /api/talents?q=koffi                             → recherche par nom/prénom/catégorie
      * GET /api/talents?budget_max=50000                    → tarif_min <= budget_max
      * GET /api/talents?disponible=1                        → uniquement les disponibles
      * GET /api/talents?sort=note|prix_asc|prix_desc|recent  → tri (défaut: recent)
@@ -64,7 +64,12 @@ class TalentController extends Controller
                     $search = $request->string('q')->trim();
                     $q->where(function ($qq) use ($search) {
                         $qq->where('nom', 'ilike', "%{$search}%")
-                           ->orWhere('prenom', 'ilike', "%{$search}%");
+                           ->orWhere('prenom', 'ilike', "%{$search}%")
+                           // Recherche aussi sur le nom de la catégorie
+                           // (ex: "photog" doit trouver "Photographe")
+                           ->orWhereHas('categorie', function ($cat) use ($search) {
+                               $cat->where('nom', 'ilike', "%{$search}%");
+                           });
                     });
                 }
             })

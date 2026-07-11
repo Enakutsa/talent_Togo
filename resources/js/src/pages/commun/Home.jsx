@@ -5,12 +5,10 @@ import TalentCard from "../../components/talent/TalentCard";
 import { getFeaturedTalents, getStats, getCategories, getReviews } from "../../services/talent.service";
 import { AuthContext } from "../../context/AuthContext";
 import {
-  Search, MapPin, Camera, Palette, Scissors, Music2, Film, Package2, Brush, Star,
+  Search, Camera, Palette, Scissors, Music2, Film, Package2, Brush, Star,
   ArrowRight, Users, Briefcase, Globe, ChevronRight, Quote, Sparkles
 } from "lucide-react";
 import "../../assets/styles/Home.css";
-
-const CITIES = ["Lomé", "Kara", "Sokodé", "Atakpamé", "Kpalimé", "Dapaong"];
 
 const CATEGORY_ICONS = {
   Photographe: Camera,
@@ -64,7 +62,6 @@ export default function Home() {
   const navigate = useNavigate();
   const { isAuthenticated } = useContext(AuthContext);
   const [search, setSearch] = useState("");
-  const [city, setCity] = useState("");
   const [favorites, setFavorites] = useState([]);
 
   // null = en cours de chargement (affiche un skeleton, jamais de fausses données)
@@ -116,7 +113,6 @@ export default function Home() {
     e.preventDefault();
     const params = new URLSearchParams();
     if (search) params.set("q", search);
-    if (city) params.set("ville", city);
     navigate(`/recherche?${params.toString()}`);
   };
 
@@ -158,22 +154,13 @@ export default function Home() {
               <Search size={18} className="hero-search-icon" />
               <input
                 type="text"
-                placeholder="Quel talent recherchez-vous ?"
+                placeholder="Photographe, graphiste, couturier..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <div className="hero-search-field hero-search-field-city">
-              <MapPin size={18} className="hero-search-icon" />
-              <select value={city} onChange={(e) => setCity(e.target.value)}>
-                <option value="">Toutes les villes</option>
-                {CITIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
             <button type="submit" className="hero-search-btn">
-              Rechercher
+              Rechercher <ArrowRight size={16} />
             </button>
           </form>
 
