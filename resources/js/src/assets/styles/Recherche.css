@@ -1,0 +1,282 @@
+.rc-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 4rem;
+  }
+  
+  .rc-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .rc-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #111827;
+  }
+  
+  .rc-sub {
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-top: 0.25rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  .rc-search-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 14px;
+    padding: 0.6rem 1rem;
+  }
+  
+  .rc-search-icon {
+    color: #9ca3af;
+    flex-shrink: 0;
+  }
+  
+  .rc-search-input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.9rem;
+    background: transparent;
+  }
+  
+  .rc-filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 10px;
+    border: none;
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  
+  .rc-filter-toggle:hover {
+    background: #e5e7eb;
+  }
+  
+  .rc-filter-count {
+    background: #7c3aed;
+    color: #ffffff;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    padding: 0.05rem 0.4rem;
+  }
+  
+  .rc-filters-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-end;
+    background: #ffffff;
+    border: 1px solid #f3f4f6;
+    border-radius: 14px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .rc-filter-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-width: 150px;
+  }
+  
+  .rc-filter-field label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+  }
+  
+  .rc-filter-field select,
+  .rc-filter-field input {
+    padding: 0.55rem 0.7rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    outline: none;
+  }
+  
+  .rc-filter-field select:focus,
+  .rc-filter-field input:focus {
+    border-color: #7c3aed;
+  }
+  
+  .rc-checkbox-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #374151;
+    cursor: pointer;
+    padding-bottom: 0.55rem;
+  }
+  
+  .rc-reset-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: none;
+    border: none;
+    color: #b91c1c;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding-bottom: 0.55rem;
+  }
+  
+  .rc-status {
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.9rem;
+    padding: 3rem 0;
+  }
+  
+  .rc-status-error {
+    color: #b91c1c;
+  }
+  
+  .rc-empty {
+    text-align: center;
+    padding: 4rem 0;
+  }
+  
+  .rc-empty-title {
+    font-weight: 600;
+    color: #374151;
+  }
+  
+  .rc-empty-sub {
+    color: #9ca3af;
+    font-size: 0.85rem;
+    margin-top: 0.3rem;
+  }
+  
+  .rc-results-count {
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+  }
+  
+  .rc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.25rem;
+  }
+  
+  .rc-card {
+    display: block;
+    background: #ffffff;
+    border: 1px solid #f3f4f6;
+    border-radius: 16px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: box-shadow 0.15s ease, transform 0.15s ease;
+  }
+  
+  .rc-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+  }
+  
+  .rc-card-image-wrap {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: #f3f4f6;
+  }
+  
+  .rc-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .rc-card-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: #e5e7eb;
+  }
+  
+  .rc-card-dispo-badge {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    background: #059669;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+  }
+  
+  .rc-card-body {
+    padding: 0.9rem 1rem 1.1rem;
+  }
+  
+  .rc-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  
+  .rc-card-nom {
+    font-weight: 700;
+    color: #111827;
+    font-size: 0.95rem;
+  }
+  
+  .rc-card-note {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #111827;
+    flex-shrink: 0;
+  }
+  
+  .rc-card-star {
+    color: #f59e0b;
+    fill: #f59e0b;
+  }
+  
+  .rc-card-avis-count {
+    color: #9ca3af;
+    font-weight: 400;
+  }
+  
+  .rc-card-categorie {
+    color: #7c3aed;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-top: 0.2rem;
+  }
+  
+  .rc-card-ville {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: #6b7280;
+    font-size: 0.78rem;
+    margin-top: 0.3rem;
+  }
+  
+  .rc-card-tarif {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: #6b7280;
+  }
+  
+  .rc-card-tarif strong {
+    color: #111827;
+  }

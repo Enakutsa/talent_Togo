@@ -1,0 +1,386 @@
+/* ============================================
+   DEMANDES ENVOYÉES (CLIENT)
+   ============================================ */
+
+   .de-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  
+  .de-new-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #ea580c;
+    color: #fff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+  }
+  
+  .de-new-btn:hover {
+    background: #c2410c;
+  }
+  
+  /* Empty state */
+  
+  .de-empty {
+    text-align: center;
+    padding: 64px 24px;
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #f1f5f4;
+  }
+  
+  .de-empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    color: #d1d5db;
+  }
+  
+  .de-empty-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 8px;
+  }
+  
+  .de-empty-sub {
+    font-size: 13.5px;
+    color: #6b7280;
+    margin: 0 0 20px;
+  }
+  
+  .de-explore-btn {
+    background: #ea580c;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  
+  .de-explore-btn:hover {
+    background: #c2410c;
+  }
+  
+  /* Summary cards */
+  
+  .de-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  
+  .de-summary-card {
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+    border: 1px solid;
+  }
+  
+  .de-summary-val {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  
+  .de-summary-label {
+    font-size: 11.5px;
+    font-weight: 500;
+    margin-top: 3px;
+  }
+  
+  .de-summary-total {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #c2410c;
+  }
+  
+  .de-summary-pending {
+    background: #fffbeb;
+    border-color: #fde68a;
+    color: #b45309;
+  }
+  
+  .de-summary-accepted {
+    background: #ecfdf3;
+    border-color: #a7f3d0;
+    color: #166534;
+  }
+  
+  .de-summary-rejected {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #b91c1c;
+  }
+  
+  /* List */
+  
+  .de-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .de-card {
+    background: #fff;
+    border: 1px solid #f1f5f4;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+  
+  .de-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  
+  .de-talent-name {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #111827;
+    cursor: pointer;
+  }
+  
+  .de-talent-name:hover {
+    color: #ea580c;
+  }
+  
+  .de-category-tag {
+    margin-left: 8px;
+    font-size: 11px;
+    color: #ea580c;
+    background: #fff7ed;
+    padding: 2px 9px;
+    border-radius: 999px;
+    font-weight: 500;
+  }
+  
+  .de-badge {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 4px 11px;
+    border-radius: 999px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  
+  .de-badge-pending {
+    background: #fffbeb;
+    color: #b45309;
+  }
+  
+  .de-badge-accepted {
+    background: #ecfdf3;
+    color: #166534;
+  }
+  
+  .de-badge-rejected {
+    background: #fef2f2;
+    color: #b91c1c;
+  }
+  
+  .de-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+  }
+  
+  .de-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #9ca3af;
+  }
+  
+  .de-meta-budget {
+    font-size: 12px;
+    font-weight: 700;
+    color: #ea580c;
+  }
+  
+  /* Message thread */
+  
+  .de-message-thread {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  
+  .de-message-bar {
+    width: 3px;
+    border-radius: 999px;
+    background: #e5e7eb;
+    flex-shrink: 0;
+  }
+  
+  .de-message-text {
+    font-size: 12.5px;
+    color: #6b7280;
+    line-height: 1.5;
+    font-style: italic;
+    margin: 0;
+  }
+  
+  /* Actions */
+  
+  .de-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f4;
+  }
+  
+  .de-message-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: #fff7ed;
+    border: 1px solid #fed7aa;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #ea580c;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+  }
+  
+  .de-message-btn:hover {
+    background: #ffedd5;
+    border-color: #fdba74;
+  }
+  
+  .de-message-btn:active {
+    transform: scale(0.97);
+  }
+  
+  .de-cancel-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #dc2626;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    margin-left: auto;
+  }
+  
+  .de-cancel-btn:hover:not(:disabled) {
+    background: #fee2e2;
+    border-color: #fca5a5;
+  }
+  
+  .de-cancel-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  /* Pagination */
+  
+  .de-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 24px;
+  }
+  
+  .de-page-btn {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    color: #374151;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  
+  .de-page-btn:hover:not(:disabled) {
+    background: #f9fafb;
+    border-color: #ea580c;
+    color: #ea580c;
+  }
+  
+  .de-page-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  
+  .de-page-info {
+    font-size: 12.5px;
+    color: #6b7280;
+    font-weight: 500;
+  }
+  
+  /* Responsive */
+  
+  @media (max-width: 640px) {
+    .de-summary-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  
+    .de-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .de-new-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  
+    .de-message-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  
+    .de-cancel-btn {
+      width: 100%;
+      justify-content: center;
+      margin-left: 0;
+    }
+  
+    .de-actions {
+      flex-direction: column;
+    }
+  }

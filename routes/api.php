@@ -96,9 +96,13 @@ Route::middleware('auth:sanctum')->group(function () {
 //--------------------------------------------------------------------------
 
 Route::middleware('auth:sanctum')->group(function () {
+    // ... autres routes ...
     Route::get('/client/demandes', [DemandePrestationController::class, 'indexClient']);
     Route::post('/client/demandes', [DemandePrestationController::class, 'store']);
+    Route::delete('/client/demandes/{id}', [DemandePrestationController::class, 'annuler']); // ← ajoute cette ligne
 
     Route::get('/talent/demandes', [DemandePrestationController::class, 'indexTalent']);
     Route::patch('/talent/demandes/{id}', [DemandePrestationController::class, 'repondre']);
 });
+
+

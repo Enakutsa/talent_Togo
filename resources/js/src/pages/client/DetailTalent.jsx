@@ -2,10 +2,11 @@ import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Star, MapPin, Heart, MessageSquare, ArrowLeft,
-  Check, Award, Clock, User, Loader, Send
+  Check, Award, Clock, User, Loader, Send, Calendar, Wallet
 } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
 import { getTalentById } from "../../services/talent.service";
+import { envoyerDemande } from "../../services/demande.service";
 import "../../assets/styles/DetailTalent.css";
 
 // ── Composant étoiles ──────────────────────────────────────────────────────
@@ -33,9 +34,15 @@ export default function DetailTalent() {
   const [error, setError]             = useState("");
   const [isFav, setIsFav]             = useState(false);
   const [showContact, setShowContact] = useState(false);
-  const [msg, setMsg]                 = useState("");
-  const [sent, setSent]               = useState(false);
   const [previewIdx, setPreviewIdx]   = useState(null);
+
+  // ── Formulaire de demande ──
+  const [messageInitial, setMessageInitial] = useState("");
+  const [dateSouhaitee, setDateSouhaitee]   = useState("");
+  const [budget, setBudget]                 = useState("");
+  const [sending, setSending]               = useState(false);
+  const [sendError, setSendError]           = useState("");
+  const [sent, setSent]                     = useState(false);
 
   // ── Chargement du talent ────────────────────────────────────────────────
   useEffect(() => {
@@ -50,10 +57,39 @@ export default function DetailTalent() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const handleSend = () => {
-    if (!msg.trim()) return;
-    setSent(true);
-    // TODO: appel API demande de prestation
+  const handleSend = async () => {
+    if (!messageInitial.trim()) return;
+
+    setSendError("");
+    setSending(true);
+
+    try {
+      await envoyerDemande({
+        profil_talent_id: talent.id,
+        message_initial: messageInitial,
+        date_souhaitee: dateSouhaitee || null,
+        budget: budget || null,
+      });
+      setSent(true);
+    } catch (err) {
+      if (err.response?.status === 422) {
+        const firstError = Object.values(err.response.data.errors || {})[0]?.[0];
+        setSendError(firstError || "Certains champs sont invalides.");
+      } else {
+        setSendError(err.response?.data?.message || "Une erreur est survenue. Réessayez.");
+      }
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const resetModal = () => {
+    setShowContact(false);
+    setSent(false);
+    setMessageInitial("");
+    setDateSouhaitee("");
+    setBudget("");
+    setSendError("");
   };
 
   const handleMessage = () => {
@@ -90,6 +126,8 @@ export default function DetailTalent() {
   const portfolio   = talent.portfolios  ?? [];
   const avisListe   = talent.avis_liste  ?? [];
   const avatar      = talent.avatar      ?? null;
+
+  const todayStr = new Date().toISOString().split("T")[0];
 
   return (
     <div className="dt-bg">
@@ -289,7 +327,7 @@ export default function DetailTalent() {
 
       {/* ── Modal demande de prestation ── */}
       {showContact && (
-        <div className="dt-modal-overlay" onClick={() => !sent && setShowContact(false)}>
+        <div className="dt-modal-overlay" onClick={() => !sent && resetModal()}>
           <div className="dt-modal" onClick={(e) => e.stopPropagation()}>
             <div className="dt-modal-header">
               <h2 className="dt-modal-title">Demande de prestation — {talent.nom}</h2>
@@ -300,23 +338,63 @@ export default function DetailTalent() {
                 <div className="dt-success-icon"><Check size={28} /></div>
                 <h3 className="dt-success-title">Demande envoyée !</h3>
                 <p className="dt-success-text">{talent.nom} recevra votre demande et vous répondra bientôt.</p>
-                <button onClick={() => { setShowContact(false); setSent(false); setMsg(""); }} className="dt-success-btn">
+                <button onClick={resetModal} className="dt-success-btn">
                   Fermer
                 </button>
               </div>
             ) : (
               <div className="dt-modal-body">
-                <textarea
-                  rows={5}
-                  placeholder="Décrivez votre projet : type de prestation, date souhaitée, budget, lieu..."
-                  className="dt-modal-textarea"
-                  value={msg}
-                  onChange={(e) => setMsg(e.target.value)}
-                />
+                {sendError && <p className="dt-modal-error">{sendError}</p>}
+
+                <div className="dt-modal-field">
+                  <label className="dt-modal-label">
+                    Votre message <span className="dt-modal-required">*</span>
+                  </label>
+                  <textarea
+                    rows={4}
+                    placeholder="Décrivez votre projet : type de prestation, lieu, détails..."
+                    className="dt-modal-textarea"
+                    value={messageInitial}
+                    onChange={(e) => setMessageInitial(e.target.value)}
+                  />
+                </div>
+
+                <div className="dt-modal-row">
+                  <div className="dt-modal-field">
+                    <label className="dt-modal-label">
+                      <Calendar size={13} /> Date souhaitée
+                    </label>
+                    <input
+                      type="date"
+                      min={todayStr}
+                      className="dt-modal-input"
+                      value={dateSouhaitee}
+                      onChange={(e) => setDateSouhaitee(e.target.value)}
+                    />
+                  </div>
+                  <div className="dt-modal-field">
+                    <label className="dt-modal-label">
+                      <Wallet size={13} /> Budget (FCFA)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="Ex: 50 000"
+                      className="dt-modal-input"
+                      value={budget}
+                      onChange={(e) => setBudget(e.target.value)}
+                    />
+                  </div>
+                </div>
+
                 <div className="dt-modal-actions">
-                  <button onClick={() => setShowContact(false)} className="dt-modal-cancel">Annuler</button>
-                  <button onClick={handleSend} disabled={!msg.trim()} className="dt-modal-send">
-                    <Send size={14} /> Envoyer
+                  <button onClick={resetModal} className="dt-modal-cancel">Annuler</button>
+                  <button
+                    onClick={handleSend}
+                    disabled={!messageInitial.trim() || sending}
+                    className="dt-modal-send"
+                  >
+                    {sending ? "Envoi..." : <><Send size={14} /> Envoyer</>}
                   </button>
                 </div>
               </div>

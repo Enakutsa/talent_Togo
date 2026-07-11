@@ -12,6 +12,7 @@ import VerifyOtp from "./pages/auth/VerifyOtp";
 import ProfilCreer from "./pages/talent/ProfilCreer";
 import TalentDashboard from "./pages/talent/TalentDashboard";
 import Portfolio from "./pages/talent/Portfolio";
+import RechercheTalents from "./pages/client/RechercheTalents";
 import DetailTalent from "./pages/client/DetailTalent";
 import ClientDashboard from "./pages/client/ClientDashboard";
 import Favoris from "./pages/client/Favoris";
@@ -49,6 +50,11 @@ export default function App() {
         {/* ── Page transitoire : PAS de RedirectIfTalent ici non plus,
              pour la même raison. ── */}
         <Route path="/verify-otp" element={<PublicLayout><VerifyOtp /></PublicLayout>} />
+
+        {/* ── Recherche/listing des talents : page publique (pas besoin
+             d'être connecté pour parcourir ; contacter/favoriser restent
+             gérés à l'intérieur des composants concernés). ── */}
+        <Route path="/recherche" element={<PublicLayout><RechercheTalents /></PublicLayout>} />
 
         <Route
           path="/talents/:id"

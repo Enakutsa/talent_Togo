@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Mail;
 class DemandePrestationController extends Controller
 {
     /**
-     * Liste des demandes envoyées par le client connecté.
+     * Liste des demandes envoyées par le client connecté (paginée, 10/page).
      * GET /api/client/demandes
      */
     public function indexClient(Request $request)
@@ -23,11 +23,17 @@ class DemandePrestationController extends Controller
         $demandes = DemandePrestation::where('client_id', $request->user()->id)
             ->with(['profilTalent.utilisateur.categorie'])
             ->latest()
-            ->get();
+            ->paginate(10);
 
         return response()->json([
             'success' => true,
-            'data' => $demandes->map(fn ($d) => $this->formatPourClient($d)),
+            'data' => $demandes->getCollection()->map(fn ($d) => $this->formatPourClient($d)),
+            'meta' => [
+                'current_page' => $demandes->currentPage(),
+                'last_page' => $demandes->lastPage(),
+                'total' => $demandes->total(),
+                'per_page' => $demandes->perPage(),
+            ],
         ]);
     }
 
@@ -176,4 +182,29 @@ class DemandePrestationController extends Controller
             'created_at' => $d->created_at,
         ];
     }
+
+    /**
+ * Le client annule une demande qu'il a envoyée, tant qu'elle est
+ * encore en attente (pas encore acceptée/refusée par le talent).
+ * DELETE /api/client/demandes/{id}
+ */
+public function annuler(Request $request, $id)
+{
+    abort_unless($request->user()->isClient(), 403, 'Réservé aux clients.');
+
+    $demande = DemandePrestation::where('client_id', $request->user()->id)->find($id);
+
+    if (!$demande) {
+        return response()->json(['message' => 'Demande introuvable.'], 404);
+    }
+
+    if ($demande->statut !== 'en_attente') {
+        return response()->json(['message' => 'Cette demande a déjà reçu une réponse, elle ne peut plus être annulée.'], 422);
+    }
+
+    $demande->delete();
+
+    return response()->json(['success' => true]);
+}
+
 }

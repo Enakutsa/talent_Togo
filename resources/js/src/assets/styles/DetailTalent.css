@@ -1,632 +1,684 @@
 /* ── Fond ─────────────────────────────────────────────────────────────────── */
 .dt-bg {
-    min-height: 100vh;
-    background: #f9fafb;
-    font-family: Inter, sans-serif;
-  }
-  
-  /* ── Loading / Error ─────────────────────────────────────────────────────── */
-  .dt-loading, .dt-error {
-    min-height: 60vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    color: #6b7280;
-    font-size: 14px;
-  }
-  
-  .dt-spinner {
-    animation: dt-spin 1s linear infinite;
-    color: #6d28d9;
-  }
-  
-  @keyframes dt-spin { to { transform: rotate(360deg); } }
-  
-  /* ── Breadcrumb ──────────────────────────────────────────────────────────── */
-  .dt-breadcrumb-wrap {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px 24px 8px;
-  }
-  
-  .dt-back-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    color: #6d28d9;
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 0;
-    transition: color 0.15s;
-  }
-  
-  .dt-back-btn:hover { color: #4c1d95; }
-  
-  /* ── Container ───────────────────────────────────────────────────────────── */
-  .dt-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 24px 60px;
-  }
-  
-  .dt-grid {
-    display: grid;
-    grid-template-columns: 1fr 340px;
-    gap: 24px;
-    align-items: start;
-  }
-  
-  /* ── Card ────────────────────────────────────────────────────────────────── */
-  .dt-card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 24px;
-    border: 1px solid #f3f4f6;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-  }
-  
-  /* ── Profile header ──────────────────────────────────────────────────────── */
-  .dt-profile-row {
-    display: flex;
-    gap: 20px;
-    align-items: flex-start;
-  }
-  
-  .dt-avatar-wrap {
-    position: relative;
-    flex-shrink: 0;
-  }
-  
-  .dt-avatar {
-    width: 80px;
-    height: 80px;
-    border-radius: 16px;
-    object-fit: cover;
-  }
-  
-  .dt-avatar-placeholder {
-    width: 80px;
-    height: 80px;
-    border-radius: 16px;
-    background: #f3f4f6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #9ca3af;
-  }
-  
-  .dt-online-dot {
-    position: absolute;
-    bottom: -2px;
-    right: -2px;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #10b981;
-    border: 2px solid #fff;
-  }
-  
-  .dt-profile-info { flex: 1; }
-  
-  .dt-profile-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-  
-  .dt-nom {
-    font-size: 22px;
-    font-weight: 700;
-    color: #111827;
-    font-family: Sora, sans-serif;
-    margin: 0;
-  }
-  
-  .dt-categorie-badge {
-    display: inline-block;
-    margin-top: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    color: #6d28d9;
-    background: #ede9fe;
-    padding: 3px 12px;
-    border-radius: 20px;
-  }
-  
-  /* Favori */
-  .dt-fav-btn {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
-    border: 2px solid #e5e7eb;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    flex-shrink: 0;
-  }
-  
-  .dt-fav-btn.dt-fav-active {
-    border-color: #fecaca;
-    background: #fef2f2;
-  }
-  
-  .dt-heart { color: #9ca3af; }
-  .dt-heart-filled { color: #ef4444; fill: #ef4444; }
-  
-  /* Méta */
-  .dt-meta-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 12px;
-    align-items: center;
-  }
-  
-  .dt-meta-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 13px;
-    color: #6b7280;
-  }
-  
-  .dt-note-val   { font-size: 13px; font-weight: 700; color: #111827; }
-  .dt-note-count { font-size: 12px; color: #9ca3af; }
-  
-  .dt-dispo-badge {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 12px;
-    font-weight: 500;
-  }
-  
-  .dt-dispo-on  { color: #059669; }
-  .dt-dispo-off { color: #ef4444; }
-  
-  .dt-dispo-dot-sm {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-  }
-  
-  .dot-on  { background: #10b981; }
-  .dot-off { background: #f87171; }
-  
-  /* ── Sections ────────────────────────────────────────────────────────────── */
-  .dt-section {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid #f3f4f6;
-  }
-  
-  .dt-section-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: #111827;
-    font-family: Sora, sans-serif;
-    margin: 0 0 12px;
-  }
-  
-  .dt-bio {
-    font-size: 13px;
-    color: #4b5563;
-    line-height: 1.7;
-    margin: 0;
-  }
-  
-  /* ── Compétences ─────────────────────────────────────────────────────────── */
-  .dt-skills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  
-  .dt-skill-tag {
-    font-size: 12px;
-    font-weight: 500;
-    color: #6d28d9;
-    background: #ede9fe;
-    padding: 4px 12px;
-    border-radius: 20px;
-  }
-  
-  /* ── Portfolio ───────────────────────────────────────────────────────────── */
-  .dt-portfolio-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    margin-top: 12px;
-  }
-  
-  .dt-portfolio-item {
-    aspect-ratio: 4/3;
-    border-radius: 10px;
-    overflow: hidden;
-    cursor: pointer;
-    background: #f3f4f6;
-  }
-  
-  .dt-portfolio-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.4s ease;
-  }
-  
-  .dt-portfolio-item:hover .dt-portfolio-img {
-    transform: scale(1.06);
-  }
-  
-  /* ── Avis ────────────────────────────────────────────────────────────────── */
-  .dt-avis-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-  
-  .dt-avis-global {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .dt-avis-count { font-weight: 400; color: #9ca3af; font-size: 13px; }
-  
-  .dt-no-avis {
-    font-size: 13px;
-    color: #9ca3af;
-    text-align: center;
-    padding: 20px 0;
-  }
-  
-  .dt-avis-list { display: flex; flex-direction: column; gap: 0; }
-  
-  .dt-avis-row {
-    padding: 16px 0;
-    border-bottom: 1px solid #f3f4f6;
-  }
-  
-  .dt-avis-row:last-child { border-bottom: none; padding-bottom: 0; }
-  
-  .dt-avis-author {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-  
-  .dt-avis-avatar {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-  
-  .dt-avis-avatar-placeholder {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: #ede9fe;
-    color: #6d28d9;
-    font-size: 14px;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: Sora, sans-serif;
-  }
-  
-  .dt-avis-name {
-    font-size: 13px;
-    font-weight: 600;
-    color: #111827;
-    font-family: Sora, sans-serif;
-    margin: 0 0 2px;
-  }
-  
-  .dt-avis-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .dt-avis-date { font-size: 11px; color: #9ca3af; }
-  
-  .dt-avis-text {
-    font-size: 13px;
-    color: #4b5563;
-    line-height: 1.6;
-    margin: 0;
-  }
-  
-  /* ── Étoiles ─────────────────────────────────────────────────────────────── */
-  .dt-stars { display: inline-flex; align-items: center; gap: 2px; }
-  .dt-star-filled { color: #f59e0b; fill: #f59e0b; }
-  .dt-star-empty  { color: #e5e7eb; fill: #e5e7eb; }
-  
-  /* ── Booking card ────────────────────────────────────────────────────────── */
-  .dt-booking-card {
-    background: #fff;
-    border-radius: 16px;
-    padding: 24px;
-    border: 1px solid #f3f4f6;
-    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
-    position: sticky;
-    top: 24px;
-  }
-  
-  .dt-tarif-block { margin-bottom: 20px; }
-  
-  .dt-tarif-label { font-size: 11px; color: #9ca3af; margin: 0 0 4px; }
-  
-  .dt-tarif-value {
-    font-size: 28px;
-    font-weight: 700;
-    color: #6d28d9;
-    font-family: Sora, sans-serif;
-    margin: 0;
-  }
-  
-  .dt-tarif-unit  { font-size: 16px; }
-  .dt-tarif-max   { font-size: 11px; color: #9ca3af; margin: 4px 0 0; }
-  
-  .dt-infos-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 20px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid #f3f4f6;
-  }
-  
-  .dt-info-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 13px;
-  }
-  
-  .dt-info-left {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: #6b7280;
-  }
-  
-  .dt-info-icon { color: #6d28d9; }
-  .dt-info-val  { font-weight: 600; color: #111827; font-size: 13px; }
-  
-  /* Bouton contacter */
-  .dt-contact-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 14px;
-    background: linear-gradient(135deg, #6d28d9, #7c3aed);
-    color: #fff;
-    font-size: 14px;
-    font-weight: 700;
-    border-radius: 12px;
-    border: none;
-    cursor: pointer;
-    transition: opacity 0.2s;
-    font-family: Sora, sans-serif;
-    box-shadow: 0 4px 12px rgba(109,40,217,0.3);
-  }
-  
-  .dt-contact-btn:hover { opacity: 0.9; }
-  
-  /* Bouton favori card */
-  .dt-fav-card-btn {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 12px;
-    border: 2px solid #e5e7eb;
-    border-radius: 12px;
-    background: #fff;
-    color: #374151;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: all 0.2s;
-    font-family: Inter, sans-serif;
-  }
-  
-  .dt-fav-card-btn:hover { border-color: #fca5a5; }
-  
-  .dt-fav-card-active {
-    border-color: #fca5a5;
-    background: #fef2f2;
-    color: #ef4444;
-  }
-  
-  /* ── Modal contact ───────────────────────────────────────────────────────── */
-  .dt-modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 200;
-    padding: 16px;
-  }
-  
-  .dt-modal {
-    background: #fff;
-    border-radius: 20px;
-    width: 100%;
-    max-width: 480px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    overflow: hidden;
-  }
-  
-  .dt-modal-header {
-    padding: 20px 24px;
-    border-bottom: 1px solid #f3f4f6;
-  }
-  
-  .dt-modal-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: #111827;
-    font-family: Sora, sans-serif;
-    margin: 0;
-  }
-  
-  .dt-modal-body { padding: 20px 24px; }
-  
-  .dt-modal-textarea {
-    width: 100%;
-    padding: 12px 14px;
-    border: 2px solid #e5e7eb;
-    border-radius: 10px;
-    font-size: 13px;
-    font-family: Inter, sans-serif;
-    resize: none;
-    outline: none;
-    box-sizing: border-box;
-    transition: border-color 0.2s;
-  }
-  
-  .dt-modal-textarea:focus { border-color: #6d28d9; }
-  
-  .dt-modal-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 14px;
-  }
-  
-  .dt-modal-cancel {
-    flex: 1;
-    padding: 12px;
-    border: 2px solid #e5e7eb;
-    border-radius: 10px;
-    background: #fff;
-    color: #374151;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: Inter, sans-serif;
-  }
-  
-  .dt-modal-cancel:hover { background: #f9fafb; }
-  
-  .dt-modal-send {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    background: #6d28d9;
-    color: #fff;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    font-family: Sora, sans-serif;
-    transition: opacity 0.2s;
-  }
-  
-  .dt-modal-send:disabled { opacity: 0.4; cursor: not-allowed; }
-  .dt-modal-send:not(:disabled):hover { opacity: 0.9; }
-  
-  /* Modal succès */
-  .dt-modal-success {
-    padding: 40px 24px;
-    text-align: center;
-  }
-  
-  .dt-success-icon {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: #d1fae5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 16px;
-    color: #059669;
-  }
-  
-  .dt-success-title {
-    font-size: 17px;
-    font-weight: 700;
-    color: #111827;
-    font-family: Sora, sans-serif;
-    margin: 0 0 8px;
-  }
-  
-  .dt-success-text {
-    font-size: 13px;
-    color: #6b7280;
-    margin: 0 0 20px;
-  }
-  
-  .dt-success-btn {
-    padding: 10px 28px;
-    background: #6d28d9;
-    color: #fff;
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    font-family: Sora, sans-serif;
-  }
-  
-  /* ── Preview portfolio ───────────────────────────────────────────────────── */
-  .dt-preview-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.92);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 300;
-    padding: 20px;
-    cursor: zoom-out;
-  }
-  
-  .dt-preview-img {
-    max-width: 900px;
-    width: 100%;
-    border-radius: 12px;
-  }
-  
-  /* ── Responsive ──────────────────────────────────────────────────────────── */
-  @media (max-width: 900px) {
-    .dt-grid {
-      grid-template-columns: 1fr;
-    }
-  
-    .dt-booking-card {
-      position: static;
-    }
-  
-    .dt-portfolio-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-  
-  @media (max-width: 480px) {
-    .dt-container { padding: 0 16px 40px; }
-    .dt-nom { font-size: 18px; }
-    .dt-portfolio-grid { grid-template-columns: repeat(2, 1fr); }
-    .dt-profile-row { flex-direction: column; }
-  }
+  min-height: 100vh;
+  background: #f9fafb;
+  font-family: Inter, sans-serif;
+}
+
+/* ── Loading / Error ─────────────────────────────────────────────────────── */
+.dt-loading, .dt-error {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #6b7280;
+  font-size: 14px;
+}
+
+.dt-spinner {
+  animation: dt-spin 1s linear infinite;
+  color: #6d28d9;
+}
+
+@keyframes dt-spin { to { transform: rotate(360deg); } }
+
+/* ── Breadcrumb ──────────────────────────────────────────────────────────── */
+.dt-breadcrumb-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 24px 8px;
+}
+
+.dt-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6d28d9;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.dt-back-btn:hover { color: #4c1d95; }
+
+/* ── Container ───────────────────────────────────────────────────────────── */
+.dt-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px 60px;
+}
+
+.dt-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ── Card ────────────────────────────────────────────────────────────────── */
+.dt-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #f3f4f6;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
+}
+
+/* ── Profile header ──────────────────────────────────────────────────────── */
+.dt-profile-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.dt-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.dt-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  object-fit: cover;
+}
+
+.dt-avatar-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 16px;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+}
+
+.dt-online-dot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid #fff;
+}
+
+.dt-profile-info { flex: 1; }
+
+.dt-profile-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.dt-nom {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111827;
+  font-family: Sora, sans-serif;
+  margin: 0;
+}
+
+.dt-categorie-badge {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6d28d9;
+  background: #ede9fe;
+  padding: 3px 12px;
+  border-radius: 20px;
+}
+
+/* Favori */
+.dt-fav-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 2px solid #e5e7eb;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.dt-fav-btn.dt-fav-active {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.dt-heart        { color: #9ca3af; }
+.dt-heart-filled { color: #ef4444; fill: #ef4444; }
+
+/* Méta */
+.dt-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+  align-items: center;
+}
+
+.dt-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.dt-note-val   { font-size: 13px; font-weight: 700; color: #111827; }
+.dt-note-count { font-size: 12px; color: #9ca3af; }
+
+.dt-dispo-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.dt-dispo-on  { color: #059669; }
+.dt-dispo-off { color: #ef4444; }
+
+.dt-dispo-dot-sm {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.dot-on  { background: #10b981; }
+.dot-off { background: #f87171; }
+
+/* ── Sections ────────────────────────────────────────────────────────────── */
+.dt-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.dt-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  font-family: Sora, sans-serif;
+  margin: 0 0 12px;
+}
+
+.dt-bio {
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ── Portfolio ───────────────────────────────────────────────────────────── */
+.dt-portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.dt-portfolio-item {
+  aspect-ratio: 4/3;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #f3f4f6;
+}
+
+.dt-portfolio-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.dt-portfolio-item:hover .dt-portfolio-img {
+  transform: scale(1.06);
+}
+
+/* ── Avis ────────────────────────────────────────────────────────────────── */
+.dt-avis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.dt-avis-global {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dt-avis-count { font-weight: 400; color: #9ca3af; font-size: 13px; }
+
+.dt-no-avis {
+  font-size: 13px;
+  color: #9ca3af;
+  text-align: center;
+  padding: 20px 0;
+}
+
+.dt-avis-list { display: flex; flex-direction: column; }
+
+.dt-avis-row {
+  padding: 16px 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.dt-avis-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+.dt-avis-author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.dt-avis-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.dt-avis-avatar-placeholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #ede9fe;
+  color: #6d28d9;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: Sora, sans-serif;
+}
+
+.dt-avis-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  font-family: Sora, sans-serif;
+  margin: 0 0 2px;
+}
+
+.dt-avis-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dt-avis-date  { font-size: 11px; color: #9ca3af; }
+
+.dt-avis-text {
+  font-size: 13px;
+  color: #4b5563;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Étoiles ─────────────────────────────────────────────────────────────── */
+.dt-stars       { display: inline-flex; align-items: center; gap: 2px; }
+.dt-star-filled { color: #f59e0b; fill: #f59e0b; }
+.dt-star-empty  { color: #e5e7eb; fill: #e5e7eb; }
+
+/* ── Booking card ────────────────────────────────────────────────────────── */
+.dt-booking-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #f3f4f6;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dt-tarif-block { margin-bottom: 8px; }
+
+.dt-tarif-label { font-size: 11px; color: #9ca3af; margin: 0 0 4px; }
+
+.dt-tarif-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #6d28d9;
+  font-family: Sora, sans-serif;
+  margin: 0;
+}
+
+.dt-tarif-unit  { font-size: 16px; }
+.dt-tarif-max   { font-size: 11px; color: #9ca3af; margin: 4px 0 0; }
+
+.dt-infos-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.dt-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.dt-info-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6b7280;
+}
+
+.dt-info-icon { color: #6d28d9; }
+.dt-info-val  { font-weight: 600; color: #111827; font-size: 13px; }
+
+/* ✅ Bouton Demande de prestation (violet principal) */
+.dt-contact-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  background: linear-gradient(135deg, #6d28d9, #7c3aed);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  font-family: Sora, sans-serif;
+  box-shadow: 0 4px 12px rgba(109,40,217,0.3);
+}
+
+.dt-contact-btn:hover { opacity: 0.9; }
+
+/* ✅ Bouton Messagerie interne (vert TalentTogo) */
+.dt-message-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px;
+  background: #f0fdf4;
+  color: #166534;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 12px;
+  border: 2px solid #bbf7d0;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: Sora, sans-serif;
+}
+
+.dt-message-btn:hover {
+  background: #dcfce7;
+  border-color: #86efac;
+}
+
+/* Bouton favori card */
+.dt-fav-card-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: Inter, sans-serif;
+}
+
+.dt-fav-card-btn:hover       { border-color: #fca5a5; }
+.dt-fav-card-active          { border-color: #fca5a5; background: #fef2f2; color: #ef4444; }
+
+/* ── Modal ───────────────────────────────────────────────────────────────── */
+.dt-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 16px;
+}
+
+.dt-modal {
+  background: #fff;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  overflow: hidden;
+}
+
+.dt-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.dt-modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  font-family: Sora, sans-serif;
+  margin: 0;
+}
+
+.dt-modal-body { padding: 20px 24px; }
+
+.dt-modal-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: Inter, sans-serif;
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.dt-modal-textarea:focus { border-color: #6d28d9; }
+
+.dt-modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.dt-modal-cancel {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  background: #fff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: Inter, sans-serif;
+}
+
+.dt-modal-cancel:hover { background: #f9fafb; }
+
+.dt-modal-send {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  background: #6d28d9;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: Sora, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: opacity 0.2s;
+}
+
+.dt-modal-send:disabled         { opacity: 0.4; cursor: not-allowed; }
+.dt-modal-send:not(:disabled):hover { opacity: 0.9; }
+
+/* Modal succès */
+.dt-modal-success {
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.dt-success-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #d1fae5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  color: #059669;
+}
+
+.dt-success-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #111827;
+  font-family: Sora, sans-serif;
+  margin: 0 0 8px;
+}
+
+.dt-success-text {
+  font-size: 13px;
+  color: #6b7280;
+  margin: 0 0 20px;
+}
+
+.dt-success-btn {
+  padding: 10px 28px;
+  background: #6d28d9;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-family: Sora, sans-serif;
+}
+
+/* ── Preview portfolio ───────────────────────────────────────────────────── */
+.dt-preview-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  padding: 20px;
+  cursor: zoom-out;
+}
+
+.dt-preview-img {
+  max-width: 900px;
+  width: 100%;
+  border-radius: 12px;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .dt-grid           { grid-template-columns: 1fr; }
+  .dt-booking-card   { position: static; }
+  .dt-portfolio-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .dt-container      { padding: 0 16px 40px; }
+  .dt-nom            { font-size: 18px; }
+  .dt-profile-row    { flex-direction: column; }
+}
+
+.dt-modal-field {
+  margin-bottom: 14px;
+}
+
+.dt-modal-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.dt-modal-required {
+  color: #dc2626;
+}
+
+.dt-modal-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.dt-modal-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 13.5px;
+  color: #111827;
+}
+
+.dt-modal-input:focus {
+  outline: none;
+  border-color: #7c3aed;
+}
+
+.dt-modal-error {
+  color: #dc2626;
+  background: #fef2f2;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 480px) {
+  .dt-modal-row {
+    grid-template-columns: 1fr;
+  }
+}
