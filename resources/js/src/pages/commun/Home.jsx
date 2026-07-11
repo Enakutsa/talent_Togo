@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 import TalentCard from "../../components/talent/TalentCard";
 import { getFeaturedTalents, getStats, getCategories, getReviews } from "../../services/talent.service";
+import { AuthContext } from "../../context/AuthContext";
 import {
   Search, MapPin, Camera, Palette, Scissors, Music2, Film, Package2, Brush, Star,
   ArrowRight, Users, Briefcase, Globe, ChevronRight, Quote, Sparkles
@@ -61,6 +62,7 @@ const steps = [
 
 export default function Home() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useContext(AuthContext);
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
   const [favorites, setFavorites] = useState([]);
@@ -116,6 +118,17 @@ export default function Home() {
     if (search) params.set("q", search);
     if (city) params.set("ville", city);
     navigate(`/recherche?${params.toString()}`);
+  };
+
+  // Réservé aux boutons "Voir tous les talents" de la section vedette :
+  // exige une connexion, contrairement aux autres liens "Voir tout"
+  // de la page qui restent libres d'accès.
+  const handleVoirTousLesTalents = () => {
+    if (!isAuthenticated) {
+      navigate("/login", { state: { from: "/recherche" } });
+      return;
+    }
+    navigate("/recherche");
   };
 
   return (
@@ -242,7 +255,7 @@ export default function Home() {
               <h2 className="section-title-left">Talents en vedette</h2>
               <p className="section-subtitle-left">Les profils les mieux notés cette semaine</p>
             </div>
-            <button onClick={() => navigate("/recherche")} className="section-link">
+            <button onClick={handleVoirTousLesTalents} className="section-link">
               Voir tous les talents <ChevronRight size={16} />
             </button>
           </div>
@@ -252,7 +265,7 @@ export default function Home() {
               ? Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="talent-card-skeleton" />
                 ))
-              : talents.map((t) => (
+              : talents.slice(0, 3).map((t) => (
                   <TalentCard
                     key={t.id}
                     {...t}
@@ -265,7 +278,7 @@ export default function Home() {
           </div>
 
           <div className="featured-cta-wrap">
-            <button onClick={() => navigate("/recherche")} className="btn-primary">
+            <button onClick={handleVoirTousLesTalents} className="btn-primary">
               Voir tous les talents <ArrowRight size={16} />
             </button>
           </div>

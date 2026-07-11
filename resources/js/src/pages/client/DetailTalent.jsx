@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Star, MapPin, Heart, MessageSquare, ArrowLeft,
-  Check, Award, Clock, User, Loader
+  Check, Award, Clock, User, Loader, Send
 } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
 import { getTalentById } from "../../services/talent.service";
@@ -28,14 +28,14 @@ export default function DetailTalent() {
   const navigate = useNavigate();
   const { isAuthenticated } = useContext(AuthContext);
 
-  const [talent, setTalent]         = useState(null);
-  const [loading, setLoading]       = useState(true);
-  const [error, setError]           = useState("");
-  const [isFav, setIsFav]           = useState(false);
+  const [talent, setTalent]           = useState(null);
+  const [loading, setLoading]         = useState(true);
+  const [error, setError]             = useState("");
+  const [isFav, setIsFav]             = useState(false);
   const [showContact, setShowContact] = useState(false);
-  const [msg, setMsg]               = useState("");
-  const [sent, setSent]             = useState(false);
-  const [previewIdx, setPreviewIdx] = useState(null);
+  const [msg, setMsg]                 = useState("");
+  const [sent, setSent]               = useState(false);
+  const [previewIdx, setPreviewIdx]   = useState(null);
 
   // ── Chargement du talent ────────────────────────────────────────────────
   useEffect(() => {
@@ -53,6 +53,12 @@ export default function DetailTalent() {
   const handleSend = () => {
     if (!msg.trim()) return;
     setSent(true);
+    // TODO: appel API demande de prestation
+  };
+
+  const handleMessage = () => {
+    if (!isAuthenticated) { navigate("/login"); return; }
+    navigate(`/messages?talent_id=${talent.id}`);
   };
 
   // ── États ────────────────────────────────────────────────────────────────
@@ -76,7 +82,6 @@ export default function DetailTalent() {
     );
   }
 
-  // Valeurs avec fallback
   const note        = talent.note        ?? 0;
   const nbAvis      = talent.avis        ?? 0;
   const disponible  = talent.disponible  ?? false;
@@ -84,7 +89,6 @@ export default function DetailTalent() {
   const tarifMax    = Number(talent.tarif_max ?? 0);
   const portfolio   = talent.portfolios  ?? [];
   const avisListe   = talent.avis_liste  ?? [];
-  const competences = talent.competences ?? [];
   const avatar      = talent.avatar      ?? null;
 
   return (
@@ -157,18 +161,6 @@ export default function DetailTalent() {
                   <p className="dt-bio">{talent.biographie}</p>
                 </div>
               )}
-
-              {/* Compétences */}
-              {competences.length > 0 && (
-                <div className="dt-section">
-                  <h2 className="dt-section-title">Compétences</h2>
-                  <div className="dt-skills">
-                    {competences.map((c) => (
-                      <span key={c} className="dt-skill-tag">{c}</span>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Portfolio */}
@@ -183,8 +175,8 @@ export default function DetailTalent() {
                       onClick={() => setPreviewIdx(i)}
                     >
                       <img
-                        src={p.url ?? p.chemin}
-                        alt={p.titre ?? p.title ?? `Photo ${i + 1}`}
+                        src={p.url ?? p.media_url}
+                        alt={p.titre ?? `Photo ${i + 1}`}
                         className="dt-portfolio-img"
                       />
                     </div>
@@ -224,7 +216,7 @@ export default function DetailTalent() {
                           </div>
                         </div>
                       </div>
-                      <p className="dt-avis-text">{a.text ?? a.commentaire}</p>
+                      <p className="dt-avis-text">{a.commentaire ?? a.text}</p>
                     </div>
                   ))}
                 </div>
@@ -235,6 +227,8 @@ export default function DetailTalent() {
           {/* ── Sidebar ── */}
           <div className="dt-sidebar-col">
             <div className="dt-booking-card">
+
+              {/* Tarifs */}
               <div className="dt-tarif-block">
                 <p className="dt-tarif-label">À partir de</p>
                 <p className="dt-tarif-value">
@@ -245,6 +239,7 @@ export default function DetailTalent() {
                 )}
               </div>
 
+              {/* Infos */}
               <div className="dt-infos-list">
                 {[
                   { label: "Temps de réponse", val: "< 2 heures", icon: Clock },
@@ -260,6 +255,7 @@ export default function DetailTalent() {
                 ))}
               </div>
 
+              {/* ✅ Bouton Demande de prestation */}
               <button
                 onClick={() => {
                   if (!isAuthenticated) { navigate("/login"); return; }
@@ -267,9 +263,18 @@ export default function DetailTalent() {
                 }}
                 className="dt-contact-btn"
               >
-                <MessageSquare size={18} /> Contacter
+                <Check size={18} /> Demander une prestation
               </button>
 
+              {/* ✅ Bouton Messagerie interne */}
+              <button
+                onClick={handleMessage}
+                className="dt-message-btn"
+              >
+                <MessageSquare size={16} /> Envoyer un message
+              </button>
+
+              {/* Bouton favori */}
               <button
                 onClick={() => setIsFav(!isFav)}
                 className={`dt-fav-card-btn ${isFav ? "dt-fav-card-active" : ""}`}
@@ -282,19 +287,19 @@ export default function DetailTalent() {
         </div>
       </div>
 
-      {/* ── Modal contact ── */}
+      {/* ── Modal demande de prestation ── */}
       {showContact && (
         <div className="dt-modal-overlay" onClick={() => !sent && setShowContact(false)}>
           <div className="dt-modal" onClick={(e) => e.stopPropagation()}>
             <div className="dt-modal-header">
-              <h2 className="dt-modal-title">Contacter {talent.nom}</h2>
+              <h2 className="dt-modal-title">Demande de prestation — {talent.nom}</h2>
             </div>
 
             {sent ? (
               <div className="dt-modal-success">
                 <div className="dt-success-icon"><Check size={28} /></div>
                 <h3 className="dt-success-title">Demande envoyée !</h3>
-                <p className="dt-success-text">{talent.nom} recevra votre message et vous répondra bientôt.</p>
+                <p className="dt-success-text">{talent.nom} recevra votre demande et vous répondra bientôt.</p>
                 <button onClick={() => { setShowContact(false); setSent(false); setMsg(""); }} className="dt-success-btn">
                   Fermer
                 </button>
@@ -310,7 +315,9 @@ export default function DetailTalent() {
                 />
                 <div className="dt-modal-actions">
                   <button onClick={() => setShowContact(false)} className="dt-modal-cancel">Annuler</button>
-                  <button onClick={handleSend} disabled={!msg.trim()} className="dt-modal-send">Envoyer</button>
+                  <button onClick={handleSend} disabled={!msg.trim()} className="dt-modal-send">
+                    <Send size={14} /> Envoyer
+                  </button>
                 </div>
               </div>
             )}
@@ -322,7 +329,7 @@ export default function DetailTalent() {
       {previewIdx !== null && (
         <div className="dt-preview-overlay" onClick={() => setPreviewIdx(null)}>
           <img
-            src={portfolio[previewIdx]?.url ?? portfolio[previewIdx]?.chemin}
+            src={portfolio[previewIdx]?.url ?? portfolio[previewIdx]?.media_url}
             alt=""
             className="dt-preview-img"
           />

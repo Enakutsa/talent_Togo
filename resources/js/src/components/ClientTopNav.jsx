@@ -3,10 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import {
   LayoutDashboard, Heart, MessageSquare, ClipboardList,
-  Bell, LogOut, Menu, X, ChevronDown, Search, User,
+  Bell, LogOut, Menu, X, ChevronDown, Search, User, Home,
 } from "lucide-react";
 
 export const CLIENT_NAV_ITEMS = [
+  { key: "accueil",   label: "Accueil",             icon: Home,            to: "/" },
   { key: "dashboard", label: "Tableau de bord",   icon: LayoutDashboard, to: "/client/dashboard" },
   { key: "favoris",   label: "Favoris",            icon: Heart,           to: "/client/favoris" },
   { key: "messages",  label: "Messages",            icon: MessageSquare,  badge: 0, to: "/client/messages" },

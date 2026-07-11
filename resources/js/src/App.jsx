@@ -35,8 +35,20 @@ export default function App() {
         {/* ── Pages publiques : inaccessibles à un talent déjà connecté ── */}
         <Route path="/" element={<RedirectIfTalent><PublicLayout><Home /></PublicLayout></RedirectIfTalent>} />
         <Route path="/register" element={<RedirectIfTalent><PublicLayout><Inscription /></PublicLayout></RedirectIfTalent>} />
-        <Route path="/login" element={<RedirectIfTalent><PublicLayout><Login /></PublicLayout></RedirectIfTalent>} />
-        <Route path="/verify-otp" element={<RedirectIfTalent><PublicLayout><VerifyOtp /></PublicLayout></RedirectIfTalent>} />
+
+        {/* ── /login : PAS de RedirectIfTalent ici. ⚠️ Login.jsx gère
+             LES DEUX étapes (email + OTP) sur cette même route. Dès que
+             l'OTP est validé, login() met à jour AuthContext.user AVANT
+             que notre navigate("/" + redirect) ne s'exécute -> ça
+             re-render RedirectIfTalent, qui redirige alors TOUJOURS vers
+             talent/dashboard (il ne connaît pas estComplet), écrasant la
+             bonne redirection vers talent/profil/creer. Même raison que
+             pour /verify-otp ci-dessous. ── */}
+        <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
+
+        {/* ── Page transitoire : PAS de RedirectIfTalent ici non plus,
+             pour la même raison. ── */}
+        <Route path="/verify-otp" element={<PublicLayout><VerifyOtp /></PublicLayout>} />
 
         <Route
           path="/talents/:id"

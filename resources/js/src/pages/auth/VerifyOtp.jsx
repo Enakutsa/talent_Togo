@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { verifyLoginOtp, resendOtp } from "../../services/auth.service";
+import { AuthContext } from "../../context/AuthContext";
 import "../../assets/styles/Otp.css";
 
 export default function VerifyOtp() {
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -63,13 +65,17 @@ export default function VerifyOtp() {
         code: codeEnvoye,
       });
 
-      localStorage.setItem("token", data.data.token);
+      // Peuple immédiatement AuthContext (user + token), pas seulement localStorage
+      login(data.data.utilisateur, data.data.token);
 
-      setSuccess("Connexion réussie ✅");
+      // Redirection immédiate selon ce que renvoie le backend (talent/dashboard,
+      // talent/profil/creer, admin, ou "/" par défaut) — pas de délai artificiel,
+      // pour éviter toute course avec d'autres redirections (ex: RedirectIfTalent).
+      const redirectPath = data.data.redirect
+        ? `/${data.data.redirect}`
+        : "/";
 
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1000);
+      navigate(redirectPath, { replace: true });
 
     } catch (err) {
       const status = err.response?.status;

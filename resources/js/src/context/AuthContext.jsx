@@ -14,6 +14,7 @@ export const AuthContext = createContext({
   loading: true,
   login: () => {},
   logout: () => {},
+  refreshUser: () => {},
   isAuthenticated: false,
 });
 
@@ -54,9 +55,21 @@ export function AuthProvider({ children }) {
     api.post("/logout").catch(() => {});
   }, []);
 
+  // Recharge l'utilisateur depuis l'API (photo, bio, tarifs à jour...).
+  // À appeler après toute mise à jour de profil pour que le header/dashboard
+  // reflètent immédiatement les changements, sans attendre un refresh de page.
+  const refreshUser = useCallback(async () => {
+    try {
+      const res = await api.get("/user");
+      setUser(res.data.data ?? res.data);
+    } catch {
+      // silencieux : si ça échoue, l'ancien état reste affiché
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
-      value={{ user, token, loading, login, logout, isAuthenticated: !!token }}
+      value={{ user, token, loading, login, logout, refreshUser, isAuthenticated: !!token }}
     >
       {children}
     </AuthContext.Provider>

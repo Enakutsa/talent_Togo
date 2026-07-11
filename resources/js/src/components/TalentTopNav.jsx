@@ -17,7 +17,7 @@ export const NAV_ITEMS = [
   { key: "messages",  label: "Messages",          icon: MessageSquare, badge: 5, to: "/talent/dashboard" },
   { key: "portfolio", label: "Portfolio",         icon: ImageIcon,     to: "/talent/portfolio" },
   { key: "avis",      label: "Avis",              icon: Star,          to: "/talent/dashboard" },
-  { key: "profil",    label: "Profil",            icon: User,          to: "/talent/dashboard" },
+
 ];
 
 export default function TalentTopNav({ activeKey }) {
