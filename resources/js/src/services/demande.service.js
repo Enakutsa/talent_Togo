@@ -1,7 +1,9 @@
 import api from "./api";
 
-export const getMesDemandes = async (page = 1) => {
-  const res = await api.get("/client/demandes", { params: { page } });
+export const getMesDemandes = async (page = 1, statut = null) => {
+  const params = { page };
+  if (statut) params.statut = statut;
+  const res = await api.get("/client/demandes", { params });
   return res.data;
 };
 

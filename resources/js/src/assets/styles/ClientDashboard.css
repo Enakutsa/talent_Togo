@@ -556,3 +556,252 @@
       grid-template-columns: 1fr;
     }
   }
+
+
+
+  /* ── Ajouts pour le nouveau contenu de ClientDashboard.jsx ── */
+
+.cdh-search-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.1rem;
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  color: #ffffff;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+/* Stats */
+.cdh-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+.cdh-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: #ffffff;
+  border: 1px solid #f3f4f6;
+  border-radius: 16px;
+  padding: 1rem 1.2rem;
+}
+
+.cdh-stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cdh-stat-violet .cdh-stat-icon { background: #ede9fe; color: #7c3aed; }
+.cdh-stat-blue .cdh-stat-icon   { background: #dbeafe; color: #2563eb; }
+.cdh-stat-amber .cdh-stat-icon  { background: #fef3c7; color: #d97706; }
+.cdh-stat-green .cdh-stat-icon  { background: #d1fae5; color: #059669; }
+
+.cdh-stat-val {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.1;
+}
+
+.cdh-stat-label {
+  font-size: 0.78rem;
+  color: #6b7280;
+  margin-top: 0.15rem;
+}
+
+/* Two columns */
+.cdh-two-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+@media (max-width: 860px) {
+  .cdh-two-cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cdh-card {
+  background: #ffffff;
+  border: 1px solid #f3f4f6;
+  border-radius: 16px;
+  padding: 1.25rem;
+}
+
+.cdh-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.9rem;
+}
+
+.cdh-card-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #111827;
+}
+
+.cdh-card-link {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #7c3aed;
+  text-decoration: none;
+}
+
+.cdh-status {
+  color: #9ca3af;
+  font-size: 0.85rem;
+  padding: 1.5rem 0;
+  text-align: center;
+}
+
+.cdh-empty {
+  text-align: center;
+  padding: 2rem 0.5rem;
+}
+
+.cdh-empty-icon {
+  color: #d1d5db;
+  margin: 0 auto 0.5rem;
+}
+
+.cdh-empty-text {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.cdh-empty-link {
+  color: #7c3aed;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Favoris list */
+.cdh-favoris-list,
+.cdh-demandes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cdh-favori-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.cdh-favori-row:hover {
+  background: #f9fafb;
+}
+
+.cdh-favori-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.cdh-favori-avatar-placeholder {
+  background: #f3f4f6;
+}
+
+.cdh-favori-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cdh-favori-nom {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #111827;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cdh-favori-meta {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.cdh-favori-note {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #111827;
+  flex-shrink: 0;
+}
+
+.cdh-star {
+  color: #f59e0b;
+  fill: #f59e0b;
+}
+
+/* Demandes list */
+.cdh-demande-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s ease;
+}
+
+.cdh-demande-row:hover {
+  background: #f9fafb;
+}
+
+.cdh-demande-nom {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #111827;
+}
+
+.cdh-demande-meta {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.cdh-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cdh-badge-pending  { background: #fef3c7; color: #b45309; }
+.cdh-badge-accepted { background: #d1fae5; color: #047857; }
+.cdh-badge-rejected { background: #fee2e2; color: #b91c1c; }

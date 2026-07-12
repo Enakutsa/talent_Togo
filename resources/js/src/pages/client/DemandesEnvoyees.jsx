@@ -12,23 +12,44 @@ const STATUT_CONFIG = {
   refusee: { label: "Refusée", cls: "de-badge-rejected", icon: XCircle },
 };
 
+// Filtre actif -> valeur envoyée à l'API (null = pas de filtre, "Total")
+const FILTRES = [
+  { key: "all", label: "Total", statut: null },
+  { key: "en_attente", label: "En attente", statut: "en_attente" },
+  { key: "acceptee", label: "Acceptées", statut: "acceptee" },
+  { key: "refusee", label: "Refusées", statut: "refusee" },
+];
+
 export default function DemandesEnvoyees() {
   const navigate = useNavigate();
   const [demandes, setDemandes] = useState(null);
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState(null);
+  const [counts, setCounts] = useState({ all: 0, en_attente: 0, acceptee: 0, refusee: 0 });
   const [cancellingId, setCancellingId] = useState(null);
+  const [activeFilter, setActiveFilter] = useState("all");
 
   useEffect(() => {
-    setDemandes(null); // affiche "Chargement..." à chaque changement de page
-    getMesDemandes(page)
+    setDemandes(null);
+    const filtreActuel = FILTRES.find((f) => f.key === activeFilter);
+
+    getMesDemandes(page, filtreActuel?.statut)
       .then((res) => {
         setDemandes(res.data || []);
         setMeta(res.meta || null);
+        // Les compteurs viennent toujours du serveur, jamais recalculés depuis
+        // la page affichée (sinon "Total" se tromperait dès qu'un filtre est actif).
+        if (res.counts) setCounts(res.counts);
       })
       .catch(() => setError("Impossible de charger vos demandes."));
-  }, [page]);
+  }, [page, activeFilter]);
+
+  const handleFilterClick = (key) => {
+    if (key === activeFilter) return;
+    setActiveFilter(key);
+    setPage(1); // repart à la première page à chaque changement de filtre
+  };
 
   const handleAnnuler = async (id) => {
     if (!window.confirm("Annuler cette demande ?")) return;
@@ -37,21 +58,18 @@ export default function DemandesEnvoyees() {
     try {
       await annulerDemande(id);
       setDemandes((prev) => prev.filter((d) => d.id !== id));
+      setCounts((prev) => ({
+        ...prev,
+        all: Math.max(0, prev.all - 1),
+        en_attente: Math.max(0, prev.en_attente - 1),
+      }));
+      setMeta((prev) => (prev ? { ...prev, total: Math.max(0, prev.total - 1) } : prev));
     } catch (err) {
       setError(err.response?.data?.message || "Impossible d'annuler cette demande.");
     } finally {
       setCancellingId(null);
     }
   };
-
-  const counts = demandes
-    ? {
-        all: meta?.total ?? demandes.length,
-        en_attente: demandes.filter((d) => d.statut === "en_attente").length,
-        acceptee: demandes.filter((d) => d.statut === "acceptee").length,
-        refusee: demandes.filter((d) => d.statut === "refusee").length,
-      }
-    : { all: 0, en_attente: 0, acceptee: 0, refusee: 0 };
 
   return (
     <div className="cd-root">
@@ -72,44 +90,51 @@ export default function DemandesEnvoyees() {
 
           {error && <p className="cd-error">{error}</p>}
 
+          {/* Cartes résumé -> deviennent des boutons de filtre */}
+          <div className="de-summary-grid">
+            {FILTRES.map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => handleFilterClick(key)}
+                className={`de-summary-card de-summary-${key === "all" ? "total" : key === "en_attente" ? "pending" : key === "acceptee" ? "accepted" : "rejected"} ${activeFilter === key ? "de-summary-active" : ""}`}
+              >
+                <div className="de-summary-val">{counts[key]}</div>
+                <div className="de-summary-label">{label}</div>
+              </button>
+            ))}
+          </div>
+
           {demandes === null ? (
             <p className="text-gray-500 text-sm">Chargement...</p>
-          ) : demandes.length === 0 && page === 1 ? (
-            <div className="de-empty">
-              <div className="de-empty-icon">
-                <MessageSquare size={28} />
+          ) : demandes.length === 0 ? (
+            activeFilter === "all" ? (
+              <div className="de-empty">
+                <div className="de-empty-icon">
+                  <MessageSquare size={28} />
+                </div>
+                <h3 className="de-empty-title">Aucune demande envoyée</h3>
+                <p className="de-empty-sub">
+                  Contactez un talent depuis son profil pour envoyer votre première demande.
+                </p>
+                <button onClick={() => navigate("/recherche")} className="de-explore-btn">
+                  Explorer les talents
+                </button>
               </div>
-              <h3 className="de-empty-title">Aucune demande envoyée</h3>
-              <p className="de-empty-sub">
-                Contactez un talent depuis son profil pour envoyer votre première demande.
-              </p>
-              <button onClick={() => navigate("/recherche")} className="de-explore-btn">
-                Explorer les talents
-              </button>
-            </div>
+            ) : (
+              <div className="de-empty">
+                <div className="de-empty-icon">
+                  <MessageSquare size={28} />
+                </div>
+                <h3 className="de-empty-title">
+                  Aucune demande {FILTRES.find((f) => f.key === activeFilter)?.label.toLowerCase()}
+                </h3>
+                <button onClick={() => handleFilterClick("all")} className="de-explore-btn">
+                  Voir toutes les demandes
+                </button>
+              </div>
+            )
           ) : (
             <>
-              {/* Summary cards */}
-              <div className="de-summary-grid">
-                <div className="de-summary-card de-summary-total">
-                  <div className="de-summary-val">{counts.all}</div>
-                  <div className="de-summary-label">Total</div>
-                </div>
-                <div className="de-summary-card de-summary-pending">
-                  <div className="de-summary-val">{counts.en_attente}</div>
-                  <div className="de-summary-label">En attente</div>
-                </div>
-                <div className="de-summary-card de-summary-accepted">
-                  <div className="de-summary-val">{counts.acceptee}</div>
-                  <div className="de-summary-label">Acceptées</div>
-                </div>
-                <div className="de-summary-card de-summary-rejected">
-                  <div className="de-summary-val">{counts.refusee}</div>
-                  <div className="de-summary-label">Refusées</div>
-                </div>
-              </div>
-
-              {/* Liste */}
               <div className="de-list">
                 {demandes.map((d) => {
                   const config = STATUT_CONFIG[d.statut] || STATUT_CONFIG.en_attente;
@@ -175,7 +200,6 @@ export default function DemandesEnvoyees() {
                 })}
               </div>
 
-              {/* Pagination */}
               {meta && meta.last_page > 1 && (
                 <div className="de-pagination">
                   <button

@@ -15,15 +15,32 @@ class DemandePrestationController extends Controller
     /**
      * Liste des demandes envoyées par le client connecté (paginée, 10/page).
      * GET /api/client/demandes
+     * GET /api/client/demandes?statut=acceptee   -> filtre la liste uniquement
+     *
+     * `counts` dans la réponse reflète TOUJOURS le total sur l'ensemble des
+     * demandes du client, peu importe le filtre `statut` demandé — sinon les
+     * compteurs des boutons de filtre (Total/En attente/Acceptées/Refusées)
+     * changeraient de valeur selon le filtre actif, ce qui serait faux.
      */
     public function indexClient(Request $request)
     {
         abort_unless($request->user()->isClient(), 403, 'Réservé aux clients.');
 
-        $demandes = DemandePrestation::where('client_id', $request->user()->id)
-            ->with(['profilTalent.utilisateur.categorie'])
-            ->latest()
-            ->paginate(10);
+        $clientId = $request->user()->id;
+
+        $query = DemandePrestation::where('client_id', $clientId)
+            ->with(['profilTalent.utilisateur.categorie']);
+
+        if ($request->filled('statut') && in_array($request->statut, ['en_attente', 'acceptee', 'refusee'])) {
+            $query->where('statut', $request->statut);
+        }
+
+        $demandes = $query->latest()->paginate(10);
+
+        $countsParStatut = DemandePrestation::where('client_id', $clientId)
+            ->selectRaw('statut, count(*) as total')
+            ->groupBy('statut')
+            ->pluck('total', 'statut');
 
         return response()->json([
             'success' => true,
@@ -33,6 +50,12 @@ class DemandePrestationController extends Controller
                 'last_page' => $demandes->lastPage(),
                 'total' => $demandes->total(),
                 'per_page' => $demandes->perPage(),
+            ],
+            'counts' => [
+                'all' => $countsParStatut->sum(),
+                'en_attente' => $countsParStatut->get('en_attente', 0),
+                'acceptee' => $countsParStatut->get('acceptee', 0),
+                'refusee' => $countsParStatut->get('refusee', 0),
             ],
         ]);
     }
@@ -184,27 +207,26 @@ class DemandePrestationController extends Controller
     }
 
     /**
- * Le client annule une demande qu'il a envoyée, tant qu'elle est
- * encore en attente (pas encore acceptée/refusée par le talent).
- * DELETE /api/client/demandes/{id}
- */
-public function annuler(Request $request, $id)
-{
-    abort_unless($request->user()->isClient(), 403, 'Réservé aux clients.');
+     * Le client annule une demande qu'il a envoyée, tant qu'elle est
+     * encore en attente (pas encore acceptée/refusée par le talent).
+     * DELETE /api/client/demandes/{id}
+     */
+    public function annuler(Request $request, $id)
+    {
+        abort_unless($request->user()->isClient(), 403, 'Réservé aux clients.');
 
-    $demande = DemandePrestation::where('client_id', $request->user()->id)->find($id);
+        $demande = DemandePrestation::where('client_id', $request->user()->id)->find($id);
 
-    if (!$demande) {
-        return response()->json(['message' => 'Demande introuvable.'], 404);
+        if (!$demande) {
+            return response()->json(['message' => 'Demande introuvable.'], 404);
+        }
+
+        if ($demande->statut !== 'en_attente') {
+            return response()->json(['message' => 'Cette demande a déjà reçu une réponse, elle ne peut plus être annulée.'], 422);
+        }
+
+        $demande->delete();
+
+        return response()->json(['success' => true]);
     }
-
-    if ($demande->statut !== 'en_attente') {
-        return response()->json(['message' => 'Cette demande a déjà reçu une réponse, elle ne peut plus être annulée.'], 422);
-    }
-
-    $demande->delete();
-
-    return response()->json(['success' => true]);
-}
-
 }

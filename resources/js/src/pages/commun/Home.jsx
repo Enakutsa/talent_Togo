@@ -150,19 +150,23 @@ export default function Home() {
           </p>
 
           <form onSubmit={handleSearch} className="hero-search-bar">
-            <div className="hero-search-field">
-              <Search size={18} className="hero-search-icon" />
-              <input
-                type="text"
-                placeholder="Photographe, graphiste, couturier..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
-            <button type="submit" className="hero-search-btn">
-              Rechercher <ArrowRight size={16} />
-            </button>
-          </form>
+  <div
+    className="hero-search-field"
+    onClick={() => navigate("/recherche")}
+    style={{ cursor: "pointer" }}
+  >
+    <Search size={18} className="hero-search-icon" />
+    <input
+      type="text"
+      placeholder="Cliquez sur Rechercher pour trouver un talent"
+      readOnly
+      style={{ cursor: "pointer" }}
+    />
+  </div>
+  <button type="submit" className="hero-search-btn">
+    Rechercher <ArrowRight size={16} />
+  </button>
+</form>
 
           <div className="hero-quicklinks">
             {["Photographe à Lomé", "Musicien mariage", "Graphiste logo", "Couture pagne"].map((q) => (

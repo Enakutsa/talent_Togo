@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search, Menu, X, Bell, User, LogOut, Settings, LayoutDashboard } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
@@ -15,6 +15,18 @@ export default function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useContext(AuthContext);
+
+  const profileRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const isActive = (href) =>
     href === "/" ? location.pathname === "/" : location.pathname.startsWith(href);
@@ -71,7 +83,7 @@ export default function Navbar() {
             )}
 
             {isAuthenticated ? (
-              <div className="navbar-profile-wrap">
+              <div className="navbar-profile-wrap" ref={profileRef}>
                 <button onClick={() => setProfileOpen(!profileOpen)} className="navbar-profile-btn">
                   <img
                     src={user?.avatar || "https://ui-avatars.com/api/?name=" + encodeURIComponent(user?.nom || "U")}
