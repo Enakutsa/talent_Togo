@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { User, Camera, ArrowRight, Mail, Phone, MapPin, Tag } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
 import { getCategories } from "../../services/categorie.service";
-import { updateProfilTalent } from "../../services/profilTalent.service";
+import { updateProfilTalent } from "../../services/profilTalent.service.js";
 import "../../assets/styles/ProfilCreer.css";
 
 export default function ProfilCreer() {
