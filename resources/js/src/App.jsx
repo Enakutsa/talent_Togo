@@ -7,6 +7,7 @@ import RedirectIfTalent from "./components/RedirectIfTalent";
 
 import Home from "./pages/commun/Home";
 import Inscription from "./pages/auth/Inscription";
+import NotFound         from "./pages/commun/NotFound";
 import Login from "./pages/auth/Login";
 import VerifyOtp from "./pages/auth/VerifyOtp";
 import ProfilCreer from "./pages/talent/ProfilCreer";
@@ -18,6 +19,7 @@ import ClientDashboard from "./pages/client/ClientDashboard";
 import Favoris from "./pages/client/Favoris";
 import Messages from "./pages/client/Messages";
 import DemandesEnvoyees from "./pages/client/DemandesEnvoyees";
+import ClientProfil from "./pages/client/ClientProfil";
 
 function PublicLayout({ children }) {
   return (
@@ -75,23 +77,10 @@ export default function App() {
         <Route path="/client/favoris" element={<ProtectedRoute><Favoris /></ProtectedRoute>} />
         <Route path="/client/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="/client/demandes" element={<ProtectedRoute><DemandesEnvoyees /></ProtectedRoute>} />
+        <Route path="/client/profil" element={<ProtectedRoute><ClientProfil /></ProtectedRoute>} />
 
-        <Route
-          path="*"
-          element={
-            <PublicLayout>
-              <div style={{ padding: "4rem 2rem", textAlign: "center" }}>
-                <h1 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.5rem" }}>
-                  Page introuvable
-                </h1>
-                <p style={{ color: "#6b7280" }}>
-                  Cette page n'existe pas ou plus.{" "}
-                  <a href="/" style={{ color: "#7c3aed", fontWeight: 600 }}>Retour à l'accueil</a>
-                </p>
-              </div>
-            </PublicLayout>
-          }
-        />
+        {/* 404 */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </AuthProvider>
   );

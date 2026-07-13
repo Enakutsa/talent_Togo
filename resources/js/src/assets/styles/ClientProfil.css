@@ -1,0 +1,253 @@
+/* ============================================
+   PROFIL CLIENT
+   ============================================ */
+
+   .cp-card {
+    background: #fff;
+    border: 1px solid #f1f5f4;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+  
+  .cp-card-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f1f5f4;
+  }
+  
+  .cp-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #fff7ed;
+    color: #ea580c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  
+  .cp-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0;
+  }
+  
+  .cp-role {
+    font-size: 12px;
+    color: #ea580c;
+    font-weight: 500;
+    margin: 2px 0 0;
+  }
+  
+  .cp-edit-btn {
+    margin-left: auto;
+    border: 1px solid #ea580c;
+    background: #fff;
+    color: #ea580c;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+  }
+  
+  .cp-edit-btn:hover {
+    background: #fff7ed;
+  }
+  
+  .cp-success {
+    color: #166534;
+    background: #ecfdf3;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13.5px;
+    margin-bottom: 16px;
+  }
+  
+  .cp-form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .cp-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  
+  .cp-field {
+    margin-bottom: 16px;
+  }
+  
+  .cp-row .cp-field {
+    margin-bottom: 0;
+  }
+  
+  .cp-label {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+  }
+  
+  .cp-input-icon {
+    position: relative;
+  }
+  
+  .cp-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+  }
+  
+  .cp-input {
+    width: 100%;
+    padding: 10px 12px 10px 36px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 13.5px;
+    color: #111827;
+  }
+  
+  .cp-password-block .cp-input {
+    padding-left: 12px;
+  }
+  
+  .cp-input:focus {
+    outline: none;
+    border-color: #ea580c;
+  }
+  
+  .cp-input-disabled {
+    background: #f9fafb;
+    color: #6b7280;
+    cursor: not-allowed;
+  }
+  
+  .cp-hint {
+    font-size: 11.5px;
+    color: #9ca3af;
+    margin: 5px 0 0;
+  }
+  
+  .cp-section-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: #6b7280;
+    margin: 8px 0 14px;
+    padding-top: 16px;
+    border-top: 1px solid #f1f5f4;
+  }
+  
+  .cp-password-toggle {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: none;
+    border: none;
+    color: #ea580c;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    margin-bottom: 16px;
+  }
+  
+  .cp-password-toggle:hover {
+    text-decoration: underline;
+  }
+  
+  .cp-password-block {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  
+  .cp-password-cancel {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 12px;
+    cursor: pointer;
+    padding: 0;
+    margin-top: 4px;
+  }
+  
+  .cp-password-cancel:hover {
+    color: #6b7280;
+  }
+  
+  .cp-submit-btn {
+    background: #ea580c;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  
+  .cp-submit-btn:hover:not(:disabled) {
+    background: #c2410c;
+  }
+  
+  .cp-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 480px) {
+    .cp-row {
+      grid-template-columns: 1fr;
+    }
+  }
+  .cp-avatar-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+  
+  .cp-avatar-photo {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .cp-avatar-edit-btn {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #ea580c;
+    color: #fff;
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  
+  .cp-avatar-edit-btn:hover {
+    background: #c2410c;
+  }

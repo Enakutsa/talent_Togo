@@ -42,6 +42,22 @@ export default function Navbar() {
     user?.role === "client" ? "/client/dashboard" :
     "/admin";
 
+  // Le profil talent n'est pas une route à part, c'est un onglet dans
+  // TalentDashboard -> on y navigue avec un state pour ouvrir cet onglet,
+  // exactement comme le fait TalentTopNav.
+  const goToProfile = () => {
+    setProfileOpen(false);
+    setMenuOpen(false);
+
+    if (user?.role === "talent") {
+      navigate("/talent/dashboard", { state: { activeKey: "profil" } });
+    } else if (user?.role === "client") {
+      navigate("/client/profil");
+    } else {
+      navigate("/profile");
+    }
+  };
+
   return (
     <nav className="navbar">
       <div className="navbar-inner">
@@ -98,9 +114,9 @@ export default function Navbar() {
                       <p className="navbar-dropdown-name">{user?.nom}</p>
                       <p className="navbar-dropdown-role">{user?.role}</p>
                     </div>
-                    <Link to="/profile" className="navbar-dropdown-link" onClick={() => setProfileOpen(false)}>
+                    <button className="navbar-dropdown-link" onClick={goToProfile}>
                       <User size={15} /> Mon profil
-                    </Link>
+                    </button>
                     <Link to={dashboardPath} className="navbar-dropdown-link" onClick={() => setProfileOpen(false)}>
                       <LayoutDashboard size={15} /> Tableau de bord
                     </Link>
@@ -149,9 +165,9 @@ export default function Navbar() {
 
           {isAuthenticated ? (
             <>
-              <Link to="/profile" onClick={() => setMenuOpen(false)} className="navbar-mobile-link">
+              <button onClick={goToProfile} className="navbar-mobile-link">
                 Mon profil
-              </Link>
+              </button>
               <Link to={dashboardPath} onClick={() => setMenuOpen(false)} className="navbar-mobile-link">
                 Tableau de bord
               </Link>

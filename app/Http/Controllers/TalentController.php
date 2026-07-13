@@ -24,7 +24,6 @@ class TalentController extends Controller
 
     /**
      * Calcule la note moyenne et le total d'avis.
-     * Utilisé pour le détail (un seul talent, relation déjà chargée).
      */
     private function calcNote(ProfilTalent $profil): array
     {
@@ -36,67 +35,19 @@ class TalentController extends Controller
     }
 
     /**
-     * Liste des talents validés, avec filtres de recherche.
+     * Liste des talents validés.
      * GET /api/talents
-     * GET /api/talents?featured=1                        → les plus vus, limité à 6
-     * GET /api/talents?categorie_id=3                     → filtre par catégorie
-     * GET /api/talents?ville=Lomé                         → filtre par ville
-     * GET /api/talents?q=koffi                             → recherche par nom/prénom/catégorie
-     * GET /api/talents?budget_max=50000                    → tarif_min <= budget_max
-     * GET /api/talents?disponible=1                        → uniquement les disponibles
-     * GET /api/talents?sort=note|prix_asc|prix_desc|recent  → tri (défaut: recent)
+     * GET /api/talents?featured=1  → les 3 derniers inscrits validés
      */
     public function index(Request $request)
     {
         $query = ProfilTalent::query()
-            ->whereHas('utilisateur', function ($q) use ($request) {
-                $q->where('statut', 'valide');
-
-                if ($request->filled('categorie_id')) {
-                    $q->where('categorie_id', $request->categorie_id);
-                }
-
-                if ($request->filled('ville')) {
-                    $q->where('ville', $request->ville);
-                }
-
-                if ($request->filled('q')) {
-                    $search = $request->string('q')->trim();
-                    $q->where(function ($qq) use ($search) {
-                        $qq->where('nom', 'ilike', "%{$search}%")
-                           ->orWhere('prenom', 'ilike', "%{$search}%")
-                           // Recherche aussi sur le nom de la catégorie
-                           // (ex: "photog" doit trouver "Photographe")
-                           ->orWhereHas('categorie', function ($cat) use ($search) {
-                               $cat->where('nom', 'ilike', "%{$search}%");
-                           });
-                    });
-                }
-            })
-            // withAvg/withCount : calcule la note moyenne et le nombre d'avis
-            // directement en SQL, plutôt que de charger tous les avis en PHP
-            // pour chaque talent (important dès que la liste s'allonge).
-            ->withAvg('avis', 'note')
-            ->withCount('avis')
+            ->whereHas('utilisateur', fn ($q) => $q->where('statut', 'valide'))
             ->with(['utilisateur.categorie', 'portfolios']);
 
-        if ($request->filled('budget_max')) {
-            $query->where('tarif_min', '<=', $request->budget_max);
-        }
-
-        if ($request->boolean('disponible')) {
-            $query->where('disponibilite', true);
-        }
-
         if ($request->boolean('featured')) {
-            $query->orderByDesc('vues')->limit(6);
-        } else {
-            match ($request->get('sort', 'recent')) {
-                'note'      => $query->orderByDesc('avis_avg_note'),
-                'prix_asc'  => $query->orderBy('tarif_min'),
-                'prix_desc' => $query->orderByDesc('tarif_min'),
-                default     => $query->latest(),
-            };
+            // ✅ Les 3 derniers talents validés (les plus récents)
+            $query->orderByDesc('created_at')->limit(3);
         }
 
         $profils = $query->get();
@@ -142,26 +93,15 @@ class TalentController extends Controller
             ? $this->resolvePhotoUrl($couverture->media_url)
             : $photoUrl;
 
-        // Vient de withAvg/withCount posés dans index(). S'ils ne sont pas
-        // présents (ex: appelé depuis ailleurs sans ces agrégats), on retombe
-        // sur le calcul classique.
-        $note  = $profil->avis_avg_note !== null ? round($profil->avis_avg_note, 1) : null;
-        $total = $profil->avis_count ?? null;
-
-        if ($note === null || $total === null) {
-            $noteInfo = $this->calcNote($profil);
-            $note = $noteInfo['note'];
-            $total = $noteInfo['total'];
-        }
+        $noteInfo = $this->calcNote($profil);
 
         return [
             'id'          => $profil->id,
             'nom'         => trim(($profil->utilisateur->prenom ?? '') . ' ' . ($profil->utilisateur->nom ?? '')),
             'categorie'   => $profil->utilisateur->categorie->nom ?? '—',
-            'categorie_id'=> $profil->utilisateur->categorie_id,
             'ville'       => $profil->utilisateur->ville ?? null,
-            'note'        => $note,
-            'avis'        => $total,
+            'note'        => $noteInfo['note'],
+            'avis'        => $noteInfo['total'],
             'tarif'       => (float) ($profil->tarif_min ?? 0),
             'tarif_max'   => (float) ($profil->tarif_max ?? 0),
             'avatar'      => $photoUrl,

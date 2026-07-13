@@ -30,6 +30,7 @@ class Utilisateur extends Authenticatable implements FilamentUser, HasName
         'motif_rejet',
         'ville',
         'categorie_id',
+        'photo',
     ];
 
     protected $hidden = [

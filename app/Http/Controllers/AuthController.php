@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -52,6 +53,21 @@ class AuthController extends Controller
                 Mail::to($admin->email)->queue(new NouveauTalentMail($talent));
             } catch (\Exception $e) {}
         }
+    }
+
+    /**
+     * ✅ Construit l'URL affichable d'une photo — compatible URL absolue
+     * (Cloudinary, anciennes données) et chemin de stockage local.
+     */
+    private function resolvePhotoUrl(?string $photo): ?string
+    {
+        if (!$photo) return null;
+
+        if (str_starts_with($photo, 'http://') || str_starts_with($photo, 'https://')) {
+            return $photo;
+        }
+
+        return asset('storage/' . $photo);
     }
 
     /**
@@ -284,30 +300,32 @@ class AuthController extends Controller
     }
 
     /**
-     * ✅ UTILISATEUR CONNECTÉ (résout l'URL de la photo, ancienne ou Cloudinary)
+     * ✅ UTILISATEUR CONNECTÉ
+     * Résout la photo du compte (utilisateurs.photo — clients/admins) ET
+     * celle du profil talent (profils_talents.photo — talents), séparément,
+     * chacune compatible URL absolue (Cloudinary) ou chemin local.
      */
     public function me(Request $request)
     {
         $utilisateur = $request->user()->load('profilTalent');
         $profil = $utilisateur->profilTalent;
 
-        $photoUrl = null;
-        if ($profil && $profil->photo) {
-            $photoUrl = (str_starts_with($profil->photo, 'http://') || str_starts_with($profil->photo, 'https://'))
-                ? $profil->photo
-                : asset('storage/' . $profil->photo);
-        }
-
         $utilisateurData = $utilisateur->toArray();
+        $utilisateurData['photo'] = $this->resolvePhotoUrl($utilisateur->photo);
+
         $utilisateurData['profilTalent'] = $profil
-            ? array_merge($profil->toArray(), ['photo' => $photoUrl])
+            ? array_merge($profil->toArray(), ['photo' => $this->resolvePhotoUrl($profil->photo)])
             : null;
 
         return response()->json($utilisateurData);
     }
 
     /**
-     * ✅ MISE À JOUR DU PROFIL (infos de base uniquement)
+     * ✅ MISE À JOUR DU PROFIL (infos de base + photo de compte)
+     *
+     * La photo ici est celle du COMPTE (utilisateurs.photo) — pertinente pour
+     * un client ou un admin. Le talent a sa propre photo "professionnelle"
+     * sur profils_talents.photo, gérée par ProfilTalentController, pas ici.
      */
     public function update(Request $request)
     {
@@ -317,6 +335,7 @@ class AuthController extends Controller
             'nom'       => 'sometimes|required|string|max:100',
             'prenom'    => 'sometimes|required|string|max:100',
             'telephone' => 'sometimes|required|string|regex:/^[0-9]{8}$/',
+            'photo'     => 'nullable|file|image|mimes:jpeg,jpg,png|max:5120',
         ];
 
         $changePassword = $request->filled('nouveau_mot_de_passe');
@@ -328,6 +347,7 @@ class AuthController extends Controller
 
         $validator = Validator::make($request->all(), $rules, [
             'telephone.regex' => 'Le numéro de téléphone doit contenir exactement 8 chiffres.',
+            'photo.image'     => 'Le fichier doit être une image (JPG ou PNG).',
         ]);
 
         if ($validator->fails()) {
@@ -342,15 +362,29 @@ class AuthController extends Controller
 
         $utilisateur->fill($request->only(['nom', 'prenom', 'telephone']));
 
+        if ($request->hasFile('photo')) {
+            // Supprime l'ancienne photo locale si elle existe (ignore les
+            // anciennes URLs Cloudinary, non supprimables via ce disque).
+            if ($utilisateur->photo && !str_starts_with($utilisateur->photo, 'http')) {
+                Storage::disk('public')->delete($utilisateur->photo);
+            }
+
+            $utilisateur->photo = $request->file('photo')->store('photos_utilisateurs', 'public');
+        }
+
         if ($changePassword) {
             $utilisateur->mot_de_passe = Hash::make($request->nouveau_mot_de_passe);
         }
 
         $utilisateur->save();
 
+        $utilisateur = $utilisateur->fresh()->load('profilTalent');
+        $data = $utilisateur->toArray();
+        $data['photo'] = $this->resolvePhotoUrl($utilisateur->photo);
+
         return response()->json([
             'success' => true,
-            'data'    => $utilisateur->fresh()->load('profilTalent'),
+            'data'    => $data,
         ]);
     }
 

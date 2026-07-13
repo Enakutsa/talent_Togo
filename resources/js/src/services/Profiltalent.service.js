@@ -1,9 +1,9 @@
-import api from "./auth.service";
+import api from "./api"; // ← remplace "./auth.service"
 
 // ✅ PROFIL TALENT (auto-service)
 export const getProfilTalent = async () => {
   const res = await api.get("/talent/profil");
-  return res.data; // { success, data: {...} }
+  return res.data;
 };
 
 export const updateProfilTalent = async (formData) => {
