@@ -13,6 +13,7 @@ import VerifyOtp from "./pages/auth/VerifyOtp";
 import ProfilCreer from "./pages/talent/ProfilCreer";
 import TalentDashboard from "./pages/talent/TalentDashboard";
 import Portfolio from "./pages/talent/Portfolio";
+import DemandesRecues from "./pages/talent/DemandesRecues";
 import RechercheTalents from "./pages/client/RechercheTalents";
 import DetailTalent from "./pages/client/DetailTalent";
 import ClientDashboard from "./pages/client/ClientDashboard";
@@ -40,23 +41,10 @@ export default function App() {
         <Route path="/" element={<RedirectIfTalent><PublicLayout><Home /></PublicLayout></RedirectIfTalent>} />
         <Route path="/register" element={<RedirectIfTalent><PublicLayout><Inscription /></PublicLayout></RedirectIfTalent>} />
 
-        {/* ── /login : PAS de RedirectIfTalent ici. ⚠️ Login.jsx gère
-             LES DEUX étapes (email + OTP) sur cette même route. Dès que
-             l'OTP est validé, login() met à jour AuthContext.user AVANT
-             que notre navigate("/" + redirect) ne s'exécute -> ça
-             re-render RedirectIfTalent, qui redirige alors TOUJOURS vers
-             talent/dashboard (il ne connaît pas estComplet), écrasant la
-             bonne redirection vers talent/profil/creer. Même raison que
-             pour /verify-otp ci-dessous. ── */}
         <Route path="/login" element={<PublicLayout><Login /></PublicLayout>} />
 
-        {/* ── Page transitoire : PAS de RedirectIfTalent ici non plus,
-             pour la même raison. ── */}
         <Route path="/verify-otp" element={<PublicLayout><VerifyOtp /></PublicLayout>} />
 
-        {/* ── Recherche/listing des talents : page publique (pas besoin
-             d'être connecté pour parcourir ; contacter/favoriser restent
-             gérés à l'intérieur des composants concernés). ── */}
         <Route path="/recherche" element={<PublicLayout><RechercheTalents /></PublicLayout>} />
 
         <Route
@@ -72,6 +60,7 @@ export default function App() {
         <Route path="/talent/profil/creer" element={<ProtectedRoute><ProfilCreer /></ProtectedRoute>} />
         <Route path="/talent/dashboard" element={<ProtectedRoute><TalentDashboard /></ProtectedRoute>} />
         <Route path="/talent/portfolio" element={<ProtectedRoute><Portfolio /></ProtectedRoute>} />
+        <Route path="/talent/demandes" element={<ProtectedRoute><DemandesRecues /></ProtectedRoute>} />
 
         {/* ── Espace client ── */}
         <Route path="/client/dashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />

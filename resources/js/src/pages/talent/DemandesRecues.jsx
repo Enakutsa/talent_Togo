@@ -4,7 +4,7 @@ import {
 } from "lucide-react";
 import TalentTopNav from "../../components/TalentTopNav";
 import Footer from "../../components/Footer";
-import { getDemandesRecues, repondreDemande } from "../../services/demandes.service";
+import { getDemandesRecues, repondreDemande } from "../../services/demande.service";
 import "../../assets/styles/DemandesRecues.css";
 
 const STATUT_MAP = {

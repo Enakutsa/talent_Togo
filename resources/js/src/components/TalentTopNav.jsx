@@ -13,7 +13,7 @@ import {
 // TalentDashboard sache quel onglet ouvrir.
 export const NAV_ITEMS = [
   { key: "dashboard", label: "Tableau de bord", icon: LayoutDashboard, to: "/talent/dashboard" },
-  { key: "demandes",  label: "Demandes",         icon: ClipboardList,  badge: 3, to: "/talent/dashboard" },
+  { key: "demandes",  label: "Demandes",         icon: ClipboardList,  badge: 3, to: "/talent/demandes" },
   { key: "messages",  label: "Messages",          icon: MessageSquare, badge: 5, to: "/talent/dashboard" },
   { key: "portfolio", label: "Portfolio",         icon: ImageIcon,     to: "/talent/portfolio" },
   { key: "avis",      label: "Avis",              icon: Star,          to: "/talent/dashboard" },
