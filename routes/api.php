@@ -46,6 +46,23 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [AuthController::class, 'me']);
         Route::put('/', [AuthController::class, 'update']);
         Route::delete('/', [AuthController::class, 'destroy']);
+
+        // ── Page "Paramètres" (espace client) ──────────────────────────
+        // ⚠️ Le changement de mot de passe passe par PUT /user (voir
+        // AuthController::update) avec mot_de_passe_actuel +
+        // nouveau_mot_de_passe + nouveau_mot_de_passe_confirmation.
+        // Pas de route séparée pour éviter de dupliquer cette logique.
+
+        // Préférences de notification (emails "demandes"/"messages",
+        // notifications in-app). GET renvoie les valeurs actuelles
+        // (avec des valeurs par défaut si l'utilisateur n'en a pas encore).
+        Route::get('/notifications', [AuthController::class, 'getNotificationPrefs']);
+        Route::put('/notifications', [AuthController::class, 'updateNotificationPrefs']);
+
+        // Révoque tous les tokens Sanctum de l'utilisateur SAUF celui
+        // utilisé pour cette requête -> déconnecte les autres appareils
+        // sans déconnecter la session en cours.
+        Route::post('/logout-all', [AuthController::class, 'logoutAllDevices']);
     });
 
     Route::post('/logout', [AuthController::class, 'logout']);
@@ -104,5 +121,3 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/talent/demandes', [DemandePrestationController::class, 'indexTalent']);
     Route::patch('/talent/demandes/{id}', [DemandePrestationController::class, 'repondre']);
 });
-
-

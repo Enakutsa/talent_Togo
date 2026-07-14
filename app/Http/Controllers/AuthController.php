@@ -321,11 +321,15 @@ class AuthController extends Controller
     }
 
     /**
-     * ✅ MISE À JOUR DU PROFIL (infos de base + photo de compte)
+     * ✅ MISE À JOUR DU PROFIL (infos de base + photo de compte + mot de passe)
      *
      * La photo ici est celle du COMPTE (utilisateurs.photo) — pertinente pour
      * un client ou un admin. Le talent a sa propre photo "professionnelle"
      * sur profils_talents.photo, gérée par ProfilTalentController, pas ici.
+     *
+     * ⚠️ C'est aussi CE endpoint qui gère le changement de mot de passe
+     * (page Paramètres) : envoyer mot_de_passe_actuel + nouveau_mot_de_passe
+     * + nouveau_mot_de_passe_confirmation, sans toucher aux autres champs.
      */
     public function update(Request $request)
     {
@@ -443,6 +447,76 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Compte supprimé avec succès.',
+        ]);
+    }
+
+    /**
+     * ✅ PRÉFÉRENCES DE NOTIFICATION (page Paramètres)
+     * Stockées en JSON sur utilisateurs.preferences_notifications.
+     * Si l'utilisateur n'en a jamais défini, on renvoie des valeurs par
+     * défaut (tout activé) sans forcer d'écriture en base.
+     */
+    public function getNotificationPrefs(Request $request)
+    {
+        $defaults = [
+            'email_demandes'       => true,
+            'email_messages'       => true,
+            'notifications_in_app' => true,
+        ];
+
+        $utilisateur = $request->user();
+        $prefs = $utilisateur->preferences_notifications
+            ? array_merge($defaults, $utilisateur->preferences_notifications)
+            : $defaults;
+
+        return response()->json([
+            'success' => true,
+            'data'    => $prefs,
+        ]);
+    }
+
+    /**
+     * ✅ MISE À JOUR DES PRÉFÉRENCES DE NOTIFICATION
+     */
+    public function updateNotificationPrefs(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email_demandes'       => 'required|boolean',
+            'email_messages'       => 'required|boolean',
+            'notifications_in_app' => 'required|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $utilisateur = $request->user();
+        $utilisateur->preferences_notifications = $request->only([
+            'email_demandes', 'email_messages', 'notifications_in_app',
+        ]);
+        $utilisateur->save();
+
+        return response()->json([
+            'success' => true,
+            'data'    => $utilisateur->preferences_notifications,
+        ]);
+    }
+
+    /**
+     * ✅ DÉCONNEXION DE TOUS LES AUTRES APPAREILS
+     * Révoque tous les tokens Sanctum SAUF celui utilisé pour cette requête,
+     * afin de ne pas déconnecter la session en cours.
+     */
+    public function logoutAllDevices(Request $request)
+    {
+        $utilisateur = $request->user();
+        $currentTokenId = $utilisateur->currentAccessToken()->id;
+
+        $utilisateur->tokens()->where('id', '!=', $currentTokenId)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Tous les autres appareils ont été déconnectés.',
         ]);
     }
 

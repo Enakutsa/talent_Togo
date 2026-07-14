@@ -133,48 +133,58 @@ class DemandePrestationController extends Controller
     }
 
     /**
-     * Le talent accepte ou refuse une demande reçue.
-     * PATCH /api/talent/demandes/{id}
-     */
-    public function repondre(Request $request, $id)
-    {
-        abort_unless($request->user()->isTalent(), 403, 'Réservé aux talents.');
+ * Le talent répond à une demande reçue :
+ * - en_attente -> acceptee / refusee
+ * - acceptee   -> terminee
+ * PATCH /api/talent/demandes/{id}
+ */
+public function repondre(Request $request, $id)
+{
+    abort_unless($request->user()->isTalent(), 403, 'Réservé aux talents.');
 
-        $validator = Validator::make($request->all(), [
-            'statut' => 'required|in:acceptee,refusee',
-            'motif_refus' => 'nullable|string|max:500',
-        ]);
+    $validator = Validator::make($request->all(), [
+        'statut' => 'required|in:acceptee,refusee,terminee',
+        'motif_refus' => 'nullable|string|max:500',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
+    }
 
-        $profil = $request->user()->profilTalent;
-        $demande = DemandePrestation::where('profil_talent_id', $profil->id)
-            ->with('client')
-            ->find($id);
+    $profil = $request->user()->profilTalent;
+    $demande = DemandePrestation::where('profil_talent_id', $profil->id)
+        ->with('client')
+        ->find($id);
 
-        if (!$demande) {
-            return response()->json(['message' => 'Demande introuvable.'], 404);
-        }
+    if (!$demande) {
+        return response()->json(['message' => 'Demande introuvable.'], 404);
+    }
 
-        if ($demande->statut !== 'en_attente') {
-            return response()->json(['message' => 'Cette demande a déjà reçu une réponse.'], 422);
-        }
+    $transitionsValides = [
+        'acceptee' => 'en_attente',
+        'refusee' => 'en_attente',
+        'terminee' => 'acceptee',
+    ];
 
-        $demande->update(['statut' => $request->statut]);
+    if ($demande->statut !== $transitionsValides[$request->statut]) {
+        return response()->json(['message' => 'Cette action n\'est pas possible dans l\'état actuel de la demande.'], 422);
+    }
 
+    $demande->update(['statut' => $request->statut]);
+
+    if (in_array($request->statut, ['acceptee', 'refusee'])) {
         try {
             Mail::to($demande->client->email)->queue(
                 new ReponseDemandeMail($demande, $request->motif_refus)
             );
         } catch (\Exception $e) {}
-
-        return response()->json([
-            'success' => true,
-            'data' => $this->formatPourTalent($demande->fresh()),
-        ]);
     }
+
+    return response()->json([
+        'success' => true,
+        'data' => $this->formatPourTalent($demande->fresh()),
+    ]);
+}
 
     private function formatPourClient(DemandePrestation $d): array
     {

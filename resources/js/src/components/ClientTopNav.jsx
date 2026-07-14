@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import {
   LayoutDashboard, Heart, MessageSquare, ClipboardList,
-  Bell, LogOut, Menu, X, ChevronDown, Search, User, Home,
+  Bell, LogOut, Menu, X, ChevronDown, Search, Settings, User, Home,
 } from "lucide-react";
 
 export const CLIENT_NAV_ITEMS = [
@@ -76,7 +76,11 @@ export default function ClientTopNav({ activeKey }) {
           <div className="cd-profile-menu" ref={menuRef}>
             <button className="cd-profile-trigger" onClick={() => setMenuOpen((o) => !o)}>
               <div className="cd-topnav-avatar">
-                <span>{initiales}</span>
+                {user?.photo ? (
+                  <img src={user.photo} alt={prenom} className="cd-topnav-avatar-photo" />
+                ) : (
+                  <span>{initiales}</span>
+                )}
               </div>
               <ChevronDown size={14} className={`cd-chevron ${menuOpen ? "cd-chevron-open" : ""}`} />
             </button>
@@ -88,8 +92,12 @@ export default function ClientTopNav({ activeKey }) {
                   <p className="cd-profile-dropdown-role">Client</p>
                 </div>
 
-                <button className="cd-profile-dropdown-item" onClick={() => navigate("/profile")}>
+                <button className="cd-profile-dropdown-item" onClick={() => navigate("/client/profil")}>
                   <User size={16} /> Mon profil
+                </button>
+
+                <button className="cd-profile-dropdown-item" onClick={() => navigate("/client/parametres")}>
+                  <Settings size={16} /> Paramètres
                 </button>
 
                 <button className="cd-profile-dropdown-item cd-profile-dropdown-logout" onClick={logout}>

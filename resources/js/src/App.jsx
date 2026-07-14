@@ -20,6 +20,7 @@ import Favoris from "./pages/client/Favoris";
 import Messages from "./pages/client/Messages";
 import DemandesEnvoyees from "./pages/client/DemandesEnvoyees";
 import ClientProfil from "./pages/client/ClientProfil";
+import Parametres from "./pages/client/Parametres";
 
 function PublicLayout({ children }) {
   return (
@@ -78,6 +79,7 @@ export default function App() {
         <Route path="/client/messages" element={<ProtectedRoute><Messages /></ProtectedRoute>} />
         <Route path="/client/demandes" element={<ProtectedRoute><DemandesEnvoyees /></ProtectedRoute>} />
         <Route path="/client/profil" element={<ProtectedRoute><ClientProfil /></ProtectedRoute>} />
+        <Route path="/client/parametres" element={<ProtectedRoute><Parametres /></ProtectedRoute>} />
 
         {/* 404 */}
         <Route path="*" element={<NotFound />} />

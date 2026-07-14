@@ -35,15 +35,79 @@ class TalentController extends Controller
     }
 
     /**
-     * Liste des talents validés.
+     * Liste des talents validés, avec filtres optionnels.
      * GET /api/talents
-     * GET /api/talents?featured=1  → les 3 derniers inscrits validés
+     * GET /api/talents?featured=1                → les 3 derniers inscrits validés
+     * GET /api/talents?q=photographe              → recherche texte (nom, catégorie)
+     * GET /api/talents?categorie_id=3              → filtre par catégorie
+     * GET /api/talents?ville=Lomé                  → filtre par ville
+     * GET /api/talents?budget_max=100000            → tarif_min <= budget_max
+     * GET /api/talents?disponible=1                 → uniquement les disponibles
+     * GET /api/talents?sort=note|prix_asc|prix_desc|recent
      */
     public function index(Request $request)
     {
         $query = ProfilTalent::query()
             ->whereHas('utilisateur', fn ($q) => $q->where('statut', 'valide'))
-            ->with(['utilisateur.categorie', 'portfolios']);
+            ->with(['utilisateur.categorie', 'portfolios', 'avis']);
+
+        // ── Recherche texte : nom/prénom de l'utilisateur ou nom de catégorie ──
+        if ($request->filled('q')) {
+            $search = $request->string('q')->trim()->toString();
+
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('utilisateur', function ($uq) use ($search) {
+                    $uq->where('nom', 'like', "%{$search}%")
+                       ->orWhere('prenom', 'like', "%{$search}%");
+                })
+                ->orWhereHas('utilisateur.categorie', function ($cq) use ($search) {
+                    $cq->where('nom', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        // ── Filtre catégorie ──
+        if ($request->filled('categorie_id')) {
+            $categorieId = $request->input('categorie_id');
+            $query->whereHas('utilisateur', function ($q) use ($categorieId) {
+                $q->where('categorie_id', $categorieId);
+            });
+        }
+
+        // ── Filtre ville ──
+        if ($request->filled('ville')) {
+            $ville = $request->input('ville');
+            $query->whereHas('utilisateur', function ($q) use ($ville) {
+                $q->where('ville', $ville);
+            });
+        }
+
+        // ── Filtre budget max (tarif_min du talent <= budget demandé) ──
+        if ($request->filled('budget_max')) {
+            $query->where('tarif_min', '<=', $request->input('budget_max'));
+        }
+
+        // ── Filtre disponibilité ──
+        if ($request->boolean('disponible')) {
+            $query->where('disponibilite', true);
+        }
+
+        // ── Tri ──
+        switch ($request->input('sort')) {
+            case 'prix_asc':
+                $query->orderBy('tarif_min', 'asc');
+                break;
+            case 'prix_desc':
+                $query->orderBy('tarif_min', 'desc');
+                break;
+            case 'note':
+                // Trié après récupération (nécessite la note calculée) — voir plus bas
+                break;
+            case 'recent':
+            default:
+                $query->orderByDesc('created_at');
+                break;
+        }
 
         if ($request->boolean('featured')) {
             // ✅ Les 3 derniers talents validés (les plus récents)
@@ -51,6 +115,11 @@ class TalentController extends Controller
         }
 
         $profils = $query->get();
+
+        // Tri par note : fait en mémoire car la note est calculée via calcNote()
+        if ($request->input('sort') === 'note') {
+            $profils = $profils->sortByDesc(fn ($p) => $this->calcNote($p)['note'])->values();
+        }
 
         return response()->json([
             'success' => true,
@@ -97,9 +166,9 @@ class TalentController extends Controller
 
         return [
             'id'          => $profil->id,
-            'nom'         => trim(($profil->utilisateur->prenom ?? '') . ' ' . ($profil->utilisateur->nom ?? '')),
-            'categorie'   => $profil->utilisateur->categorie->nom ?? '—',
-            'ville'       => $profil->utilisateur->ville ?? null,
+            'nom'         => trim(($profil->utilisateur?->prenom ?? '') . ' ' . ($profil->utilisateur?->nom ?? '')),
+            'categorie'   => $profil->utilisateur?->categorie?->nom ?? '—',
+            'ville'       => $profil->utilisateur?->ville ?? null,
             'note'        => $noteInfo['note'],
             'avis'        => $noteInfo['total'],
             'tarif'       => (float) ($profil->tarif_min ?? 0),
@@ -131,7 +200,7 @@ class TalentController extends Controller
         // Avis
         $avisListe = $profil->avis->map(fn ($a) => [
             'id'          => $a->id,
-            'client'      => trim(($a->utilisateur->prenom ?? '') . ' ' . ($a->utilisateur->nom ?? '')),
+            'client'      => trim(($a->utilisateur?->prenom ?? '') . ' ' . ($a->utilisateur?->nom ?? '')),
             'avatar'      => null,
             'note'        => $a->note,
             'commentaire' => $a->commentaire,
@@ -140,9 +209,9 @@ class TalentController extends Controller
 
         return [
             'id'          => $profil->id,
-            'nom'         => trim(($profil->utilisateur->prenom ?? '') . ' ' . ($profil->utilisateur->nom ?? '')),
-            'categorie'   => $profil->utilisateur->categorie->nom ?? '—',
-            'ville'       => $profil->utilisateur->ville ?? null,
+            'nom'         => trim(($profil->utilisateur?->prenom ?? '') . ' ' . ($profil->utilisateur?->nom ?? '')),
+            'categorie'   => $profil->utilisateur?->categorie?->nom ?? '—',
+            'ville'       => $profil->utilisateur?->ville ?? null,
             'biographie'  => $profil->biographie,
             'note'        => $noteInfo['note'],
             'avis'        => $noteInfo['total'],

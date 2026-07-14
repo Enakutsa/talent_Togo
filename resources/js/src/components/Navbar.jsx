@@ -42,9 +42,6 @@ export default function Navbar() {
     user?.role === "client" ? "/client/dashboard" :
     "/admin";
 
-  // Le profil talent n'est pas une route à part, c'est un onglet dans
-  // TalentDashboard -> on y navigue avec un state pour ouvrir cet onglet,
-  // exactement comme le fait TalentTopNav.
   const goToProfile = () => {
     setProfileOpen(false);
     setMenuOpen(false);
@@ -57,6 +54,12 @@ export default function Navbar() {
       navigate("/profile");
     }
   };
+
+  // La photo vient d'un endroit différent selon le rôle : le client a
+  // sa propre colonne `photo` sur Utilisateur, le talent a la sienne
+  // sur profilTalent.
+  const avatarUrl =
+    user?.role === "talent" ? user?.profilTalent?.photo : user?.photo;
 
   return (
     <nav className="navbar">
@@ -102,7 +105,7 @@ export default function Navbar() {
               <div className="navbar-profile-wrap" ref={profileRef}>
                 <button onClick={() => setProfileOpen(!profileOpen)} className="navbar-profile-btn">
                   <img
-                    src={user?.avatar || "https://ui-avatars.com/api/?name=" + encodeURIComponent(user?.nom || "U")}
+                    src={avatarUrl || "https://ui-avatars.com/api/?name=" + encodeURIComponent(user?.nom || "U")}
                     alt={user?.nom}
                     className="navbar-profile-avatar"
                   />

@@ -805,3 +805,10 @@
 .cdh-badge-pending  { background: #fef3c7; color: #b45309; }
 .cdh-badge-accepted { background: #d1fae5; color: #047857; }
 .cdh-badge-rejected { background: #fee2e2; color: #b91c1c; }
+
+.cd-topnav-avatar-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}

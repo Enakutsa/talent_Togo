@@ -1,0 +1,303 @@
+/* ── Page ─────────────────────────────────────────────────────────────────── */
+.pr-page {
+    min-height: 100vh;
+    background: #f9fafb;
+    font-family: Inter, sans-serif;
+  }
+  
+  .pr-body {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 40px 24px 60px;
+  }
+  
+  .pr-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #111827;
+    font-family: Sora, sans-serif;
+    margin: 0 0 6px;
+  }
+  
+  .pr-sub {
+    font-size: 14px;
+    color: #6b7280;
+    margin: 0 0 28px;
+  }
+  
+  /* ── Cards ───────────────────────────────────────────────────────────────── */
+  .pr-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid #f3f4f6;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+  }
+  
+  .pr-card-danger {
+    border-color: #fecaca;
+    background: #fff5f5;
+  }
+  
+  .pr-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  
+  .pr-card-icon { color: #166534; }
+  .pr-card-icon-danger { color: #dc2626; }
+  
+  .pr-card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    font-family: Sora, sans-serif;
+    margin: 0;
+  }
+  
+  .pr-loading {
+    font-size: 13px;
+    color: #9ca3af;
+  }
+  
+  /* ── Rows (toggles, actions) ────────────────────────────────────────────── */
+  .pr-rows { display: flex; flex-direction: column; gap: 18px; }
+  
+  .pr-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  
+  .pr-row-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 2px;
+  }
+  
+  .pr-row-desc {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0;
+  }
+  
+  /* ── Toggle ──────────────────────────────────────────────────────────────── */
+  .pr-toggle {
+    width: 42px;
+    height: 24px;
+    border-radius: 20px;
+    background: #d1d5db;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  
+  .pr-toggle-on { background: #166534; }
+  
+  .pr-toggle-dot {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  
+  .pr-toggle-on .pr-toggle-dot { transform: translateX(18px); }
+  
+  /* ── Form ────────────────────────────────────────────────────────────────── */
+  .pr-form { display: flex; flex-direction: column; gap: 14px; }
+  
+  .pr-field { display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  
+  .pr-field-row { display: flex; gap: 14px; }
+  
+  .pr-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+  }
+  
+  .pr-input {
+    padding: 10px 12px;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 13px;
+    outline: none;
+    font-family: Inter, sans-serif;
+    transition: border-color 0.2s;
+  }
+  
+  .pr-input:focus { border-color: #166534; }
+  
+  /* ── Status / erreurs ────────────────────────────────────────────────────── */
+  .pr-status {
+    font-size: 12px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 8px 0 0;
+  }
+  
+  .pr-status-ok { color: #166534; }
+  
+  .pr-error {
+    font-size: 12px;
+    color: #dc2626;
+    margin: 0;
+  }
+  
+  .pr-divider {
+    height: 1px;
+    background: #f3f4f6;
+    margin: 20px 0;
+  }
+  
+  /* ── Boutons ─────────────────────────────────────────────────────────────── */
+  .pr-btn-primary {
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    background: #166534;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: Sora, sans-serif;
+    transition: background 0.2s;
+  }
+  
+  .pr-btn-primary:hover { background: #14532d; }
+  .pr-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+  
+  .pr-btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #fff;
+    color: #374151;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: Inter, sans-serif;
+    transition: all 0.2s;
+  }
+  
+  .pr-btn-secondary:hover { border-color: #166534; color: #166534; }
+  .pr-btn-secondary:disabled { opacity: 0.6; cursor: not-allowed; }
+  
+  .pr-btn-danger {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: #dc2626;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: Sora, sans-serif;
+    transition: background 0.2s;
+  }
+  
+  .pr-btn-danger:hover { background: #b91c1c; }
+  .pr-btn-danger:disabled { opacity: 0.5; cursor: not-allowed; }
+  
+  .pr-spin { animation: pr-spin 0.8s linear infinite; }
+  
+  @keyframes pr-spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  /* ── Modale de suppression ──────────────────────────────────────────────── */
+  .pr-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  
+  .pr-modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px;
+    max-width: 420px;
+    width: 100%;
+    position: relative;
+  }
+  
+  .pr-modal-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+  }
+  
+  .pr-modal-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #fee2e2;
+    color: #dc2626;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+  }
+  
+  .pr-modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    font-family: Sora, sans-serif;
+    margin: 0 0 8px;
+  }
+  
+  .pr-modal-text {
+    font-size: 13px;
+    color: #6b7280;
+    margin: 0 0 16px;
+    line-height: 1.5;
+  }
+  
+  .pr-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  
+  /* ── Responsive ──────────────────────────────────────────────────────────── */
+  @media (max-width: 560px) {
+    .pr-field-row { flex-direction: column; }
+    .pr-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+  }

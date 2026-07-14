@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   Search, MapPin, Star, SlidersHorizontal,
@@ -12,6 +12,15 @@ const VILLES_TOGO = [
   "Atakpamé", "Amlamé", "Badou", "Sotouboua", "Sokodé", "Bassar",
   "Kara", "Niamtougou", "Kandé", "Mango", "Dapaong",
 ];
+
+// ✅ Normalise un texte pour la comparaison (minuscule + sans accents)
+// ex: "Photographe" -> "photographe", "Décoration" -> "decoration"
+function normalize(str) {
+  return (str || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
 
 const SORT_OPTIONS = [
   { value: "recent",    label: "Plus récents"     },
@@ -73,6 +82,10 @@ export default function RechercheTalents() {
   const [showFilters, setShowFilters] = useState(false);
   const [budget,      setBudget]      = useState(500000);
 
+  // ✅ Autocomplete de la barre de recherche (suggestions de catégories)
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchWrapRef = useRef(null);
+
   // ✅ Préremplit depuis l'URL (ex: /recherche?categorie_id=3 depuis Home.jsx,
   // ou ?q=photographe depuis une barre de recherche externe).
   const [filters, setFilters] = useState({
@@ -110,8 +123,17 @@ export default function RechercheTalents() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categories]);
 
+  // ✅ Compteur de requêtes : permet d'ignorer une réponse "en retard".
+  // Sans ça, si tu tapes une recherche texte puis cliques vite sur un filtre,
+  // la requête de la recherche texte (partie en 1er) peut répondre APRÈS
+  // celle du filtre (partie en 2nd), et écrase alors les résultats filtrés
+  // avec les anciens résultats non filtrés → "le filtre ne marche plus".
+  const requestIdRef = useRef(0);
+
   // Recherche avec debounce
   const fetchTalents = useCallback(() => {
+    const currentRequestId = ++requestIdRef.current;
+
     setLoading(true);
     setError("");
 
@@ -124,9 +146,19 @@ export default function RechercheTalents() {
     params.sort = filters.sort;
 
     searchTalents(params)
-      .then((res) => setTalents(res.data || []))
-      .catch(() => setError("Impossible de charger les talents. Réessayez."))
-      .finally(() => setLoading(false));
+      .then((res) => {
+        // Une requête plus récente est déjà partie : on ignore cette réponse
+        if (currentRequestId !== requestIdRef.current) return;
+        setTalents(res.data || []);
+      })
+      .catch(() => {
+        if (currentRequestId !== requestIdRef.current) return;
+        setError("Impossible de charger les talents. Réessayez.");
+      })
+      .finally(() => {
+        if (currentRequestId !== requestIdRef.current) return;
+        setLoading(false);
+      });
   }, [filters, budget]);
 
   useEffect(() => {
@@ -159,6 +191,27 @@ export default function RechercheTalents() {
     budget < 500000,
   ].filter(Boolean).length;
 
+  // ✅ Suggestions de catégories correspondant au texte tapé (ex: "phot" -> "Photographe")
+  const searchSuggestions = filters.q.trim().length > 0
+    ? categories.filter((c) => normalize(c.nom).includes(normalize(filters.q.trim())))
+    : [];
+
+  const selectSuggestion = (categorie) => {
+    setFilters({ ...filters, q: "", categorie_id: String(categorie.id) });
+    setShowSuggestions(false);
+  };
+
+  // Ferme le dropdown de suggestions si on clique en dehors du champ
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (searchWrapRef.current && !searchWrapRef.current.contains(e.target)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="rc-page">
 
@@ -173,19 +226,44 @@ export default function RechercheTalents() {
           </p>
 
           <div className="rc-hero-search">
-            <div className="rc-hero-search-field">
+            <div className="rc-hero-search-field" ref={searchWrapRef}>
               <Search size={18} className="rc-search-icon-hero" />
               <input
                 type="text"
                 placeholder="Photographe, graphiste, musicien..."
                 value={filters.q}
-                onChange={(e) => setFilters({ ...filters, q: e.target.value })}
+                onChange={(e) => {
+                  setFilters({ ...filters, q: e.target.value });
+                  setShowSuggestions(true);
+                }}
+                onFocus={() => setShowSuggestions(true)}
                 className="rc-hero-search-input"
               />
               {filters.q && (
-                <button onClick={() => setFilters({ ...filters, q: "" })} className="rc-clear-btn">
+                <button
+                  onClick={() => { setFilters({ ...filters, q: "" }); setShowSuggestions(false); }}
+                  className="rc-clear-btn"
+                >
                   <X size={16} />
                 </button>
+              )}
+
+              {/* ✅ Dropdown d'autocomplete : suggestions de catégories */}
+              {showSuggestions && searchSuggestions.length > 0 && (
+                <ul className="rc-suggestions">
+                  {searchSuggestions.map((c) => (
+                    <li key={c.id}>
+                      <button
+                        type="button"
+                        className="rc-suggestion-item"
+                        onClick={() => selectSuggestion(c)}
+                      >
+                        <Search size={14} className="rc-suggestion-icon" />
+                        <span>{c.nom}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
             <button
