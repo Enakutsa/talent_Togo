@@ -579,3 +579,16 @@
   .de-summary-card-active {
     border-color: currentColor;
   }
+
+  .de-badge-terminee {
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+  
+  .de-summary-terminee {
+    background: #eff6ff;
+    color: #1d4ed8;
+  }
+  .de-summary-terminee.de-summary-card-active {
+    border-color: #1d4ed8;
+  }

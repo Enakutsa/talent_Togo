@@ -11,6 +11,7 @@ const STATUT_CONFIG = {
   en_attente: { label: "En attente", cls: "de-badge-pending", icon: Clock },
   acceptee: { label: "Acceptée", cls: "de-badge-accepted", icon: CheckCircle },
   refusee: { label: "Refusée", cls: "de-badge-rejected", icon: XCircle },
+  terminee: { label: "Terminée", cls: "de-badge-terminee", icon: CheckCircle },
 };
 
 const FILTERS = [
@@ -18,6 +19,7 @@ const FILTERS = [
   { key: "en_attente", label: "En attente", cardCls: "de-summary-pending" },
   { key: "acceptee",   label: "Acceptées",  cardCls: "de-summary-accepted" },
   { key: "refusee",    label: "Refusées",   cardCls: "de-summary-rejected" },
+  { key: "terminee",   label: "Terminées",  cardCls: "de-summary-terminee" },
 ];
 
 export default function DemandesEnvoyees() {
@@ -26,7 +28,7 @@ export default function DemandesEnvoyees() {
   const [error, setError] = useState("");
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState(null);
-  const [counts, setCounts] = useState({ all: 0, en_attente: 0, acceptee: 0, refusee: 0 });
+  const [counts, setCounts] = useState({ all: 0, en_attente: 0, acceptee: 0, refusee: 0, terminee: 0 });
   const [statutFilter, setStatutFilter] = useState(null); // null = Total
   const [cancellingId, setCancellingId] = useState(null);
   const [avisIds, setAvisIds] = useState([]);
@@ -178,7 +180,7 @@ export default function DemandesEnvoyees() {
                   const config = STATUT_CONFIG[d.statut] || STATUT_CONFIG.en_attente;
                   const StatusIcon = config.icon;
                   const peutAnnuler = d.statut === "en_attente";
-                  const peutNoter = d.statut === "acceptee" && !avisIds.includes(d.id);
+                  const peutNoter = d.statut === "terminee" && !avisIds.includes(d.id);
 
                   return (
                     <div key={d.id} className="de-card">
