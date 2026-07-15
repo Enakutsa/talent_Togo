@@ -1,195 +1,228 @@
 import { useState, useEffect } from "react";
-import {
-  Clock, CheckCircle, XCircle, MessageSquare, Loader2, Inbox,
-} from "lucide-react";
-import TalentTopNav from "../../components/TalentTopNav";
-import Footer from "../../components/Footer";
+import { Clock, CheckCircle, XCircle, Calendar, Wallet } from "lucide-react";
 import { getDemandesRecues, repondreDemande } from "../../services/demande.service";
+import TalentTopNav from "../../components/TalentTopNav";
+import "../../assets/styles/TalentDashboard.css";
 import "../../assets/styles/DemandesRecues.css";
 
-const STATUT_MAP = {
-  en_attente: { label: "En attente", cls: "dr-badge-attente", icon: Clock },
-  acceptee:   { label: "Acceptée",   cls: "dr-badge-acceptee", icon: CheckCircle },
-  refusee:    { label: "Refusée",    cls: "dr-badge-refusee",  icon: XCircle },
-  terminee:   { label: "Terminée",   cls: "dr-badge-terminee", icon: CheckCircle },
+const STATUT_CONFIG = {
+  en_attente: { label: "En attente", cls: "dr-badge-pending", icon: Clock },
+  acceptee: { label: "Acceptée", cls: "dr-badge-accepted", icon: CheckCircle },
+  refusee: { label: "Refusée", cls: "dr-badge-rejected", icon: XCircle },
+  terminee: { label: "Terminée", cls: "dr-badge-terminee", icon: CheckCircle },
 };
 
 const FILTERS = [
-  { key: "toutes",     label: "Toutes" },
-  { key: "en_attente", label: "En attente" },
-  { key: "acceptee",   label: "Acceptées" },
-  { key: "refusee",    label: "Refusées" },
-  { key: "terminee",   label: "Terminées" },
+  { key: "toutes",     label: "Total",      cardCls: "dr-summary-total" },
+  { key: "en_attente", label: "En attente", cardCls: "dr-summary-pending" },
+  { key: "acceptee",   label: "Acceptées",  cardCls: "dr-summary-accepted" },
+  { key: "refusee",    label: "Refusées",   cardCls: "dr-summary-rejected" },
+  { key: "terminee",   label: "Terminées",  cardCls: "dr-summary-terminee" },
 ];
 
 export default function DemandesRecues() {
-  const [demandes, setDemandes] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [demandes, setDemandes] = useState(null);
   const [error, setError] = useState("");
+  const [respondingId, setRespondingId] = useState(null);
+  const [motifModal, setMotifModal] = useState(null);
+  const [motif, setMotif] = useState("");
   const [filter, setFilter] = useState("toutes");
-  const [expanded, setExpanded] = useState(null);
-  const [actionLoadingId, setActionLoadingId] = useState(null);
 
   useEffect(() => {
-    chargerDemandes();
-  }, []);
-
-  const chargerDemandes = () => {
-    setLoading(true);
-    setError("");
     getDemandesRecues()
       .then((res) => setDemandes(res.data || []))
-      .catch(() => setError("Impossible de charger les demandes. Réessayez plus tard."))
-      .finally(() => setLoading(false));
+      .catch(() => setError("Impossible de charger vos demandes."));
+  }, []);
+
+  const handleAccepter = async (id) => {
+    setRespondingId(id);
+    try {
+      await repondreDemande(id, "acceptee");
+      setDemandes((prev) => prev.map((d) => (d.id === id ? { ...d, statut: "acceptee" } : d)));
+    } catch (err) {
+      setError(err.response?.data?.message || "Impossible d'accepter cette demande.");
+    } finally {
+      setRespondingId(null);
+    }
   };
 
-  const handleRepondre = (id, statut) => {
-    setActionLoadingId(id);
-    repondreDemande(id, statut)
-      .then((res) => {
-        setDemandes((prev) => prev.map((d) => (d.id === id ? res.data : d)));
-        setExpanded(null);
-      })
-      .catch((err) => {
-        const message = err?.response?.data?.message || "Une erreur est survenue.";
-        setError(message);
-      })
-      .finally(() => setActionLoadingId(null));
+  const handleTerminer = async (id) => {
+    setRespondingId(id);
+    try {
+      await repondreDemande(id, "terminee");
+      setDemandes((prev) => prev.map((d) => (d.id === id ? { ...d, statut: "terminee" } : d)));
+    } catch (err) {
+      setError(err.response?.data?.message || "Impossible de marquer cette demande comme terminée.");
+    } finally {
+      setRespondingId(null);
+    }
   };
 
-  const filtered = filter === "toutes"
-    ? demandes
-    : demandes.filter((d) => d.statut === filter);
+  const ouvrirRefus = (demande) => {
+    setMotifModal(demande);
+    setMotif("");
+  };
 
-  const nbEnAttente = demandes.filter((d) => d.statut === "en_attente").length;
+  const confirmerRefus = async () => {
+    if (!motifModal) return;
+    setRespondingId(motifModal.id);
+    try {
+      await repondreDemande(motifModal.id, "refusee", motif || null);
+      setDemandes((prev) =>
+        prev.map((d) => (d.id === motifModal.id ? { ...d, statut: "refusee" } : d))
+      );
+      setMotifModal(null);
+    } catch (err) {
+      setError(err.response?.data?.message || "Impossible de refuser cette demande.");
+    } finally {
+      setRespondingId(null);
+    }
+  };
+
+  const counts = demandes
+    ? {
+        toutes: demandes.length,
+        en_attente: demandes.filter((d) => d.statut === "en_attente").length,
+        acceptee: demandes.filter((d) => d.statut === "acceptee").length,
+        refusee: demandes.filter((d) => d.statut === "refusee").length,
+        terminee: demandes.filter((d) => d.statut === "terminee").length,
+      }
+    : { toutes: 0, en_attente: 0, acceptee: 0, refusee: 0, terminee: 0 };
+
+  const filtered = demandes
+    ? filter === "toutes"
+      ? demandes
+      : demandes.filter((d) => d.statut === filter)
+    : null;
 
   return (
-    <div className="dr-page">
+    <div className="td-root">
       <TalentTopNav activeKey="demandes" />
 
-      <div className="dr-body">
-        <div className="dr-header">
-          <div>
-            <h1 className="dr-title">Demandes reçues</h1>
-            <p className="dr-sub">
-              {nbEnAttente > 0
-                ? `${nbEnAttente} demande${nbEnAttente > 1 ? "s" : ""} en attente de réponse`
-                : "Aucune demande en attente"}
-            </p>
+      <main className="td-main">
+        <div className="td-page">
+          <div className="td-page-header">
+            <div>
+              <h1 className="td-page-title">Demandes reçues</h1>
+              <p className="td-page-sub">Acceptez ou refusez les demandes de prestation des clients.</p>
+            </div>
           </div>
-        </div>
 
-        <div className="dr-filters">
-          {FILTERS.map((f) => (
-            <button
-              key={f.key}
-              className={`dr-filter-btn ${filter === f.key ? "dr-filter-btn-active" : ""}`}
-              onClick={() => setFilter(f.key)}
-            >
-              {f.label}
-            </button>
-          ))}
-        </div>
+          {demandes !== null && demandes.length > 0 && (
+            <div className="dr-summary-grid">
+              {FILTERS.map((f) => (
+                <button
+                  key={f.key}
+                  onClick={() => setFilter(f.key)}
+                  className={`dr-summary-card ${f.cardCls} ${filter === f.key ? "dr-summary-card-active" : ""}`}
+                >
+                  <div className="dr-summary-val">{counts[f.key]}</div>
+                  <div className="dr-summary-label">{f.label}</div>
+                </button>
+              ))}
+            </div>
+          )}
 
-        {error && <p className="dr-error">{error}</p>}
+          {error && <p className="profil-creer-error">{error}</p>}
 
-        {loading ? (
-          <div className="dr-loading">
-            <Loader2 size={22} className="dr-spin" />
-            <span>Chargement des demandes...</span>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="dr-empty">
-            <Inbox size={32} className="dr-empty-icon" />
-            <p>Aucune demande {filter !== "toutes" ? "dans cette catégorie" : "pour le moment"}.</p>
-          </div>
-        ) : (
-          <div className="dr-list">
-            {filtered.map((d) => {
-              const statutInfo = STATUT_MAP[d.statut] || STATUT_MAP.en_attente;
-              const StatutIcon = statutInfo.icon;
-              const isExpanded = expanded === d.id;
-              const isLoadingAction = actionLoadingId === d.id;
+          {filtered === null ? (
+            <p className="text-gray-500 text-sm">Chargement...</p>
+          ) : filtered.length === 0 ? (
+            <div className="dr-empty">
+              <Clock size={32} />
+              <p className="dr-empty-title">
+                {filter === "toutes" ? "Aucune demande reçue pour le moment" : "Aucune demande dans cette catégorie"}
+              </p>
+            </div>
+          ) : (
+            <div className="dr-list">
+              {filtered.map((d) => {
+                const config = STATUT_CONFIG[d.statut] || STATUT_CONFIG.en_attente;
+                const StatusIcon = config.icon;
+                const enAttente = d.statut === "en_attente";
+                const acceptee = d.statut === "acceptee";
 
-              return (
-                <div key={d.id} className="dr-card">
-                  <div
-                    className="dr-card-top"
-                    onClick={() => setExpanded(isExpanded ? null : d.id)}
-                  >
-                    <div className="dr-card-info">
-                      <div className="dr-card-row">
-                        <p className="dr-client-name">{d.client_nom}</p>
-                        <span className={`dr-badge ${statutInfo.cls}`}>
-                          <StatutIcon size={12} /> {statutInfo.label}
+                return (
+                  <div key={d.id} className="dr-card">
+                    <div className="dr-card-top">
+                      <p className="dr-client-name">{d.client_nom}</p>
+                      <span className={`dr-badge ${config.cls}`}>
+                        <StatusIcon size={12} /> {config.label}
+                      </span>
+                    </div>
+
+                    <div className="dr-meta-row">
+                      {d.date_souhaitee && (
+                        <span className="dr-meta-item">
+                          <Calendar size={11} />
+                          {new Date(d.date_souhaitee).toLocaleDateString("fr-FR")}
                         </span>
-                      </div>
-                      <div className="dr-card-meta">
-                        {d.date_souhaitee && (
-                          <span className="dr-meta-item">
-                            <Clock size={12} /> {new Date(d.date_souhaitee).toLocaleDateString("fr-FR")}
-                          </span>
-                        )}
-                        {d.budget && (
-                          <span className="dr-meta-budget">
-                            {Number(d.budget).toLocaleString("fr-FR")} FCFA
-                          </span>
-                        )}
-                      </div>
+                      )}
+                      {d.budget && (
+                        <span className="dr-meta-budget">
+                          <Wallet size={11} /> {Number(d.budget).toLocaleString("fr-FR")} FCFA
+                        </span>
+                      )}
                     </div>
+
+                    <p className="dr-message">"{d.message_initial}"</p>
+
+                    {enAttente && (
+                      <div className="dr-actions">
+                        <button
+                          onClick={() => handleAccepter(d.id)}
+                          disabled={respondingId === d.id}
+                          className="dr-accept-btn"
+                        >
+                          <CheckCircle size={14} /> Accepter
+                        </button>
+                        <button
+                          onClick={() => ouvrirRefus(d)}
+                          disabled={respondingId === d.id}
+                          className="dr-reject-btn"
+                        >
+                          <XCircle size={14} /> Refuser
+                        </button>
+                      </div>
+                    )}
+
+                    {acceptee && (
+                      <div className="dr-actions">
+                        <button
+                          onClick={() => handleTerminer(d.id)}
+                          disabled={respondingId === d.id}
+                          className="dr-terminer-btn"
+                        >
+                          <CheckCircle size={14} /> Marquer comme terminée
+                        </button>
+                      </div>
+                    )}
                   </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </main>
 
-                  {isExpanded && (
-                    <div className="dr-card-details">
-                      <p className="dr-details-label">Message du client :</p>
-                      <div className="dr-message-box">
-                        <MessageSquare size={16} className="dr-message-icon" />
-                        <p className="dr-message-text">{d.message_initial}</p>
-                      </div>
-
-                      {d.statut === "en_attente" && (
-                        <div className="dr-actions">
-                          <button
-                            className="dr-btn dr-btn-accept"
-                            disabled={isLoadingAction}
-                            onClick={() => handleRepondre(d.id, "acceptee")}
-                          >
-                            {isLoadingAction ? <Loader2 size={15} className="dr-spin" /> : <CheckCircle size={15} />}
-                            Accepter
-                          </button>
-                          <button
-                            className="dr-btn dr-btn-refuse"
-                            disabled={isLoadingAction}
-                            onClick={() => handleRepondre(d.id, "refusee")}
-                          >
-                            {isLoadingAction ? <Loader2 size={15} className="dr-spin" /> : <XCircle size={15} />}
-                            Refuser
-                          </button>
-                        </div>
-                      )}
-
-                      {d.statut === "acceptee" && (
-                        <div className="dr-actions">
-                          <button
-                            className="dr-btn dr-btn-terminer"
-                            disabled={isLoadingAction}
-                            onClick={() => handleRepondre(d.id, "terminee")}
-                          >
-                            {isLoadingAction ? <Loader2 size={15} className="dr-spin" /> : <CheckCircle size={15} />}
-                            Marquer comme terminée
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+      {motifModal && (
+        <div className="dr-modal-overlay" onClick={() => setMotifModal(null)}>
+          <div className="dr-modal" onClick={(e) => e.stopPropagation()}>
+            <h2 className="dr-modal-title">Refuser la demande de {motifModal.client_nom}</h2>
+            <textarea
+              rows={3}
+              placeholder="Motif du refus (facultatif)..."
+              className="dr-modal-textarea"
+              value={motif}
+              onChange={(e) => setMotif(e.target.value)}
+            />
+            <div className="dr-modal-actions">
+              <button onClick={() => setMotifModal(null)} className="dr-modal-cancel">Annuler</button>
+              <button onClick={confirmerRefus} className="dr-modal-confirm">Confirmer le refus</button>
+            </div>
           </div>
-        )}
-      </div>
-
-      <Footer />
+        </div>
+      )}
     </div>
   );
 }

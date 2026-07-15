@@ -9,6 +9,7 @@ use App\Http\Controllers\TalentController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\FavoriController;
 use App\Http\Controllers\DemandePrestationController;
+use App\Http\Controllers\AvisController;
 
 /*
 |--------------------------------------------------------------------------
@@ -120,4 +121,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/talent/demandes', [DemandePrestationController::class, 'indexTalent']);
     Route::patch('/talent/demandes/{id}', [DemandePrestationController::class, 'repondre']);
+});
+
+// --------------------------------------------------------------------------
+// AVIS (CRUD) — Réservé au rôle "client" (vérifié dans le contrôleur)
+// --------------------------------------------------------------------------
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/client/avis', [AvisController::class, 'store']);
+    Route::get('/client/avis', [AvisController::class, 'indexClient']);
 });

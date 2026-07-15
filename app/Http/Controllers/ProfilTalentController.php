@@ -34,41 +34,55 @@ class ProfilTalentController extends Controller
     }
 
     public function show(Request $request)
-    {
-        $this->assertTalent($request);
+{
+    $this->assertTalent($request);
 
-        $utilisateur = $request->user();
-        $profil = $utilisateur->profilTalent;
+    $utilisateur = $request->user();
+    $profil = $utilisateur->profilTalent;
 
-        if (!$profil) {
-            return response()->json(['message' => 'Profil introuvable.'], 404);
-        }
-
-        $profil->load('utilisateur.categorie');
-
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'id' => $profil->id,
-                'tarif_min' => $profil->tarif_min,
-                'tarif_max' => $profil->tarif_max,
-                'biographie' => $profil->biographie,
-                'disponibilite' => (bool) $profil->disponibilite,
-                'photo' => $this->resolvePhotoUrl($profil->photo),
-                'vues' => $profil->vues,
-                'prenom' => $utilisateur->prenom,
-                'nom' => $utilisateur->nom,
-                'email' => $utilisateur->email,
-                'telephone' => $utilisateur->telephone,
-                'categorie_id' => $utilisateur->categorie_id,
-                'categorie' => $utilisateur->categorie->nom ?? null,
-                'ville' => $utilisateur->ville,
-                'statut' => $utilisateur->statut,
-                'estComplet' => $profil->estComplet(),
-            ],
-        ]);
+    if (!$profil) {
+        return response()->json(['message' => 'Profil introuvable.'], 404);
     }
 
+    $profil->load('utilisateur.categorie');
+
+    $avisVisibles = $profil->avis()->where('statut', 'visible')->get();
+    $nbAvis = $avisVisibles->count();
+    $noteMoyenne = $nbAvis > 0 ? round($avisVisibles->avg('note'), 1) : 0;
+
+    // ✅ Revenus estimés : somme des budgets des demandes de prestation
+    // terminées pour ce talent. Basé sur demandes_prestation.budget, saisi
+    // par le client à la demande — pas un montant "facturé" réel, d'où le
+    // libellé "estimés" côté frontend.
+    $revenusEstimes = $profil->demandesPrestation()
+        ->where('statut', 'terminee')
+        ->sum('budget');
+
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'id' => $profil->id,
+            'tarif_min' => $profil->tarif_min,
+            'tarif_max' => $profil->tarif_max,
+            'biographie' => $profil->biographie,
+            'disponibilite' => (bool) $profil->disponibilite,
+            'photo' => $this->resolvePhotoUrl($profil->photo),
+            'vues' => $profil->vues,
+            'note' => $noteMoyenne,
+            'nb_avis' => $nbAvis,
+            'revenus_estimes' => (float) $revenusEstimes,
+            'prenom' => $utilisateur->prenom,
+            'nom' => $utilisateur->nom,
+            'email' => $utilisateur->email,
+            'telephone' => $utilisateur->telephone,
+            'categorie_id' => $utilisateur->categorie_id,
+            'categorie' => $utilisateur->categorie->nom ?? null,
+            'ville' => $utilisateur->ville,
+            'statut' => $utilisateur->statut,
+            'estComplet' => $profil->estComplet(),
+        ],
+    ]);
+}
     public function update(Request $request)
     {
         $this->assertTalent($request);

@@ -1,138 +1,37 @@
 import { useState, useContext, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import {
-  ClipboardList, MessageSquare, Star, Eye, TrendingUp, ChevronRight,
+  ClipboardList, TrendingUp, ChevronRight, Eye, Star, Search,
   User, Camera, Mail, Phone, MapPin, Tag,
 } from "lucide-react";
 import { getProfilTalent, updateProfilTalent } from "../../services/profilTalent.service";
 import { getCategories } from "../../services/categorie.service";
+import { getDemandesRecues } from "../../services/demande.service";
 import TalentTopNav, { NAV_ITEMS } from "../../components/TalentTopNav";
 import "../../assets/styles/TalentDashboard.css";
 import "../../assets/styles/ProfilCreer.css";
-
-// ── Données factices (seront remplacées par l'API) ──────────────────────────
-const STATS = [
-  { label: "Vues du profil",  value: "128",  sub: "+12 cette semaine", icon: Eye,           color: "blue"   },
-  { label: "Demandes reçues", value: "14",   sub: "3 en attente",      icon: ClipboardList, color: "orange" },
-  { label: "Avis clients",    value: "4.8★", sub: "24 avis",           icon: Star,          color: "yellow" },
-  { label: "Taux de réponse", value: "92%",  sub: "Excellent",         icon: TrendingUp,    color: "green"  },
-];
-
-const DEMANDES_RECENTES = [
-  { id: 1, client: "Akosua M.",  service: "Séance photo mariage",    date: "Aujourd'hui", statut: "en_attente" },
-  { id: 2, client: "Yao K.",     service: "Portrait professionnel",  date: "Hier",        statut: "acceptee"  },
-  { id: 3, client: "Afi D.",     service: "Photos événement",        date: "Il y a 2j",   statut: "en_attente" },
-];
-
-const MESSAGES_RECENTS = [
-  { id: 1, nom: "Akosua M.", message: "Bonjour, êtes-vous disponible le 15 juillet ?", heure: "10:24", non_lu: true  },
-  { id: 2, nom: "Koffi A.",  message: "Merci pour votre réponse rapide !",              heure: "Hier",  non_lu: false },
-  { id: 3, nom: "Esther L.", message: "Pouvez-vous m'envoyer vos tarifs ?",             heure: "Hier",  non_lu: true  },
-];
 
 export default function TalentDashboard() {
   const location = useLocation();
   const { user } = useContext(AuthContext);
   const [activeKey, setActiveKey] = useState("dashboard");
 
-  // Arrivée depuis TalentTopNav avec un onglet précis à ouvrir
-  // (ex: clic sur "Profil" depuis la page Portfolio -> state.activeKey = "profil")
   useEffect(() => {
     if (location.state?.activeKey) {
       setActiveKey(location.state.activeKey);
     }
   }, [location.state]);
 
-  const statutColor = { en_attente: "orange", acceptee: "green", refusee: "red" };
-  const statutLabel = { en_attente: "En attente", acceptee: "Acceptée", refusee: "Refusée" };
-
   return (
     <div className="td-root">
       <TalentTopNav activeKey={activeKey} />
 
       <main className="td-main">
+        {activeKey === "dashboard" && <DashboardSection user={user} />}
 
-        {/* ── PAGE : Dashboard ── */}
-        {activeKey === "dashboard" && (
-          <div className="td-page">
-            <div className="td-page-header">
-              <div>
-                <h1 className="td-page-title">Bonjour, {user?.prenom || "Talent"} 👋</h1>
-                <p className="td-page-sub">Voici un résumé de votre activité aujourd'hui.</p>
-              </div>
-            </div>
-
-            <div className="td-stats-grid">
-              {STATS.map(({ label, value, sub, icon: Icon, color }) => (
-                <div key={label} className={`td-stat-card td-stat-${color}`}>
-                  <div className={`td-stat-icon-wrap td-stat-icon-${color}`}>
-                    <Icon size={20} />
-                  </div>
-                  <div>
-                    <p className="td-stat-value">{value}</p>
-                    <p className="td-stat-label">{label}</p>
-                    <p className="td-stat-sub">{sub}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="td-two-cols">
-              <div className="td-card">
-                <div className="td-card-header">
-                  <h2 className="td-card-title">Demandes récentes</h2>
-                  <button className="td-card-link" onClick={() => setActiveKey("demandes")}>
-                    Voir tout <ChevronRight size={14} />
-                  </button>
-                </div>
-                <div className="td-card-body">
-                  {DEMANDES_RECENTES.map((d) => (
-                    <div key={d.id} className="td-demande-row">
-                      <div className="td-demande-avatar">{d.client[0]}</div>
-                      <div className="td-demande-info">
-                        <p className="td-demande-client">{d.client}</p>
-                        <p className="td-demande-service">{d.service}</p>
-                      </div>
-                      <div className="td-demande-right">
-                        <span className={`td-statut td-statut-${statutColor[d.statut]}`}>
-                          {statutLabel[d.statut]}
-                        </span>
-                        <p className="td-demande-date">{d.date}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="td-card">
-                <div className="td-card-header">
-                  <h2 className="td-card-title">Messages récents</h2>
-                  <button className="td-card-link" onClick={() => setActiveKey("messages")}>
-                    Voir tout <ChevronRight size={14} />
-                  </button>
-                </div>
-                <div className="td-card-body">
-                  {MESSAGES_RECENTS.map((m) => (
-                    <div key={m.id} className={`td-msg-row ${m.non_lu ? "td-msg-unread" : ""}`}>
-                      <div className="td-demande-avatar">{m.nom[0]}</div>
-                      <div className="td-demande-info">
-                        <p className="td-demande-client">{m.nom} {m.non_lu && <span className="td-unread-dot" />}</p>
-                        <p className="td-demande-service td-msg-preview">{m.message}</p>
-                      </div>
-                      <p className="td-demande-date">{m.heure}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── PAGE : Profil ── */}
         {activeKey === "profil" && <ProfilSection />}
 
-        {/* ── Autres pages internes (placeholders) ── */}
         {activeKey !== "dashboard" && activeKey !== "profil" && (
           <div className="td-page td-placeholder">
             <div className="td-placeholder-inner">
@@ -142,15 +41,142 @@ export default function TalentDashboard() {
             </div>
           </div>
         )}
-
       </main>
     </div>
   );
 }
 
-// ============================================
-// Section Profil — affichée dans l'onglet "Profil" du dashboard.
-// ============================================
+const statutColor = { en_attente: "orange", acceptee: "green", refusee: "red", terminee: "blue" };
+const statutLabel = { en_attente: "En attente", acceptee: "Acceptée", refusee: "Refusée", terminee: "Terminée" };
+
+function DashboardSection({ user }) {
+  const navigate = useNavigate();
+  const [demandes, setDemandes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [profil, setProfil] = useState(null);
+  const [profilLoading, setProfilLoading] = useState(true);
+
+  useEffect(() => {
+    getProfilTalent()
+      .then((res) => setProfil(res.data))
+      .catch(() => setProfil(null))
+      .finally(() => setProfilLoading(false));
+  }, []);
+
+  useEffect(() => {
+    getDemandesRecues()
+      .then((res) => setDemandes(res.data || []))
+      .catch(() => setDemandes([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const total = demandes.length;
+  const enAttente = demandes.filter((d) => d.statut === "en_attente").length;
+  const demandesRecentes = demandes.slice(0, 5);
+
+  // ✅ Revenus estimés : renvoyés par ProfilTalentController::show
+  // (somme des budgets des demandes terminées, voir backend).
+  const revenusEstimes = profil?.revenus_estimes ?? 0;
+
+  return (
+    <div className="td-page">
+      <div className="td-page-header">
+        <div>
+          <h1 className="td-page-title">Bonjour, {user?.prenom || "Talent"} 👋</h1>
+          <p className="td-page-sub">Voici un résumé de votre activité aujourd'hui.</p>
+        </div>
+      </div>
+
+      <div className="td-stats-grid-4">
+        <div className="td-stat-card-v2">
+          <div className="td-stat-icon-v2 td-stat-icon-blue">
+            <Eye size={18} />
+          </div>
+          <p className="td-stat-value-v2">{profilLoading ? "…" : (profil?.vues ?? 0)}</p>
+          <p className="td-stat-label-v2">Vues du profil</p>
+          <p className="td-stat-sub-v2 td-stat-sub-muted">Depuis la création du profil</p>
+        </div>
+
+        <div className="td-stat-card-v2">
+          <div className="td-stat-icon-v2 td-stat-icon-purple">
+            <ClipboardList size={18} />
+          </div>
+          <p className="td-stat-value-v2">{loading ? "…" : total}</p>
+          <p className="td-stat-label-v2">Demandes reçues</p>
+          <p className="td-stat-sub-v2 td-stat-sub-ok">{loading ? "" : `${enAttente} en attente`}</p>
+        </div>
+
+        <div className="td-stat-card-v2">
+          <div className="td-stat-icon-v2 td-stat-icon-yellow">
+            <Star size={18} />
+          </div>
+          <p className="td-stat-value-v2">{profilLoading ? "…" : (profil?.note ?? 0)}</p>
+          <p className="td-stat-label-v2">Note moyenne</p>
+          <p className="td-stat-sub-v2 td-stat-sub-muted">
+            {profilLoading ? "" : profil?.nb_avis > 0 ? `${profil.nb_avis} avis` : "Aucun avis"}
+          </p>
+        </div>
+
+        <div className="td-stat-card-v2">
+          <div className="td-stat-icon-v2 td-stat-icon-green">
+            <TrendingUp size={18} />
+          </div>
+          <p className="td-stat-value-v2">
+            {profilLoading ? "…" : `${revenusEstimes.toLocaleString("fr-FR")} FCFA`}
+          </p>
+          <p className="td-stat-label-v2">Revenus estimés</p>
+          <p className="td-stat-sub-v2 td-stat-sub-muted">Demandes terminées</p>
+        </div>
+      </div>
+
+      <button className="td-explore-banner" onClick={() => navigate("/recherche")}>
+        <div className="td-explore-banner-icon">
+          <Search size={20} />
+        </div>
+        <div className="td-explore-banner-text">
+          <p className="td-explore-banner-title">Découvrez les autres talents de la plateforme</p>
+          <p className="td-explore-banner-sub">Explorez les profils, inspirez-vous et suivez la concurrence.</p>
+        </div>
+        <ChevronRight size={18} className="td-explore-banner-arrow" />
+      </button>
+
+      <div className="td-card">
+        <div className="td-card-header">
+          <h2 className="td-card-title">Demandes récentes</h2>
+          <button className="td-card-link" onClick={() => navigate("/talent/demandes")}>
+            Voir tout <ChevronRight size={14} />
+          </button>
+        </div>
+        <div className="td-card-body">
+          {loading ? (
+            <p className="td-empty-text">Chargement...</p>
+          ) : demandesRecentes.length === 0 ? (
+            <p className="td-empty-text">Aucune demande pour le moment.</p>
+          ) : (
+            demandesRecentes.map((d) => (
+              <div key={d.id} className="td-demande-row">
+                <div className="td-demande-avatar">{d.client_nom?.[0] ?? "?"}</div>
+                <div className="td-demande-info">
+                  <p className="td-demande-client">{d.client_nom}</p>
+                  <p className="td-demande-service">{d.message_initial}</p>
+                </div>
+                <div className="td-demande-right">
+                  <span className={`td-statut td-statut-${statutColor[d.statut] || "orange"}`}>
+                    {statutLabel[d.statut] || d.statut}
+                  </span>
+                  <p className="td-demande-date">
+                    {d.created_at ? new Date(d.created_at).toLocaleDateString("fr-FR") : ""}
+                  </p>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const VILLES_TOGO = [
   "Lomé", "Aného", "Tsévié", "Vogan", "Tabligbo", "Notsé", "Kpalimé",
   "Atakpamé", "Amlamé", "Badou", "Sotouboua", "Sokodé", "Bassar",

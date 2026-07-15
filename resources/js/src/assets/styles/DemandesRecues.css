@@ -1,301 +1,266 @@
-.dr-page {
-    min-height: 100vh;
-    background: #f7f8f7;
-    display: flex;
-    flex-direction: column;
+/* ── Résumé / filtres en cartes ── */
+.dr-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.dr-summary-card {
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  padding: 16px;
+  text-align: left;
+  font: inherit;
+  transition: transform 0.1s ease, border-color 0.15s ease;
+}
+
+.dr-summary-card:hover {
+  transform: translateY(-1px);
+}
+
+.dr-summary-val {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.dr-summary-label {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.dr-summary-total { background: #fff7ed; color: #c2410c; }
+.dr-summary-total.dr-summary-card-active { border-color: #c2410c; }
+
+.dr-summary-pending { background: #fefce8; color: #a16207; }
+.dr-summary-pending.dr-summary-card-active { border-color: #a16207; }
+
+.dr-summary-accepted { background: #ecfdf5; color: #047857; }
+.dr-summary-accepted.dr-summary-card-active { border-color: #047857; }
+
+.dr-summary-rejected { background: #fef2f2; color: #b91c1c; }
+.dr-summary-rejected.dr-summary-card-active { border-color: #b91c1c; }
+
+.dr-summary-terminee { background: #eff6ff; color: #1d4ed8; }
+.dr-summary-terminee.dr-summary-card-active { border-color: #1d4ed8; }
+
+@media (max-width: 700px) {
+  .dr-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
-  
-  .dr-body {
-    flex: 1;
-    max-width: 860px;
-    width: 100%;
-    margin: 0 auto;
-    padding: 32px 24px 48px;
-  }
-  
-  .dr-header {
-    margin-bottom: 24px;
-  }
-  
-  .dr-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: #0b3d24;
-    margin: 0 0 4px;
-  }
-  
-  .dr-sub {
-    font-size: 14px;
-    color: #6b7280;
-    margin: 0;
-  }
-  
-  /* Filtres */
-  .dr-filters {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    overflow-x: auto;
-    padding-bottom: 2px;
-  }
-  
-  .dr-filter-btn {
-    white-space: nowrap;
-    padding: 8px 16px;
-    border-radius: 999px;
-    border: 1px solid #e2e5e2;
-    background: #fff;
-    color: #4b5563;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-  
-  .dr-filter-btn:hover {
-    border-color: #1a5c34;
-  }
-  
-  .dr-filter-btn-active {
-    background: #1a5c34;
-    border-color: #1a5c34;
-    color: #fff;
-  }
-  
-  /* Loading / empty / error */
-  .dr-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    padding: 48px 0;
-    color: #6b7280;
-    font-size: 14px;
-  }
-  
-  .dr-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    padding: 56px 0;
-    color: #9ca3af;
-    font-size: 14px;
-  }
-  
-  .dr-empty-icon {
-    color: #d1d5db;
-  }
-  
-  .dr-error {
-    background: #fef2f2;
-    color: #b91c1c;
-    border: 1px solid #fecaca;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: 13px;
-    margin-bottom: 16px;
-  }
-  
-  .dr-spin {
-    animation: dr-spin 0.8s linear infinite;
-  }
-  
-  @keyframes dr-spin {
-    to { transform: rotate(360deg); }
-  }
-  
-  /* Liste et cartes */
-  .dr-list {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-  
-  .dr-card {
-    background: #fff;
-    border: 1px solid #eceeec;
-    border-radius: 16px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-    overflow: hidden;
-  }
-  
-  .dr-card-top {
-    padding: 18px 20px;
-    cursor: pointer;
-    transition: background 0.15s ease;
-  }
-  
-  .dr-card-top:hover {
-    background: #fafbfa;
-  }
-  
-  .dr-card-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  
-  .dr-client-name {
-    font-weight: 600;
-    color: #111827;
-    font-size: 15px;
-    margin: 0;
-  }
-  
-  .dr-card-meta {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-top: 6px;
-  }
-  
-  .dr-meta-item {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    color: #9ca3af;
-  }
-  
-  .dr-meta-budget {
-    font-size: 12px;
-    font-weight: 600;
-    color: #1a5c34;
-  }
-  
-  /* Badges de statut */
-  .dr-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 10px;
-    border-radius: 999px;
-    flex-shrink: 0;
-  }
-  
-  .dr-badge-attente {
-    background: #fff7ed;
-    color: #c2410c;
-  }
-  
-  .dr-badge-acceptee {
-    background: #ecfdf5;
-    color: #047857;
-  }
-  
-  .dr-badge-refusee {
-    background: #fef2f2;
-    color: #b91c1c;
-  }
-  
-  .dr-badge-terminee {
-    background: #eff6ff;
-    color: #1d4ed8;
-  }
-  
-  /* Détails dépliés */
-  .dr-card-details {
-    border-top: 1px solid #f1f2f1;
-    padding: 16px 20px 20px;
-  }
-  
-  .dr-details-label {
-    font-size: 12px;
-    font-weight: 600;
-    color: #6b7280;
-    margin: 0 0 8px;
-  }
-  
-  .dr-message-box {
-    background: #f4faf6;
-    border-radius: 12px;
-    padding: 14px;
-    display: flex;
-    gap: 10px;
-  }
-  
-  .dr-message-icon {
-    color: #1a5c34;
-    flex-shrink: 0;
-    margin-top: 2px;
-  }
-  
-  .dr-message-text {
-    font-size: 14px;
-    color: #374151;
-    line-height: 1.5;
-    margin: 0;
-  }
-  
-  /* Actions */
+}
+
+/* ── État vide ── */
+.dr-empty {
+  text-align: center;
+  padding: 64px 24px;
+  color: #9ca3af;
+}
+
+.dr-empty-title {
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+/* ── Liste et cartes de demande ── */
+.dr-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 700px;
+}
+
+.dr-card {
+  background: #fff;
+  border: 1px solid #f1f5f4;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.dr-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.dr-client-name {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+/* ── Badges de statut ── */
+.dr-badge {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 11px;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.dr-badge-pending  { background: #fffbeb; color: #b45309; }
+.dr-badge-accepted { background: #ecfdf3; color: #166534; }
+.dr-badge-rejected { background: #fef2f2; color: #b91c1c; }
+.dr-badge-terminee  { background: #eff6ff; color: #1d4ed8; }
+
+/* ── Meta (date / budget) ── */
+.dr-meta-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.dr-meta-item, .dr-meta-budget {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.dr-meta-budget {
+  color: #166534;
+  font-weight: 700;
+}
+
+/* ── Message du client ── */
+.dr-message {
+  font-size: 13px;
+  color: #374151;
+  font-style: italic;
+  margin: 0 0 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f4;
+}
+
+/* ── Actions ── */
+.dr-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.dr-accept-btn, .dr-reject-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.dr-accept-btn { background: #ecfdf3; color: #166534; }
+.dr-accept-btn:hover { background: #dcfce7; }
+
+.dr-reject-btn { background: #fef2f2; color: #dc2626; }
+.dr-reject-btn:hover { background: #fee2e2; }
+
+.dr-terminer-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  background: #f5730a;
+  color: #fff;
+}
+
+.dr-terminer-btn:hover:not(:disabled) { background: #dd6608; }
+.dr-terminer-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.dr-accept-btn:disabled,
+.dr-reject-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Modale de refus ── */
+.dr-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+}
+
+.dr-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+}
+
+.dr-modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 16px;
+}
+
+.dr-modal-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.dr-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.dr-modal-cancel {
+  flex: 1;
+  background: #f3f4f6;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.dr-modal-confirm {
+  flex: 1;
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
   .dr-actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 16px;
+    flex-direction: column;
   }
-  
-  .dr-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 10px 18px;
-    border-radius: 10px;
-    font-size: 13px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: opacity 0.15s ease;
+
+  .dr-accept-btn, .dr-reject-btn, .dr-terminer-btn {
+    width: 100%;
+    justify-content: center;
   }
-  
-  .dr-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-  
-  .dr-btn-accept {
-    background: #1a5c34;
-    color: #fff;
-  }
-  
-  .dr-btn-accept:hover:not(:disabled) {
-    background: #164a2a;
-  }
-  
-  .dr-btn-refuse {
-    background: #fef2f2;
-    color: #b91c1c;
-    border: 1px solid #fecaca;
-  }
-  
-  .dr-btn-refuse:hover:not(:disabled) {
-    background: #fee2e2;
-  }
-  
-  .dr-btn-terminer {
-    background: #f5730a;
-    color: #fff;
-  }
-  
-  .dr-btn-terminer:hover:not(:disabled) {
-    background: #dd6608;
-  }
-  
-  /* Responsive */
-  @media (max-width: 640px) {
-    .dr-body {
-      padding: 20px 16px 40px;
-    }
-  
-    .dr-actions {
-      flex-direction: column;
-    }
-  
-    .dr-btn {
-      width: 100%;
-      justify-content: center;
-    }
-  }
+}

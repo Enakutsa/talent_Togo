@@ -1,10 +1,11 @@
 import { useContext, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import { getProfilTalent, updateProfilTalent } from "../services/profilTalent.service";
 import {
   LayoutDashboard, User, MessageSquare, ClipboardList,
   Star, Bell, LogOut, Menu, X, ChevronDown,
-  Wifi, WifiOff, Search, Image as ImageIcon,
+  Wifi, WifiOff, Search, Image as ImageIcon, Loader2,
 } from "lucide-react";
 
 // "to" = route réelle vers laquelle on navigue.
@@ -13,9 +14,8 @@ import {
 // TalentDashboard sache quel onglet ouvrir.
 export const NAV_ITEMS = [
   { key: "dashboard", label: "Tableau de bord", icon: LayoutDashboard, to: "/talent/dashboard" },
-  { key: "demandes",  label: "Demandes",         icon: ClipboardList,  badge: 3, to: "/talent/demandes" },
-  { key: "messages",  label: "Messages",          icon: MessageSquare, badge: 5, to: "/talent/dashboard" },
-  { key: "portfolio", label: "Portfolio",         icon: ImageIcon,     to: "/talent/portfolio" },
+  { key: "demandes",  label: "Demandes",         icon: ClipboardList,  to: "/talent/demandes" },
+  { key: "messages",  label: "Messages",          icon: MessageSquare, to: "/talent/dashboard" },  { key: "portfolio", label: "Portfolio",         icon: ImageIcon,     to: "/talent/portfolio" },
   { key: "avis",      label: "Avis",              icon: Star,          to: "/talent/dashboard" },
 
 ];
@@ -27,12 +27,22 @@ export default function TalentTopNav({ activeKey }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [disponible, setDisponible] = useState(true);
+  const [dispoLoading, setDispoLoading] = useState(false);
   const menuRef = useRef(null);
 
   const prenom = user?.prenom || "Talent";
   const nom = user?.nom || "";
   const photo = user?.profilTalent?.photo || null;
   const initiales = `${prenom[0] ?? ""}${nom[0] ?? ""}`.toUpperCase();
+
+  // ✅ Charge la vraie disponibilité du profil au montage — avant ça, le
+  // toggle démarrait toujours à "Disponible" par défaut, peu importe l'état
+  // réel enregistré côté backend.
+  useEffect(() => {
+    getProfilTalent()
+      .then((res) => setDisponible(!!res.data?.disponibilite))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -50,6 +60,24 @@ export default function TalentTopNav({ activeKey }) {
     navigate(item.to, { state: { activeKey: item.key } });
     setMobileNavOpen(false);
     setMenuOpen(false);
+  };
+
+  // ✅ Bascule la disponibilité : mise à jour optimiste de l'UI, appel API
+  // via le même endpoint que ProfilSection (PUT /talent/profil), et
+  // rollback si la requête échoue.
+  const handleToggleDispo = () => {
+    if (dispoLoading) return;
+
+    const next = !disponible;
+    setDisponible(next);
+    setDispoLoading(true);
+
+    const payload = new FormData();
+    payload.append("disponibilite", next ? "1" : "0");
+
+    updateProfilTalent(payload)
+      .catch(() => setDisponible(!next))
+      .finally(() => setDispoLoading(false));
   };
 
   return (
@@ -113,9 +141,14 @@ export default function TalentTopNav({ activeKey }) {
                   </div>
                   <button
                     className={`td-dispo-toggle ${disponible ? "toggle-on" : "toggle-off"}`}
-                    onClick={() => setDisponible(!disponible)}
+                    onClick={handleToggleDispo}
+                    disabled={dispoLoading}
                   >
-                    <span className="td-dispo-thumb" />
+                    {dispoLoading ? (
+                      <Loader2 size={12} className="td-dispo-spin" />
+                    ) : (
+                      <span className="td-dispo-thumb" />
+                    )}
                   </button>
                 </div>
 

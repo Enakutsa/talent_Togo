@@ -23,11 +23,12 @@ class TalentController extends Controller
     }
 
     /**
-     * Calcule la note moyenne et le total d'avis.
+     * Calcule la note moyenne et le total d'avis (uniquement les avis visibles).
      */
     private function calcNote(ProfilTalent $profil): array
     {
         $avis  = $profil->relationLoaded('avis') ? $profil->avis : $profil->avis()->get();
+        $avis  = $avis->where('statut', 'visible');
         $total = $avis->count();
         $note  = $total > 0 ? round($avis->avg('note'), 1) : 0;
 
@@ -133,7 +134,7 @@ class TalentController extends Controller
      */
     public function show(ProfilTalent $talent)
     {
-        $talent->load(['utilisateur.categorie', 'portfolios', 'avis.utilisateur']);
+        $talent->load(['utilisateur.categorie', 'portfolios', 'avis.client']);
 
         abort_unless($talent->utilisateur?->statut === 'valide', 404);
 
@@ -197,15 +198,19 @@ class TalentController extends Controller
             'type'  => $p->type ?? 'image',
         ])->values()->toArray();
 
-        // Avis
-        $avisListe = $profil->avis->map(fn ($a) => [
-            'id'          => $a->id,
-            'client'      => trim(($a->utilisateur?->prenom ?? '') . ' ' . ($a->utilisateur?->nom ?? '')),
-            'avatar'      => null,
-            'note'        => $a->note,
-            'commentaire' => $a->commentaire,
-            'date'        => $a->created_at?->format('d M Y') ?? '',
-        ])->values()->toArray();
+        // Avis — uniquement ceux visibles publiquement
+        $avisListe = $profil->avis
+            ->where('statut', 'visible')
+            ->map(fn ($a) => [
+                'id'          => $a->id,
+                'client'      => trim(($a->client?->prenom ?? '') . ' ' . ($a->client?->nom ?? '')),
+                'avatar'      => null,
+                'note'        => $a->note,
+                'commentaire' => $a->commentaire,
+                'date'        => $a->created_at?->format('d M Y') ?? '',
+            ])
+            ->values()
+            ->toArray();
 
         return [
             'id'          => $profil->id,

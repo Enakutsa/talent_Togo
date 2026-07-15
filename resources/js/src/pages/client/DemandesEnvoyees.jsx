@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Clock, CheckCircle, XCircle, MessageSquare, Search, X } from "lucide-react";
+import { Clock, CheckCircle, XCircle, MessageSquare, Search, X, Star, Send } from "lucide-react";
 import { getMesDemandes, annulerDemande } from "../../services/demande.service";
+import { envoyerAvis, getMesAvis } from "../../services/avis.service";
 import ClientTopNav from "../../components/ClientTopNav";
 import "../../assets/styles/ClientDashboard.css";
 import "../../assets/styles/DemandesEnvoyees.css";
@@ -12,12 +13,11 @@ const STATUT_CONFIG = {
   refusee: { label: "Refusée", cls: "de-badge-rejected", icon: XCircle },
 };
 
-// Filtre actif -> valeur envoyée à l'API (null = pas de filtre, "Total")
-const FILTRES = [
-  { key: "all", label: "Total", statut: null },
-  { key: "en_attente", label: "En attente", statut: "en_attente" },
-  { key: "acceptee", label: "Acceptées", statut: "acceptee" },
-  { key: "refusee", label: "Refusées", statut: "refusee" },
+const FILTERS = [
+  { key: null,         label: "Total",      cardCls: "de-summary-total" },
+  { key: "en_attente", label: "En attente", cardCls: "de-summary-pending" },
+  { key: "acceptee",   label: "Acceptées",  cardCls: "de-summary-accepted" },
+  { key: "refusee",    label: "Refusées",   cardCls: "de-summary-rejected" },
 ];
 
 export default function DemandesEnvoyees() {
@@ -27,28 +27,37 @@ export default function DemandesEnvoyees() {
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState(null);
   const [counts, setCounts] = useState({ all: 0, en_attente: 0, acceptee: 0, refusee: 0 });
+  const [statutFilter, setStatutFilter] = useState(null); // null = Total
   const [cancellingId, setCancellingId] = useState(null);
-  const [activeFilter, setActiveFilter] = useState("all");
+  const [avisIds, setAvisIds] = useState([]);
+
+  const [avisModal, setAvisModal] = useState(null);
+  const [note, setNote] = useState(0);
+  const [commentaire, setCommentaire] = useState("");
+  const [sendingAvis, setSendingAvis] = useState(false);
+  const [avisError, setAvisError] = useState("");
 
   useEffect(() => {
     setDemandes(null);
-    const filtreActuel = FILTRES.find((f) => f.key === activeFilter);
-
-    getMesDemandes(page, filtreActuel?.statut)
+    getMesDemandes(page, statutFilter)
       .then((res) => {
         setDemandes(res.data || []);
         setMeta(res.meta || null);
-        // Les compteurs viennent toujours du serveur, jamais recalculés depuis
-        // la page affichée (sinon "Total" se tromperait dès qu'un filtre est actif).
         if (res.counts) setCounts(res.counts);
       })
       .catch(() => setError("Impossible de charger vos demandes."));
-  }, [page, activeFilter]);
+  }, [page, statutFilter]);
+
+  useEffect(() => {
+    getMesAvis()
+      .then((res) => setAvisIds((res.data || []).map((a) => a.demande_prestation_id)))
+      .catch(() => {});
+  }, []);
 
   const handleFilterClick = (key) => {
-    if (key === activeFilter) return;
-    setActiveFilter(key);
-    setPage(1); // repart à la première page à chaque changement de filtre
+    if (key === statutFilter) return;
+    setStatutFilter(key);
+    setPage(1);
   };
 
   const handleAnnuler = async (id) => {
@@ -58,17 +67,50 @@ export default function DemandesEnvoyees() {
     try {
       await annulerDemande(id);
       setDemandes((prev) => prev.filter((d) => d.id !== id));
-      setCounts((prev) => ({
-        ...prev,
-        all: Math.max(0, prev.all - 1),
-        en_attente: Math.max(0, prev.en_attente - 1),
-      }));
-      setMeta((prev) => (prev ? { ...prev, total: Math.max(0, prev.total - 1) } : prev));
+      setCounts((prev) => ({ ...prev, all: prev.all - 1, en_attente: prev.en_attente - 1 }));
     } catch (err) {
       setError(err.response?.data?.message || "Impossible d'annuler cette demande.");
     } finally {
       setCancellingId(null);
     }
+  };
+
+  const ouvrirAvis = (demande) => {
+    setAvisModal(demande);
+    setNote(0);
+    setCommentaire("");
+    setAvisError("");
+  };
+
+  const fermerAvis = () => setAvisModal(null);
+
+  const handleEnvoyerAvis = async () => {
+    if (note === 0) {
+      setAvisError("Sélectionnez une note.");
+      return;
+    }
+
+    setAvisError("");
+    setSendingAvis(true);
+
+    try {
+      await envoyerAvis({
+        demande_prestation_id: avisModal.id,
+        note,
+        commentaire: commentaire || null,
+      });
+      setAvisIds((prev) => [...prev, avisModal.id]);
+      fermerAvis();
+    } catch (err) {
+      setAvisError(err.response?.data?.message || "Impossible d'envoyer l'avis.");
+    } finally {
+      setSendingAvis(false);
+    }
+  };
+
+  const countValue = (key) => {
+    if (key === null) return counts.all ?? 0;
+    return counts[key] ?? 0;
   };
 
   return (
@@ -90,24 +132,25 @@ export default function DemandesEnvoyees() {
 
           {error && <p className="cd-error">{error}</p>}
 
-          {/* Cartes résumé -> deviennent des boutons de filtre */}
-          <div className="de-summary-grid">
-            {FILTRES.map(({ key, label }) => (
-              <button
-                key={key}
-                onClick={() => handleFilterClick(key)}
-                className={`de-summary-card de-summary-${key === "all" ? "total" : key === "en_attente" ? "pending" : key === "acceptee" ? "accepted" : "rejected"} ${activeFilter === key ? "de-summary-active" : ""}`}
-              >
-                <div className="de-summary-val">{counts[key]}</div>
-                <div className="de-summary-label">{label}</div>
-              </button>
-            ))}
-          </div>
+          {counts.all > 0 && (
+            <div className="de-summary-grid">
+              {FILTERS.map((f) => (
+                <button
+                  key={f.label}
+                  onClick={() => handleFilterClick(f.key)}
+                  className={`de-summary-card ${f.cardCls} ${statutFilter === f.key ? "de-summary-card-active" : ""}`}
+                >
+                  <div className="de-summary-val">{countValue(f.key)}</div>
+                  <div className="de-summary-label">{f.label}</div>
+                </button>
+              ))}
+            </div>
+          )}
 
           {demandes === null ? (
             <p className="text-gray-500 text-sm">Chargement...</p>
           ) : demandes.length === 0 ? (
-            activeFilter === "all" ? (
+            statutFilter === null ? (
               <div className="de-empty">
                 <div className="de-empty-icon">
                   <MessageSquare size={28} />
@@ -125,12 +168,7 @@ export default function DemandesEnvoyees() {
                 <div className="de-empty-icon">
                   <MessageSquare size={28} />
                 </div>
-                <h3 className="de-empty-title">
-                  Aucune demande {FILTRES.find((f) => f.key === activeFilter)?.label.toLowerCase()}
-                </h3>
-                <button onClick={() => handleFilterClick("all")} className="de-explore-btn">
-                  Voir toutes les demandes
-                </button>
+                <h3 className="de-empty-title">Aucune demande dans cette catégorie</h3>
               </div>
             )
           ) : (
@@ -140,6 +178,7 @@ export default function DemandesEnvoyees() {
                   const config = STATUT_CONFIG[d.statut] || STATUT_CONFIG.en_attente;
                   const StatusIcon = config.icon;
                   const peutAnnuler = d.statut === "en_attente";
+                  const peutNoter = d.statut === "acceptee" && !avisIds.includes(d.id);
 
                   return (
                     <div key={d.id} className="de-card">
@@ -185,6 +224,15 @@ export default function DemandesEnvoyees() {
                           <MessageSquare size={12} /> Message
                         </button>
 
+                        {peutNoter && (
+                          <button
+                            onClick={() => ouvrirAvis(d)}
+                            className="de-avis-btn"
+                          >
+                            <Star size={12} /> Laisser un avis
+                          </button>
+                        )}
+
                         {peutAnnuler && (
                           <button
                             onClick={() => handleAnnuler(d.id)}
@@ -228,6 +276,51 @@ export default function DemandesEnvoyees() {
 
         </div>
       </main>
+
+      {avisModal && (
+        <div className="de-avis-modal-overlay" onClick={fermerAvis}>
+          <div className="de-avis-modal" onClick={(e) => e.stopPropagation()}>
+            <h2 className="de-avis-modal-title">Noter {avisModal.talent_nom}</h2>
+
+            {avisError && <p className="cd-error">{avisError}</p>}
+
+            <div className="de-avis-stars">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setNote(n)}
+                  className="de-avis-star-btn"
+                >
+                  <Star
+                    size={28}
+                    className={n <= note ? "de-avis-star-filled" : "de-avis-star-empty"}
+                  />
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              rows={4}
+              placeholder="Partagez votre expérience (facultatif)..."
+              className="de-avis-textarea"
+              value={commentaire}
+              onChange={(e) => setCommentaire(e.target.value)}
+            />
+
+            <div className="de-avis-modal-actions">
+              <button onClick={fermerAvis} className="de-modal-cancel">Annuler</button>
+              <button
+                onClick={handleEnvoyerAvis}
+                disabled={sendingAvis || note === 0}
+                className="de-modal-send"
+              >
+                {sendingAvis ? "Envoi..." : <><Send size={14} /> Envoyer</>}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

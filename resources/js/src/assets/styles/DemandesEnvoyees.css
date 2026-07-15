@@ -440,3 +440,142 @@
   border-color: currentColor;
 }
   }
+
+  .de-avis-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fefce8;
+    border: 1px solid #fde68a;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #b45309;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  
+  .de-avis-btn:hover {
+    background: #fef9c3;
+  }
+  
+  /* Modale avis */
+  
+  .de-avis-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 100;
+  }
+  
+  .de-avis-modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 420px;
+  }
+  
+  .de-avis-modal-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 20px;
+  }
+  
+  .de-avis-stars {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+  
+  .de-avis-star-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+  }
+  
+  .de-avis-star-filled {
+    fill: #fbbf24;
+    color: #fbbf24;
+  }
+  
+  .de-avis-star-empty {
+    color: #e5e7eb;
+  }
+  
+  .de-avis-textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    font-size: 13.5px;
+    resize: vertical;
+    margin-bottom: 18px;
+  }
+  
+  .de-avis-textarea:focus {
+    outline: none;
+    border-color: #ea580c;
+  }
+  
+  .de-avis-modal-actions {
+    display: flex;
+    gap: 10px;
+  }
+  
+  .de-modal-cancel {
+    flex: 1;
+    background: #f3f4f6;
+    border: none;
+    padding: 11px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #374151;
+    cursor: pointer;
+  }
+  
+  .de-modal-send {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    background: #ea580c;
+    border: none;
+    padding: 11px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+  }
+  
+  .de-modal-send:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .de-summary-card {
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.1s ease, border-color 0.15s ease;
+    font: inherit;
+    text-align: left;
+  }
+  
+  .de-summary-card:hover {
+    transform: translateY(-1px);
+  }
+  
+  .de-summary-card-active {
+    border-color: currentColor;
+  }
