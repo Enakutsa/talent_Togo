@@ -130,4 +130,10 @@ class Utilisateur extends Authenticatable implements FilamentUser, HasName
     {
         return $this->statut === 'desactive';
     }
+
+    public function signalements()
+{
+    return $this->hasMany(Signalement::class, 'client_id');
+}
+
 }

@@ -86,7 +86,7 @@
   
   .de-summary-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 12px;
     margin-bottom: 28px;
   }
@@ -95,7 +95,18 @@
     border-radius: 14px;
     padding: 16px;
     text-align: center;
-    border: 1px solid;
+    border: 2px solid transparent;
+    cursor: pointer;
+    font: inherit;
+    transition: transform 0.1s ease, border-color 0.15s ease;
+  }
+
+  .de-summary-card:hover {
+    transform: translateY(-1px);
+  }
+
+  .de-summary-card-active {
+    border-color: currentColor;
   }
   
   .de-summary-val {
@@ -132,6 +143,16 @@
     background: #fef2f2;
     border-color: #fecaca;
     color: #b91c1c;
+  }
+
+  .de-summary-terminee {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1d4ed8;
+  }
+
+  .de-summary-terminee.de-summary-card-active {
+    border-color: #1d4ed8;
   }
   
   /* List */
@@ -207,6 +228,11 @@
   .de-badge-rejected {
     background: #fef2f2;
     color: #b91c1c;
+  }
+
+  .de-badge-terminee {
+    background: #eff6ff;
+    color: #1d4ed8;
   }
   
   .de-meta-row {
@@ -312,6 +338,25 @@
     opacity: 0.6;
     cursor: not-allowed;
   }
+
+  .de-avis-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fefce8;
+    border: 1px solid #fde68a;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #b45309;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  
+  .de-avis-btn:hover {
+    background: #fef9c3;
+  }
   
   /* Pagination */
   
@@ -351,115 +396,7 @@
     color: #6b7280;
     font-weight: 500;
   }
-  
-  /* Responsive */
-  
-  @media (max-width: 640px) {
-    .de-summary-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  
-    .de-header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-  
-    .de-new-btn {
-      width: 100%;
-      justify-content: center;
-    }
-  
-    .de-message-btn {
-      width: 100%;
-      justify-content: center;
-    }
-  
-    .de-cancel-btn {
-      width: 100%;
-      justify-content: center;
-      margin-left: 0;
-    }
-  
-    .de-actions {
-      flex-direction: column;
-    }
-    .de-pagination {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 16px;
-      margin-top: 24px;
-    }
-    
-    .de-page-btn {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      color: #374151;
-      padding: 8px 16px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s ease;
-    }
-    
-    .de-page-btn:hover:not(:disabled) {
-      background: #f9fafb;
-      border-color: #ea580c;
-      color: #ea580c;
-    }
-    
-    .de-page-btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-    
-    .de-page-info {
-      font-size: 12.5px;
-      color: #6b7280;
-      font-weight: 500;
-    }
 
-    /* ── Ajouts pour DemandesEnvoyees.jsx : cartes résumé -> boutons filtres ── */
-
-.de-summary-card {
-  /* Reset des styles par défaut d'un <button> */
-  border: 2px solid transparent;
-  background: inherit;
-  cursor: pointer;
-  font: inherit;
-  text-align: left;
-  transition: border-color 0.15s ease, transform 0.1s ease;
-}
-
-.de-summary-card:hover {
-  transform: translateY(-1px);
-}
-
-.de-summary-active {
-  border-color: currentColor;
-}
-  }
-
-  .de-avis-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: #fefce8;
-    border: 1px solid #fde68a;
-    padding: 8px 16px;
-    border-radius: 10px;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: #b45309;
-    cursor: pointer;
-    transition: background 0.15s ease;
-  }
-  
-  .de-avis-btn:hover {
-    background: #fef9c3;
-  }
-  
   /* Modale avis */
   
   .de-avis-modal-overlay {
@@ -563,32 +500,36 @@
     opacity: 0.6;
     cursor: not-allowed;
   }
-
-  .de-summary-card {
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: transform 0.1s ease, border-color 0.15s ease;
-    font: inherit;
-    text-align: left;
-  }
   
-  .de-summary-card:hover {
-    transform: translateY(-1px);
-  }
+  /* Responsive */
   
-  .de-summary-card-active {
-    border-color: currentColor;
-  }
-
-  .de-badge-terminee {
-    background: #eff6ff;
-    color: #1d4ed8;
-  }
+  @media (max-width: 640px) {
+    .de-summary-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
   
-  .de-summary-terminee {
-    background: #eff6ff;
-    color: #1d4ed8;
-  }
-  .de-summary-terminee.de-summary-card-active {
-    border-color: #1d4ed8;
+    .de-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .de-new-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  
+    .de-message-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  
+    .de-cancel-btn {
+      width: 100%;
+      justify-content: center;
+      margin-left: 0;
+    }
+  
+    .de-actions {
+      flex-direction: column;
+    }
   }

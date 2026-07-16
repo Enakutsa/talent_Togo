@@ -9,3 +9,8 @@ export const getMesAvis = async () => {
   const res = await api.get("/client/avis");
   return res.data;
 };
+
+export const getAvisRecus = async () => {
+  const res = await api.get("/talent/avis");
+  return res.data;
+};

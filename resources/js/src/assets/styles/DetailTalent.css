@@ -682,3 +682,39 @@
     grid-template-columns: 1fr;
   }
 }
+
+.dt-modal-hint {
+  font-size: 11.5px;
+  color: #9ca3af;
+  margin: 4px 0 0;
+}
+
+/* ── Signalement ─────────────────────────────────────────────────────────── */
+.dt-report-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  background: none;
+  border: none;
+  color: #9ca3af;
+  font-size: 12.5px;
+  font-weight: 500;
+  padding: 10px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: color 0.15s ease;
+}
+
+.dt-report-btn:hover {
+  color: #dc2626;
+}
+
+.dt-modal-send-danger {
+  background: #dc2626 !important;
+}
+
+.dt-modal-send-danger:hover:not(:disabled) {
+  background: #b91c1c !important;
+}

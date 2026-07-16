@@ -10,7 +10,7 @@ use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\FavoriController;
 use App\Http\Controllers\DemandePrestationController;
 use App\Http\Controllers\AvisController;
-
+use App\Http\Controllers\SignalementController;
 /*
 |--------------------------------------------------------------------------
 | AUTH PUBLIC
@@ -129,4 +129,14 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/client/avis', [AvisController::class, 'store']);
     Route::get('/client/avis', [AvisController::class, 'indexClient']);
+    Route::get('/talent/avis', [AvisController::class, 'indexTalent']);
+});
+
+
+// --------------------------------------------------------------------------
+// SIGNALEMENTS (CRUD) — Réservé au rôle "client" (v
+//érifié dans le contrôleur)
+// --------------------------------------------------------------------------
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/client/signalements', [SignalementController::class, 'store']);
 });

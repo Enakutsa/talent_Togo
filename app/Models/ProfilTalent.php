@@ -64,4 +64,10 @@ class ProfilTalent extends Model
             && !is_null($this->utilisateur?->categorie_id)
             && !is_null($this->photo);
     }
+
+    public function signalements()
+{
+    return $this->hasMany(Signalement::class, 'profil_talent_id');
+}
+
 }

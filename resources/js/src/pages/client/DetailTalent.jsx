@@ -2,11 +2,12 @@ import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Star, MapPin, Heart, MessageSquare, ArrowLeft,
-  Check, Award, Clock, User, Loader, Send, Calendar, Wallet
+  Check, Award, Clock, User, Loader, Send, Calendar, Wallet, Flag
 } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
 import { getTalentById } from "../../services/talent.service";
 import { envoyerDemande } from "../../services/demande.service";
+import { signalerTalent } from "../../services/signalement.service";
 import "../../assets/styles/DetailTalent.css";
 
 // ── Composant étoiles ──────────────────────────────────────────────────────
@@ -23,6 +24,10 @@ function Stars({ note, size = 14 }) {
     </span>
   );
 }
+
+// ✅ Nombre maximum d'avis affichés sur la page de détail, pour ne pas
+// surcharger la page quand un talent a beaucoup d'avis.
+const MAX_AVIS_AFFICHES = 5;
 
 export default function DetailTalent() {
   const { id } = useParams();
@@ -44,6 +49,14 @@ export default function DetailTalent() {
   const [sendError, setSendError]           = useState("");
   const [sent, setSent]                     = useState(false);
 
+  // ── Formulaire de signalement ──
+  const [showReport, setShowReport]             = useState(false);
+  const [reportMotif, setReportMotif]           = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [reportSending, setReportSending]       = useState(false);
+  const [reportError, setReportError]           = useState("");
+  const [reportSent, setReportSent]             = useState(false);
+
   // ── Chargement du talent ────────────────────────────────────────────────
   useEffect(() => {
     if (!id) return;
@@ -59,6 +72,13 @@ export default function DetailTalent() {
 
   const handleSend = async () => {
     if (!messageInitial.trim()) return;
+
+    // ✅ Le budget proposé ne peut pas être inférieur au tarif minimum
+    // fixé par le talent sur son profil.
+    if (budget && Number(budget) < tarif) {
+      setSendError(`Le budget ne peut pas être inférieur au tarif minimum de ${tarif.toLocaleString("fr-FR")} FCFA.`);
+      return;
+    }
 
     setSendError("");
     setSending(true);
@@ -97,6 +117,43 @@ export default function DetailTalent() {
     navigate(`/messages?talent_id=${talent.id}`);
   };
 
+  // ── Signalement ──
+  const MOTIFS = [
+    { value: "contenu_inapproprie", label: "Contenu inapproprié" },
+    { value: "faux_profil", label: "Faux profil" },
+    { value: "arnaque", label: "Arnaque / fraude" },
+    { value: "comportement_abusif", label: "Comportement abusif" },
+    { value: "autre", label: "Autre" },
+  ];
+
+  const handleReport = async () => {
+    if (!reportMotif) return;
+
+    setReportError("");
+    setReportSending(true);
+
+    try {
+      await signalerTalent({
+        profil_talent_id: talent.id,
+        motif: reportMotif,
+        description: reportDescription || null,
+      });
+      setReportSent(true);
+    } catch (err) {
+      setReportError(err.response?.data?.message || "Impossible d'envoyer le signalement.");
+    } finally {
+      setReportSending(false);
+    }
+  };
+
+  const resetReportModal = () => {
+    setShowReport(false);
+    setReportSent(false);
+    setReportMotif("");
+    setReportDescription("");
+    setReportError("");
+  };
+
   // ── États ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
@@ -126,6 +183,13 @@ export default function DetailTalent() {
   const portfolio   = talent.portfolios  ?? [];
   const avisListe   = talent.avis_liste  ?? [];
   const avatar      = talent.avatar      ?? null;
+
+  // ✅ On n'affiche que les 5 avis les plus récents, pour ne pas surcharger
+  // la page. Le backend (TalentController::formatTalentDetail) trie déjà
+  // avis_liste du plus récent au plus ancien, donc ce sont bien les 5
+  // derniers — et ça se met à jour automatiquement à chaque nouvel avis.
+  const MAX_AVIS_AFFICHES = 5;
+  const avisAffiches = avisListe.slice(0, MAX_AVIS_AFFICHES);
 
   const todayStr = new Date().toISOString().split("T")[0];
 
@@ -238,26 +302,34 @@ export default function DetailTalent() {
               {avisListe.length === 0 ? (
                 <p className="dt-no-avis">Aucun avis pour le moment.</p>
               ) : (
-                <div className="dt-avis-list">
-                  {avisListe.map((a, i) => (
-                    <div key={i} className="dt-avis-row">
-                      <div className="dt-avis-author">
-                        {a.avatar
-                          ? <img src={a.avatar} alt={a.client} className="dt-avis-avatar" />
-                          : <div className="dt-avis-avatar-placeholder">{(a.client ?? "?")[0]}</div>
-                        }
-                        <div>
-                          <p className="dt-avis-name">{a.client}</p>
-                          <div className="dt-avis-meta">
-                            <Stars note={a.note} size={12} />
-                            <span className="dt-avis-date">{a.date}</span>
+                <>
+                  <div className="dt-avis-list">
+                    {avisAffiches.map((a, i) => (
+                      <div key={i} className="dt-avis-row">
+                        <div className="dt-avis-author">
+                          {a.avatar
+                            ? <img src={a.avatar} alt={a.client} className="dt-avis-avatar" />
+                            : <div className="dt-avis-avatar-placeholder">{(a.client ?? "?")[0]}</div>
+                          }
+                          <div>
+                            <p className="dt-avis-name">{a.client}</p>
+                            <div className="dt-avis-meta">
+                              <Stars note={a.note} size={12} />
+                              <span className="dt-avis-date">{a.date}</span>
+                            </div>
                           </div>
                         </div>
+                        <p className="dt-avis-text">{a.commentaire ?? a.text}</p>
                       </div>
-                      <p className="dt-avis-text">{a.commentaire ?? a.text}</p>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+
+                  {avisListe.length > MAX_AVIS_AFFICHES && (
+                    <p className="dt-avis-more">
+                      + {avisListe.length - MAX_AVIS_AFFICHES} autre{avisListe.length - MAX_AVIS_AFFICHES > 1 ? "s" : ""} avis
+                    </p>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -320,6 +392,17 @@ export default function DetailTalent() {
                 <Heart size={16} className={isFav ? "dt-heart-filled" : ""} />
                 {isFav ? "Retiré des favoris" : "Ajouter aux favoris"}
               </button>
+
+              {/* ✅ Bouton Signaler */}
+              <button
+                onClick={() => {
+                  if (!isAuthenticated) { navigate("/login"); return; }
+                  setShowReport(true);
+                }}
+                className="dt-report-btn"
+              >
+                <Flag size={14} /> Signaler ce profil
+              </button>
             </div>
           </div>
         </div>
@@ -378,12 +461,15 @@ export default function DetailTalent() {
                     </label>
                     <input
                       type="number"
-                      min="0"
-                      placeholder="Ex: 50 000"
+                      min={tarif}
+                      placeholder={`Min. ${tarif.toLocaleString("fr-FR")}`}
                       className="dt-modal-input"
                       value={budget}
                       onChange={(e) => setBudget(e.target.value)}
                     />
+                    <p className="dt-modal-hint">
+                      Tarif minimum du talent : {tarif.toLocaleString("fr-FR")} FCFA
+                    </p>
                   </div>
                 </div>
 
@@ -391,10 +477,72 @@ export default function DetailTalent() {
                   <button onClick={resetModal} className="dt-modal-cancel">Annuler</button>
                   <button
                     onClick={handleSend}
-                    disabled={!messageInitial.trim() || sending}
+                    disabled={!messageInitial.trim() || sending || (budget && Number(budget) < tarif)}
                     className="dt-modal-send"
                   >
                     {sending ? "Envoi..." : <><Send size={14} /> Envoyer</>}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal signalement ── */}
+      {showReport && (
+        <div className="dt-modal-overlay" onClick={() => !reportSent && resetReportModal()}>
+          <div className="dt-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="dt-modal-header">
+              <h2 className="dt-modal-title">Signaler {talent.nom}</h2>
+            </div>
+
+            {reportSent ? (
+              <div className="dt-modal-success">
+                <div className="dt-success-icon"><Check size={28} /></div>
+                <h3 className="dt-success-title">Signalement envoyé</h3>
+                <p className="dt-success-text">Notre équipe va examiner ce profil.</p>
+                <button onClick={resetReportModal} className="dt-success-btn">Fermer</button>
+              </div>
+            ) : (
+              <div className="dt-modal-body">
+                {reportError && <p className="dt-modal-error">{reportError}</p>}
+
+                <div className="dt-modal-field">
+                  <label className="dt-modal-label">
+                    Motif <span className="dt-modal-required">*</span>
+                  </label>
+                  <select
+                    className="dt-modal-input"
+                    value={reportMotif}
+                    onChange={(e) => setReportMotif(e.target.value)}
+                  >
+                    <option value="">Sélectionnez un motif</option>
+                    {MOTIFS.map((m) => (
+                      <option key={m.value} value={m.value}>{m.label}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="dt-modal-field">
+                  <label className="dt-modal-label">Détails (facultatif)</label>
+                  <textarea
+                    rows={4}
+                    placeholder="Décrivez le problème rencontré..."
+                    className="dt-modal-textarea"
+                    value={reportDescription}
+                    onChange={(e) => setReportDescription(e.target.value)}
+                  />
+                </div>
+
+                <div className="dt-modal-actions">
+                  <button onClick={resetReportModal} className="dt-modal-cancel">Annuler</button>
+                  <button
+                    onClick={handleReport}
+                    disabled={!reportMotif || reportSending}
+                    className="dt-modal-send dt-modal-send-danger"
+                  >
+                    {reportSending ? "Envoi..." : <><Flag size={14} /> Signaler</>}
                   </button>
                 </div>
               </div>

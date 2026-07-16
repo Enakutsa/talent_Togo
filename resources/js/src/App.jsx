@@ -14,6 +14,7 @@ import ProfilCreer from "./pages/talent/ProfilCreer";
 import TalentDashboard from "./pages/talent/TalentDashboard";
 import Portfolio from "./pages/talent/Portfolio";
 import DemandesRecues from "./pages/talent/DemandesRecues";
+import AvisRecus from "./pages/talent/AvisRecus";
 import RechercheTalents from "./pages/client/RechercheTalents";
 import DetailTalent from "./pages/client/DetailTalent";
 import ClientDashboard from "./pages/client/ClientDashboard";
@@ -61,6 +62,7 @@ export default function App() {
         <Route path="/talent/dashboard" element={<ProtectedRoute><TalentDashboard /></ProtectedRoute>} />
         <Route path="/talent/portfolio" element={<ProtectedRoute><Portfolio /></ProtectedRoute>} />
         <Route path="/talent/demandes" element={<ProtectedRoute><DemandesRecues /></ProtectedRoute>} />
+        <Route path="/talent/avis" element={<ProtectedRoute><AvisRecus /></ProtectedRoute>} />
 
         {/* ── Espace client ── */}
         <Route path="/client/dashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />

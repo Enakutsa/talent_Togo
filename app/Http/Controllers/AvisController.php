@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Validator;
 class AvisController extends Controller
 {
     /**
-     * Le client laisse un avis sur un talent, rattaché à une demande acceptée.
+     * Le client laisse un avis sur un talent, rattaché à une demande terminée.
      * POST /api/client/avis
      */
     public function store(Request $request)
@@ -35,8 +35,11 @@ class AvisController extends Controller
             return response()->json(['message' => 'Demande introuvable.'], 404);
         }
 
-        if ($demande->statut !== 'acceptee') {
-            return response()->json(['message' => 'Vous ne pouvez laisser un avis que pour une demande acceptée.'], 422);
+        // ✅ Un avis ne peut être laissé que pour une prestation TERMINÉE
+        // (avant : vérifiait 'acceptee', désynchronisé du frontend qui
+        // n'affiche le bouton "Laisser un avis" que sur statut 'terminee').
+        if ($demande->statut !== 'terminee') {
+            return response()->json(['message' => 'Vous ne pouvez laisser un avis que pour une demande terminée.'], 422);
         }
 
         $dejaNote = Avis::where('demande_prestation_id', $demande->id)->exists();
@@ -81,4 +84,43 @@ class AvisController extends Controller
             'data' => $avis,
         ]);
     }
+
+    /**
+ * Liste des avis reçus par le talent connecté.
+ * GET /api/talent/avis
+ */
+public function indexTalent(Request $request)
+{
+    abort_unless($request->user()->isTalent(), 403, 'Réservé aux talents.');
+
+    $profil = $request->user()->profilTalent;
+
+    if (!$profil) {
+        return response()->json(['message' => 'Profil introuvable.'], 404);
+    }
+
+    $avis = Avis::where('profil_talent_id', $profil->id)
+        ->where('statut', 'visible')
+        ->with('client')
+        ->latest()
+        ->get()
+        ->map(function ($a) {
+            return [
+                'id' => $a->id,
+                'client_nom' => trim(($a->client->prenom ?? '') . ' ' . ($a->client->nom ?? '')),
+                'note' => $a->note,
+                'commentaire' => $a->commentaire,
+                'created_at' => $a->created_at,
+            ];
+        });
+
+    $moyenneNote = $avis->count() > 0 ? round($avis->avg('note'), 1) : 0;
+
+    return response()->json([
+        'success' => true,
+        'data' => $avis,
+        'moyenne' => $moyenneNote,
+        'total' => $avis->count(),
+    ]);
+}
 }

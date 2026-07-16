@@ -198,9 +198,14 @@ class TalentController extends Controller
             'type'  => $p->type ?? 'image',
         ])->values()->toArray();
 
-        // Avis — uniquement ceux visibles publiquement
+        // ✅ Avis — uniquement ceux visibles publiquement, TRIÉS DU PLUS
+        // RÉCENT AU PLUS ANCIEN (sortByDesc AVANT le map). Le frontend
+        // (DetailTalent.jsx) ne garde ensuite que les 5 premiers de cette
+        // liste — donc ce sont bien les 5 derniers avis, mis à jour à
+        // chaque nouvel avis.
         $avisListe = $profil->avis
             ->where('statut', 'visible')
+            ->sortByDesc('created_at')
             ->map(fn ($a) => [
                 'id'          => $a->id,
                 'client'      => trim(($a->client?->prenom ?? '') . ' ' . ($a->client?->nom ?? '')),

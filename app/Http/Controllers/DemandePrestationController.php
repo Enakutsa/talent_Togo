@@ -19,8 +19,9 @@ class DemandePrestationController extends Controller
      *
      * `counts` dans la réponse reflète TOUJOURS le total sur l'ensemble des
      * demandes du client, peu importe le filtre `statut` demandé — sinon les
-     * compteurs des boutons de filtre (Total/En attente/Acceptées/Refusées)
-     * changeraient de valeur selon le filtre actif, ce qui serait faux.
+     * compteurs des boutons de filtre (Total/En attente/Acceptées/Refusées/
+     * Terminées) changeraient de valeur selon le filtre actif, ce qui serait
+     * faux.
      */
     public function indexClient(Request $request)
     {
@@ -31,7 +32,7 @@ class DemandePrestationController extends Controller
         $query = DemandePrestation::where('client_id', $clientId)
             ->with(['profilTalent.utilisateur.categorie']);
 
-        if ($request->filled('statut') && in_array($request->statut, ['en_attente', 'acceptee', 'refusee'])) {
+        if ($request->filled('statut') && in_array($request->statut, ['en_attente', 'acceptee', 'refusee', 'terminee'])) {
             $query->where('statut', $request->statut);
         }
 
@@ -56,6 +57,7 @@ class DemandePrestationController extends Controller
                 'en_attente' => $countsParStatut->get('en_attente', 0),
                 'acceptee' => $countsParStatut->get('acceptee', 0),
                 'refusee' => $countsParStatut->get('refusee', 0),
+                'terminee' => $countsParStatut->get('terminee', 0),
             ],
         ]);
     }
