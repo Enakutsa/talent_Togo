@@ -114,7 +114,7 @@ export default function DetailTalent() {
 
   const handleMessage = () => {
     if (!isAuthenticated) { navigate("/login"); return; }
-    navigate(`/messages?talent_id=${talent.id}`);
+    navigate(`/client/messages?talent_id=${talent.id}`);
   };
 
   // ── Signalement ──

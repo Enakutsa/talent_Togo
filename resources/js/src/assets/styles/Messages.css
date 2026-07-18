@@ -1,0 +1,439 @@
+/* ── Layout général ──────────────────────────────────────────────────────── */
+.ms-layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  height: calc(100vh - 64px);
+  max-width: 1200px;
+  margin: 0 auto;
+  border: 1px solid #f3f4f6;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* ── Sidebar conversations ──────────────────────────────────────────────── */
+.ms-sidebar {
+  border-right: 1px solid #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.ms-sidebar-title {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: Sora, sans-serif;
+  color: #111827;
+  padding: 18px 20px;
+  margin: 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.ms-empty-text {
+  padding: 20px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.ms-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 40px 20px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+.ms-empty-btn {
+  padding: 8px 18px;
+  background: #166534;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ms-conv-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.ms-conv-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  border-bottom: 1px solid #f9fafb;
+  transition: background 0.15s;
+  position: relative;
+}
+
+.ms-conv-item:hover { background: #f9fafb; }
+.ms-conv-active     { background: #f0fdf4; }
+
+.ms-conv-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #ede9fe;
+  color: #6d28d9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.ms-conv-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ms-conv-info { flex: 1; min-width: 0; }
+
+.ms-conv-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 2px;
+}
+
+.ms-conv-preview {
+  font-size: 12px;
+  color: #9ca3af;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ms-conv-badge {
+  background: #166534;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+  flex-shrink: 0;
+}
+
+/* ── Fil de discussion ──────────────────────────────────────────────────── */
+.ms-thread {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ms-thread-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #d1d5db;
+  font-size: 13px;
+}
+
+.ms-thread-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.ms-thread-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  font-family: Sora, sans-serif;
+  margin: 0;
+}
+
+.ms-thread-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ms-thread-loading {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ms-spin { animation: ms-spin 0.8s linear infinite; color: #9ca3af; }
+@keyframes ms-spin { to { transform: rotate(360deg); } }
+
+.ms-bubble-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 4px;
+  position: relative;
+}
+
+.ms-bubble-row-me { justify-content: flex-end; }
+
+.ms-bubble {
+  max-width: 70%;
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  position: relative;
+  cursor: pointer;
+}
+
+.ms-bubble p { margin: 0; }
+
+.ms-bubble-them {
+  background: #f3f4f6;
+  color: #111827;
+  border-bottom-left-radius: 4px;
+}
+
+.ms-bubble-me {
+  background: #166534;
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+
+.ms-bubble-deleted {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.ms-deleted-text {
+  font-style: italic;
+  color: #9ca3af;
+}
+
+.ms-bubble-me .ms-deleted-text {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.ms-edited-tag {
+  opacity: 0.7;
+}
+
+.ms-bubble-time {
+  display: block;
+  font-size: 10px;
+  margin-top: 4px;
+  opacity: 0.65;
+}
+
+/* ── Menu contextuel (modifier / supprimer) ─────────────────────────────── */
+.ms-bubble-menu {
+  position: absolute;
+  top: 100%;
+  z-index: 20;
+  background: #fff;
+  border: 1px solid #eceeec;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  padding: 4px;
+  min-width: 210px;
+  margin-top: 4px;
+}
+
+.ms-bubble-row-me .ms-bubble-menu {
+  right: 0;
+}
+
+.ms-bubble-row:not(.ms-bubble-row-me) .ms-bubble-menu {
+  left: 0;
+}
+
+.ms-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+  text-align: left;
+}
+
+.ms-menu-item:hover {
+  background: #f0fdf4;
+}
+
+.ms-menu-item-danger {
+  color: #b91c1c;
+}
+
+.ms-menu-item-danger:hover {
+  background: #fef2f2;
+}
+
+/* ── Édition inline ──────────────────────────────────────────────────────── */
+.ms-edit-box {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.ms-edit-input {
+  flex: 1;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 13.5px;
+  color: inherit;
+  outline: none;
+}
+
+.ms-bubble-them .ms-edit-input {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+}
+
+.ms-edit-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.ms-edit-confirm, .ms-edit-cancel {
+  border: none;
+  border-radius: 6px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ms-edit-confirm {
+  background: #166534;
+  color: #fff;
+}
+
+.ms-edit-cancel {
+  background: rgba(0, 0, 0, 0.1);
+  color: inherit;
+}
+
+/* ── Modale de confirmation de suppression ──────────────────────────────── */
+.ms-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+}
+
+.ms-confirm-modal {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px;
+  max-width: 340px;
+  width: 100%;
+}
+
+.ms-confirm-text {
+  font-size: 14px;
+  color: #111827;
+  margin: 0 0 16px;
+}
+
+.ms-confirm-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.ms-confirm-cancel, .ms-confirm-delete {
+  flex: 1;
+  border: none;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ms-confirm-cancel {
+  background: #f3f4f6;
+}
+
+.ms-confirm-delete {
+  background: #dc2626;
+  color: #fff;
+}
+
+/* ── Input d'envoi ───────────────────────────────────────────────────────── */
+.ms-thread-input-row {
+  display: flex;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.ms-thread-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 20px;
+  font-size: 13.5px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.ms-thread-input:focus { border-color: #166534; }
+
+.ms-send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #166534;
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.ms-send-btn:hover:not(:disabled) { background: #14532d; }
+.ms-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .ms-layout {
+    grid-template-columns: 1fr;
+    height: calc(100vh - 64px);
+  }
+  .ms-sidebar { display: none; }
+}

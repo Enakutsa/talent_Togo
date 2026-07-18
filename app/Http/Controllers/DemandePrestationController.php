@@ -30,6 +30,7 @@ class DemandePrestationController extends Controller
         $clientId = $request->user()->id;
 
         $query = DemandePrestation::where('client_id', $clientId)
+            ->where('statut', '!=', 'conversation')
             ->with(['profilTalent.utilisateur.categorie']);
 
         if ($request->filled('statut') && in_array($request->statut, ['en_attente', 'acceptee', 'refusee', 'terminee'])) {
@@ -38,7 +39,10 @@ class DemandePrestationController extends Controller
 
         $demandes = $query->latest()->paginate(10);
 
+        // ✅ 'conversation' exclu ici aussi, sinon il gonflerait le total
+        // "Toutes" sans jamais apparaître dans un des compteurs détaillés.
         $countsParStatut = DemandePrestation::where('client_id', $clientId)
+            ->where('statut', '!=', 'conversation')
             ->selectRaw('statut, count(*) as total')
             ->groupBy('statut')
             ->pluck('total', 'statut');
@@ -77,6 +81,7 @@ class DemandePrestationController extends Controller
         }
 
         $demandes = DemandePrestation::where('profil_talent_id', $profil->id)
+            ->where('statut', '!=', 'conversation')
             ->with(['client'])
             ->latest()
             ->get();

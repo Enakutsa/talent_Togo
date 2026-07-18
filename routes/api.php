@@ -11,6 +11,9 @@ use App\Http\Controllers\FavoriController;
 use App\Http\Controllers\DemandePrestationController;
 use App\Http\Controllers\AvisController;
 use App\Http\Controllers\SignalementController;
+use App\Http\Controllers\MessageController;
+
+
 /*
 |--------------------------------------------------------------------------
 | AUTH PUBLIC
@@ -139,4 +142,25 @@ Route::middleware('auth:sanctum')->group(function () {
 // --------------------------------------------------------------------------
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/client/signalements', [SignalementController::class, 'store']);
+});
+
+//--------------------------------------------------------------------------
+// MESSAGERIE — conversations rattachées à une demande de prestation
+// (voir MessageController pour le détail du fonctionnement).
+//--------------------------------------------------------------------------
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/client/conversations', [MessageController::class, 'indexClient']);
+    Route::post('/client/conversations/start', [MessageController::class, 'start']);
+    Route::get('/talent/conversations', [MessageController::class, 'indexTalent']);
+ 
+    // Communes aux deux rôles — le contrôleur vérifie que l'utilisateur
+    // connecté fait bien partie de la conversation.
+    Route::get('/conversations/{demande}/messages', [MessageController::class, 'show']);
+    Route::post('/conversations/{demande}/messages', [MessageController::class, 'store']);
+
+    // Modification / suppression d'un message individuel — le contrôleur
+    // vérifie l'appartenance à la conversation et les droits (auteur
+    // uniquement pour modifier ou supprimer "pour tous").
+    Route::patch('/messages/{id}', [MessageController::class, 'update']);
+    Route::delete('/messages/{id}', [MessageController::class, 'destroy']);
 });

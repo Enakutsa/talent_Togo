@@ -15,9 +15,9 @@ import {
 export const NAV_ITEMS = [
   { key: "dashboard", label: "Tableau de bord", icon: LayoutDashboard, to: "/talent/dashboard" },
   { key: "demandes",  label: "Demandes",         icon: ClipboardList,  to: "/talent/demandes" },
-  { key: "messages",  label: "Messages",          icon: MessageSquare, to: "/talent/dashboard" },  
-  { key: "portfolio", label: "Portfolio",         icon: ImageIcon,     to: "/talent/portfolio" },
-  { key: "avis",      label: "Avis",              icon: Star,          to: "/talent/avis" },
+  { key: "messages",  label: "Messages",          icon: MessageSquare, to: "/talent/messages" },  { key: "portfolio", label: "Portfolio",         icon: ImageIcon,     to: "/talent/portfolio" },
+  { key: "avis",      label: "Avis",              icon: Star,          to: "/talent/dashboard" },
+
 ];
 
 export default function TalentTopNav({ activeKey }) {

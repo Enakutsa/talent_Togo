@@ -1,17 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import { Send, MessageSquare, User, Loader2, MoreVertical, Pencil, Trash2, X, Check } from "lucide-react";
+import { Send, MessageSquare, User, Loader2, Pencil, Trash2, X, Check } from "lucide-react";
 import {
-  getConversationsClient, startConversation, getMessages, sendMessage,
-  updateMessage, deleteMessage,
+  getConversationsTalent, getMessages, sendMessage, updateMessage, deleteMessage,
 } from "../../services/message.service";
-import ClientTopNav from "../../components/ClientTopNav";
+import TalentTopNav from "../../components/TalentTopNav";
+import "../../assets/styles/TalentDashboard.css";
 import "../../assets/styles/Messages.css";
 
-export default function Messages() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
-
+export default function MessagesTalent() {
   const [conversations, setConversations] = useState(null);
   const [activeId, setActiveId] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -25,11 +21,11 @@ export default function Messages() {
   const [openMenuId, setOpenMenuId] = useState(null);
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
-  const [confirmDelete, setConfirmDelete] = useState(null); // { id, mode }
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const menuRef = useRef(null);
 
   const loadConversations = useCallback(() => {
-    getConversationsClient()
+    getConversationsTalent()
       .then((res) => setConversations(res.data || []))
       .catch(() => setError("Impossible de charger vos conversations."));
   }, []);
@@ -37,23 +33,6 @@ export default function Messages() {
   useEffect(() => {
     loadConversations();
   }, [loadConversations]);
-
-  useEffect(() => {
-    const talentId = searchParams.get("talent_id");
-    if (!talentId) return;
-
-    startConversation(talentId)
-      .then((res) => {
-        setActiveId(res.data.conversation_id);
-        loadConversations();
-      })
-      .catch(() => setError("Impossible de démarrer la conversation."))
-      .finally(() => {
-        searchParams.delete("talent_id");
-        setSearchParams(searchParams, { replace: true });
-      });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     if (!activeId) return;
@@ -68,7 +47,6 @@ export default function Messages() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Ferme le menu contextuel au clic en dehors
   useEffect(() => {
     const handleClick = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -137,10 +115,10 @@ export default function Messages() {
   const activeConversation = conversations?.find((c) => c.id === activeId);
 
   return (
-    <div className="cd-root">
-      <ClientTopNav activeKey="messages" />
+    <div className="td-root">
+      <TalentTopNav activeKey="messages" />
 
-      <main className="cd-main">
+      <main className="td-main">
         <div className="ms-layout">
 
           <aside className="ms-sidebar">
@@ -152,9 +130,6 @@ export default function Messages() {
               <div className="ms-empty">
                 <MessageSquare size={26} />
                 <p>Aucune conversation pour le moment.</p>
-                <button onClick={() => navigate("/recherche")} className="ms-empty-btn">
-                  Explorer les talents
-                </button>
               </div>
             ) : (
               <div className="ms-conv-list">
@@ -165,13 +140,13 @@ export default function Messages() {
                     onClick={() => setActiveId(c.id)}
                   >
                     <div className="ms-conv-avatar">
-                      {c.talent_photo
-                        ? <img src={c.talent_photo} alt={c.talent_nom} />
+                      {c.client_photo
+                        ? <img src={c.client_photo} alt={c.client_nom} />
                         : <User size={18} />
                       }
                     </div>
                     <div className="ms-conv-info">
-                      <p className="ms-conv-name">{c.talent_nom}</p>
+                      <p className="ms-conv-name">{c.client_nom}</p>
                       <p className="ms-conv-preview">{c.dernier_message || "Nouvelle conversation"}</p>
                     </div>
                     {c.non_lus > 0 && <span className="ms-conv-badge">{c.non_lus}</span>}
@@ -191,12 +166,12 @@ export default function Messages() {
               <>
                 <div className="ms-thread-header">
                   <div className="ms-conv-avatar">
-                    {activeConversation?.talent_photo
-                      ? <img src={activeConversation.talent_photo} alt="" />
+                    {activeConversation?.client_photo
+                      ? <img src={activeConversation.client_photo} alt="" />
                       : <User size={18} />
                     }
                   </div>
-                  <p className="ms-thread-name">{activeConversation?.talent_nom}</p>
+                  <p className="ms-thread-name">{activeConversation?.client_nom}</p>
                 </div>
 
                 <div className="ms-thread-body">
@@ -292,26 +267,8 @@ export default function Messages() {
           </section>
         </div>
 
-        {error && <p className="cd-error">{error}</p>}
+        {error && <p className="td-error">{error}</p>}
       </main>
-
-      {confirmDelete && (
-        <div className="ms-confirm-overlay" onClick={() => setConfirmDelete(null)}>
-          <div className="ms-confirm-modal" onClick={(e) => e.stopPropagation()}>
-            <p className="ms-confirm-text">
-              {confirmDelete.mode === "tous"
-                ? "Supprimer ce message pour tout le monde ?"
-                : "Supprimer ce message pour vous uniquement ?"}
-            </p>
-            <div className="ms-confirm-actions">
-              <button onClick={() => setConfirmDelete(null)} className="ms-confirm-cancel">Annuler</button>
-              <button onClick={() => handleDelete(confirmDelete.id, confirmDelete.mode)} className="ms-confirm-delete">
-                Supprimer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
