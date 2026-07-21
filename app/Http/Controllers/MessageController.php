@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\DemandePrestation;
 use App\Models\Message;
 use App\Models\ProfilTalent;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -217,6 +218,19 @@ class MessageController extends Controller
             'contenu' => $request->contenu,
             'lu' => false,
         ]);
+
+        // ✅ Notifie l'autre participant de la conversation (le destinataire
+        // est celui des deux qui n'est PAS l'expéditeur du message).
+        $destinataire = $request->user()->id === $demande->client_id
+            ? $demande->profilTalent->utilisateur
+            : $demande->client;
+
+        NotificationService::creer(
+            $destinataire,
+            'nouveau_message',
+            "Nouveau message de {$request->user()->prenom}",
+            ['demande_id' => $demande->id]
+        );
 
         return response()->json([
             'success' => true,

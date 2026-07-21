@@ -2,9 +2,10 @@ import { useContext, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { getProfilTalent, updateProfilTalent } from "../services/profilTalent.service";
+import NotificationBell from "./NotificationBell";
 import {
   LayoutDashboard, User, MessageSquare, ClipboardList,
-  Star, Bell, LogOut, Menu, X, ChevronDown,
+  Star, LogOut, Menu, X, ChevronDown,
   Wifi, WifiOff, Search, Image as ImageIcon, Loader2,
 } from "lucide-react";
 
@@ -106,10 +107,7 @@ export default function TalentTopNav({ activeKey }) {
             <Search size={18} />
           </button>
 
-          <button className="td-icon-btn td-icon-btn-bell" title="Notifications">
-            <Bell size={18} />
-            <span className="td-bell-dot" />
-          </button>
+          <NotificationBell accentColor="green" />
 
           <div className="td-profile-menu" ref={menuRef}>
             <button className="td-profile-trigger" onClick={() => setMenuOpen((o) => !o)}>

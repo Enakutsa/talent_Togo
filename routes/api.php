@@ -12,6 +12,7 @@ use App\Http\Controllers\DemandePrestationController;
 use App\Http\Controllers\AvisController;
 use App\Http\Controllers\SignalementController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NotificationController;
 
 
 /*
@@ -163,4 +164,14 @@ Route::middleware('auth:sanctum')->group(function () {
     // uniquement pour modifier ou supprimer "pour tous").
     Route::patch('/messages/{id}', [MessageController::class, 'update']);
     Route::delete('/messages/{id}', [MessageController::class, 'destroy']);
+});
+
+// --------------------------------------------------------------------------
+// NOTIFICATIONS (CRUD) — Réservé à tous les rôles (vérifié dans le contrôleur)
+// --------------------------------------------------------------------------
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::patch('/notifications/{id}/lu', [NotificationController::class, 'marquerLue']);
+    Route::patch('/notifications/tout-lire', [NotificationController::class, 'toutMarquerLu']);
 });

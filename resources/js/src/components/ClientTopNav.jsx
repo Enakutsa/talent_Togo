@@ -1,9 +1,10 @@
 import { useContext, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
+import NotificationBell from "./NotificationBell";
 import {
   LayoutDashboard, Heart, MessageSquare, ClipboardList,
-  Bell, LogOut, Menu, X, ChevronDown, Search, Settings, User, Home,
+  LogOut, Menu, X, ChevronDown, Search, Settings, User, Home,
 } from "lucide-react";
 
 export const CLIENT_NAV_ITEMS = [
@@ -68,10 +69,7 @@ export default function ClientTopNav({ activeKey }) {
             <Search size={18} />
           </button>
 
-          <button className="cd-icon-btn cd-icon-btn-bell" title="Notifications">
-            <Bell size={18} />
-            <span className="cd-bell-dot" />
-          </button>
+          <NotificationBell accentColor="orange" />
 
           <div className="cd-profile-menu" ref={menuRef}>
             <button className="cd-profile-trigger" onClick={() => setMenuOpen((o) => !o)}>

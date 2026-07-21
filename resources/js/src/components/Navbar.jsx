@@ -1,7 +1,8 @@
 import { useState, useContext, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, Menu, X, Bell, User, LogOut, Settings, LayoutDashboard } from "lucide-react";
+import { Search, Menu, X, User, LogOut, Settings, LayoutDashboard } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
+import NotificationBell from "./NotificationBell";
 import "../assets/styles/Navbar.css";
 
 const links = [
@@ -94,12 +95,7 @@ export default function Navbar() {
               <Search size={18} />
             </button>
 
-            {isAuthenticated && (
-              <button className="navbar-icon-btn navbar-icon-btn-bell" aria-label="Notifications">
-                <Bell size={18} />
-                <span className="navbar-bell-dot" />
-              </button>
-            )}
+            {isAuthenticated && <NotificationBell accentColor={user?.role === "talent" ? "green" : "orange"} />}
 
             {isAuthenticated ? (
               <div className="navbar-profile-wrap" ref={profileRef}>

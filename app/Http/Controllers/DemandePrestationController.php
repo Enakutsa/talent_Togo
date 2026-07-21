@@ -6,6 +6,7 @@ use App\Models\DemandePrestation;
 use App\Models\ProfilTalent;
 use App\Mail\NouvelleDemandeMail;
 use App\Mail\ReponseDemandeMail;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
@@ -133,6 +134,13 @@ class DemandePrestationController extends Controller
             Mail::to($profil->utilisateur->email)->queue(new NouvelleDemandeMail($demande));
         } catch (\Exception $e) {}
 
+        NotificationService::creer(
+            $profil->utilisateur,
+            'nouvelle_demande',
+            "Nouvelle demande de prestation de {$request->user()->prenom} {$request->user()->nom}",
+            ['demande_id' => $demande->id]
+        );
+
         return response()->json([
             'success' => true,
             'data' => $this->formatPourClient($demande->load('profilTalent.utilisateur.categorie')),
@@ -140,58 +148,81 @@ class DemandePrestationController extends Controller
     }
 
     /**
- * Le talent répond à une demande reçue :
- * - en_attente -> acceptee / refusee
- * - acceptee   -> terminee
- * PATCH /api/talent/demandes/{id}
- */
-public function repondre(Request $request, $id)
-{
-    abort_unless($request->user()->isTalent(), 403, 'Réservé aux talents.');
+     * Le talent répond à une demande reçue :
+     * - en_attente -> acceptee / refusee
+     * - acceptee   -> terminee
+     * PATCH /api/talent/demandes/{id}
+     */
+    public function repondre(Request $request, $id)
+    {
+        abort_unless($request->user()->isTalent(), 403, 'Réservé aux talents.');
 
-    $validator = Validator::make($request->all(), [
-        'statut' => 'required|in:acceptee,refusee,terminee',
-        'motif_refus' => 'nullable|string|max:500',
-    ]);
+        $validator = Validator::make($request->all(), [
+            'statut' => 'required|in:acceptee,refusee,terminee',
+            'motif_refus' => 'nullable|string|max:500',
+        ]);
 
-    if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()], 422);
-    }
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
 
-    $profil = $request->user()->profilTalent;
-    $demande = DemandePrestation::where('profil_talent_id', $profil->id)
-        ->with('client')
-        ->find($id);
+        $profil = $request->user()->profilTalent;
+        $demande = DemandePrestation::where('profil_talent_id', $profil->id)
+            ->with('client')
+            ->find($id);
 
-    if (!$demande) {
-        return response()->json(['message' => 'Demande introuvable.'], 404);
-    }
+        if (!$demande) {
+            return response()->json(['message' => 'Demande introuvable.'], 404);
+        }
 
-    $transitionsValides = [
-        'acceptee' => 'en_attente',
-        'refusee' => 'en_attente',
-        'terminee' => 'acceptee',
-    ];
+        $transitionsValides = [
+            'acceptee' => 'en_attente',
+            'refusee' => 'en_attente',
+            'terminee' => 'acceptee',
+        ];
 
-    if ($demande->statut !== $transitionsValides[$request->statut]) {
-        return response()->json(['message' => 'Cette action n\'est pas possible dans l\'état actuel de la demande.'], 422);
-    }
+        if ($demande->statut !== $transitionsValides[$request->statut]) {
+            return response()->json(['message' => 'Cette action n\'est pas possible dans l\'état actuel de la demande.'], 422);
+        }
 
-    $demande->update(['statut' => $request->statut]);
+        $demande->update(['statut' => $request->statut]);
 
-    if (in_array($request->statut, ['acceptee', 'refusee'])) {
-        try {
-            Mail::to($demande->client->email)->queue(
-                new ReponseDemandeMail($demande, $request->motif_refus)
+        if (in_array($request->statut, ['acceptee', 'refusee'])) {
+            try {
+                Mail::to($demande->client->email)->queue(
+                    new ReponseDemandeMail($demande, $request->motif_refus)
+                );
+            } catch (\Exception $e) {}
+
+            $talentNom = trim(($profil->utilisateur->prenom ?? '') . ' ' . ($profil->utilisateur->nom ?? ''));
+            $message = $request->statut === 'acceptee'
+                ? "Votre demande a été acceptée par {$talentNom}"
+                : "Votre demande a été refusée par {$talentNom}";
+
+            NotificationService::creer(
+                $demande->client,
+                $request->statut === 'acceptee' ? 'demande_acceptee' : 'demande_refusee',
+                $message,
+                ['demande_id' => $demande->id]
             );
-        } catch (\Exception $e) {}
-    }
+        }
 
-    return response()->json([
-        'success' => true,
-        'data' => $this->formatPourTalent($demande->fresh()),
-    ]);
-}
+        if ($request->statut === 'terminee') {
+            $talentNom = trim(($profil->utilisateur->prenom ?? '') . ' ' . ($profil->utilisateur->nom ?? ''));
+
+            NotificationService::creer(
+                $demande->client,
+                'demande_terminee',
+                "{$talentNom} a marqué votre prestation comme terminée",
+                ['demande_id' => $demande->id]
+            );
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $this->formatPourTalent($demande->fresh()),
+        ]);
+    }
 
     private function formatPourClient(DemandePrestation $d): array
     {

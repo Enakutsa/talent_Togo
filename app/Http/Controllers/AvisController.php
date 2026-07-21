@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Avis;
 use App\Models\DemandePrestation;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -27,7 +28,10 @@ class AvisController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $demande = DemandePrestation::where('id', $request->demande_prestation_id)
+        // ✅ Eager-load profilTalent.utilisateur : nécessaire pour notifier
+        // le talent juste après la création de l'avis, sans requête en plus.
+        $demande = DemandePrestation::with('profilTalent.utilisateur')
+            ->where('id', $request->demande_prestation_id)
             ->where('client_id', $request->user()->id)
             ->first();
 
@@ -56,6 +60,14 @@ class AvisController extends Controller
             'commentaire' => $request->commentaire,
             'statut' => 'visible',
         ]);
+
+        // ✅ Notifie le talent qu'il a reçu un nouvel avis sur son profil.
+        NotificationService::creer(
+            $demande->profilTalent->utilisateur,
+            'nouvel_avis',
+            "{$request->user()->prenom} {$request->user()->nom} a laissé un avis sur votre profil",
+            ['talent_id' => $demande->profil_talent_id]
+        );
 
         return response()->json([
             'success' => true,
@@ -86,41 +98,41 @@ class AvisController extends Controller
     }
 
     /**
- * Liste des avis reçus par le talent connecté.
- * GET /api/talent/avis
- */
-public function indexTalent(Request $request)
-{
-    abort_unless($request->user()->isTalent(), 403, 'Réservé aux talents.');
+     * Liste des avis reçus par le talent connecté.
+     * GET /api/talent/avis
+     */
+    public function indexTalent(Request $request)
+    {
+        abort_unless($request->user()->isTalent(), 403, 'Réservé aux talents.');
 
-    $profil = $request->user()->profilTalent;
+        $profil = $request->user()->profilTalent;
 
-    if (!$profil) {
-        return response()->json(['message' => 'Profil introuvable.'], 404);
+        if (!$profil) {
+            return response()->json(['message' => 'Profil introuvable.'], 404);
+        }
+
+        $avis = Avis::where('profil_talent_id', $profil->id)
+            ->where('statut', 'visible')
+            ->with('client')
+            ->latest()
+            ->get()
+            ->map(function ($a) {
+                return [
+                    'id' => $a->id,
+                    'client_nom' => trim(($a->client->prenom ?? '') . ' ' . ($a->client->nom ?? '')),
+                    'note' => $a->note,
+                    'commentaire' => $a->commentaire,
+                    'created_at' => $a->created_at,
+                ];
+            });
+
+        $moyenneNote = $avis->count() > 0 ? round($avis->avg('note'), 1) : 0;
+
+        return response()->json([
+            'success' => true,
+            'data' => $avis,
+            'moyenne' => $moyenneNote,
+            'total' => $avis->count(),
+        ]);
     }
-
-    $avis = Avis::where('profil_talent_id', $profil->id)
-        ->where('statut', 'visible')
-        ->with('client')
-        ->latest()
-        ->get()
-        ->map(function ($a) {
-            return [
-                'id' => $a->id,
-                'client_nom' => trim(($a->client->prenom ?? '') . ' ' . ($a->client->nom ?? '')),
-                'note' => $a->note,
-                'commentaire' => $a->commentaire,
-                'created_at' => $a->created_at,
-            ];
-        });
-
-    $moyenneNote = $avis->count() > 0 ? round($avis->avg('note'), 1) : 0;
-
-    return response()->json([
-        'success' => true,
-        'data' => $avis,
-        'moyenne' => $moyenneNote,
-        'total' => $avis->count(),
-    ]);
-}
 }
