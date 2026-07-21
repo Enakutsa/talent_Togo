@@ -301,3 +301,8 @@
     .pr-field-row { flex-direction: column; }
     .pr-row { flex-direction: column; align-items: flex-start; gap: 10px; }
   }
+
+  .pr-toggle:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }

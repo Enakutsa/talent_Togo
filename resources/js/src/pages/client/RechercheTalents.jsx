@@ -13,8 +13,6 @@ const VILLES_TOGO = [
   "Kara", "Niamtougou", "Kandé", "Mango", "Dapaong",
 ];
 
-// ✅ Normalise un texte pour la comparaison (minuscule + sans accents)
-// ex: "Photographe" -> "photographe", "Décoration" -> "decoration"
 function normalize(str) {
   return (str || "")
     .toLowerCase()
@@ -39,9 +37,9 @@ function TalentCard({ talent }) {
         ) : (
           <div className="rc-card-image-placeholder" />
         )}
-        {talent.disponible && (
-          <span className="rc-card-dispo-badge">Disponible</span>
-        )}
+        <span className={`rc-card-dispo-badge ${talent.disponible ? "rc-dispo-on" : "rc-dispo-off"}`}>
+          {talent.disponible ? "Disponible" : "Indisponible"}
+        </span>
       </div>
       <div className="rc-card-body">
         <div className="rc-card-top">
@@ -82,12 +80,9 @@ export default function RechercheTalents() {
   const [showFilters, setShowFilters] = useState(false);
   const [budget,      setBudget]      = useState(500000);
 
-  // ✅ Autocomplete de la barre de recherche (suggestions de catégories)
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchWrapRef = useRef(null);
 
-  // ✅ Préremplit depuis l'URL (ex: /recherche?categorie_id=3 depuis Home.jsx,
-  // ou ?q=photographe depuis une barre de recherche externe).
   const [filters, setFilters] = useState({
     q:            searchParams.get("q") || "",
     categorie_id: searchParams.get("categorie_id") || "",
@@ -96,21 +91,14 @@ export default function RechercheTalents() {
     sort:         searchParams.get("sort") || "recent",
   });
 
-  // Capturé une seule fois au montage : l'effet de synchro URL (plus bas)
-  // réécrit l'URL avec les filtres actuels dès le premier rendu, donc si on
-  // relisait searchParams.get("categorie") à chaque fois, il aurait déjà
-  // disparu avant que les catégories n'aient fini de charger.
   const [pendingCategorieName] = useState(() => searchParams.get("categorie"));
 
-  // Chargement des catégories
   useEffect(() => {
     getCategories()
       .then((res) => setCategories(res?.data || []))
       .catch(() => setCategories([]));
   }, []);
 
-  // ✅ Home.jsx envoie ?categorie=<nom> (ex: "Photographe"), pas l'ID.
-  // Dès que les catégories sont chargées, on résout le nom en categorie_id.
   useEffect(() => {
     if (!pendingCategorieName || filters.categorie_id || categories.length === 0) return;
 
@@ -123,14 +111,8 @@ export default function RechercheTalents() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [categories]);
 
-  // ✅ Compteur de requêtes : permet d'ignorer une réponse "en retard".
-  // Sans ça, si tu tapes une recherche texte puis cliques vite sur un filtre,
-  // la requête de la recherche texte (partie en 1er) peut répondre APRÈS
-  // celle du filtre (partie en 2nd), et écrase alors les résultats filtrés
-  // avec les anciens résultats non filtrés → "le filtre ne marche plus".
   const requestIdRef = useRef(0);
 
-  // Recherche avec debounce
   const fetchTalents = useCallback(() => {
     const currentRequestId = ++requestIdRef.current;
 
@@ -147,7 +129,6 @@ export default function RechercheTalents() {
 
     searchTalents(params)
       .then((res) => {
-        // Une requête plus récente est déjà partie : on ignore cette réponse
         if (currentRequestId !== requestIdRef.current) return;
         setTalents(res.data || []);
       })
@@ -166,8 +147,6 @@ export default function RechercheTalents() {
     return () => clearTimeout(timeout);
   }, [fetchTalents]);
 
-  // ✅ Garde l'URL synchronisée avec les filtres actifs -> partageable,
-  // et fonctionne si l'utilisateur revient en arrière avec le bouton précédent.
   useEffect(() => {
     const params = {};
     if (filters.q) params.q = filters.q;
@@ -191,7 +170,6 @@ export default function RechercheTalents() {
     budget < 500000,
   ].filter(Boolean).length;
 
-  // ✅ Suggestions de catégories correspondant au texte tapé (ex: "phot" -> "Photographe")
   const searchSuggestions = filters.q.trim().length > 0
     ? categories.filter((c) => normalize(c.nom).includes(normalize(filters.q.trim())))
     : [];
@@ -201,7 +179,6 @@ export default function RechercheTalents() {
     setShowSuggestions(false);
   };
 
-  // Ferme le dropdown de suggestions si on clique en dehors du champ
   useEffect(() => {
     function handleClickOutside(e) {
       if (searchWrapRef.current && !searchWrapRef.current.contains(e.target)) {
@@ -248,7 +225,6 @@ export default function RechercheTalents() {
                 </button>
               )}
 
-              {/* ✅ Dropdown d'autocomplete : suggestions de catégories */}
               {showSuggestions && searchSuggestions.length > 0 && (
                 <ul className="rc-suggestions">
                   {searchSuggestions.map((c) => (
@@ -288,7 +264,6 @@ export default function RechercheTalents() {
           <aside className={`rc-sidebar ${showFilters ? "rc-sidebar-open" : ""}`}>
             <h2 className="rc-sidebar-title">Filtres</h2>
 
-            {/* Catégorie */}
             <div className="rc-filter-group">
               <p className="rc-filter-label">Catégorie</p>
               <div className="rc-cat-list">
@@ -310,7 +285,6 @@ export default function RechercheTalents() {
               </div>
             </div>
 
-            {/* Ville */}
             <div className="rc-filter-group">
               <p className="rc-filter-label">Ville</p>
               <div className="rc-select-wrap">
@@ -328,7 +302,6 @@ export default function RechercheTalents() {
               </div>
             </div>
 
-            {/* Budget */}
             <div className="rc-filter-group">
               <p className="rc-filter-label">
                 Budget max
@@ -350,7 +323,6 @@ export default function RechercheTalents() {
               </div>
             </div>
 
-            {/* Trier par */}
             <div className="rc-filter-group">
               <p className="rc-filter-label">Trier par</p>
               <div className="rc-select-wrap">
@@ -367,7 +339,6 @@ export default function RechercheTalents() {
               </div>
             </div>
 
-            {/* Disponibles uniquement */}
             <div className="rc-filter-group">
               <label className="rc-checkbox-row">
                 <div
@@ -384,7 +355,6 @@ export default function RechercheTalents() {
               </label>
             </div>
 
-            {/* Reset */}
             {activeFilterCount > 0 && (
               <button className="rc-reset-btn" onClick={resetFilters}>
                 <X size={14} /> Réinitialiser
@@ -395,7 +365,6 @@ export default function RechercheTalents() {
           {/* ── Résultats ── */}
           <div className="rc-results">
 
-            {/* Barre résultats */}
             <div className="rc-results-bar">
               <p className="rc-results-count">
                 {loading ? "Chargement..." : (
@@ -405,7 +374,6 @@ export default function RechercheTalents() {
                   </>
                 )}
               </p>
-              {/* Chips filtres actifs */}
               <div className="rc-chips">
                 {filters.categorie_id && categories.find(c => String(c.id) === filters.categorie_id) && (
                   <span className="rc-chip">
@@ -428,7 +396,6 @@ export default function RechercheTalents() {
               </div>
             </div>
 
-            {/* Contenu */}
             {error ? (
               <p className="rc-status-error">{error}</p>
             ) : loading ? (

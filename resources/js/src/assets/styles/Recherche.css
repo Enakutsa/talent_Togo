@@ -46,7 +46,7 @@
   align-items: center;
   gap: 10px;
   padding: 0 12px;
-  position: relative; /* nécessaire pour positionner le dropdown de suggestions */
+  position: relative;
 }
 
 .rc-search-icon-hero { color: #9ca3af; flex-shrink: 0; }
@@ -478,16 +478,25 @@
   background: linear-gradient(135deg, #dcfce7, #bbf7d0);
 }
 
+/* ── Badge disponibilité (2 états) ── */
 .rc-card-dispo-badge {
   position: absolute;
   top: 10px;
   left: 10px;
-  background: #16a34a;
-  color: #fff;
   font-size: 11px;
   font-weight: 600;
   padding: 3px 10px;
   border-radius: 20px;
+}
+
+.rc-dispo-on {
+  background: #16a34a;
+  color: #fff;
+}
+
+.rc-dispo-off {
+  background: #ef4444;
+  color: #fff;
 }
 
 .rc-card-body { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 4px; }

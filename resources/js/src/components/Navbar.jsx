@@ -1,6 +1,6 @@
 import { useState, useContext, useRef, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, Menu, X, User, LogOut, Settings, LayoutDashboard } from "lucide-react";
+import { Menu, X, User, LogOut, Settings, LayoutDashboard } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
 import NotificationBell from "./NotificationBell";
 import "../assets/styles/Navbar.css";
@@ -43,6 +43,9 @@ export default function Navbar() {
     user?.role === "client" ? "/client/dashboard" :
     "/admin";
 
+  const settingsPath =
+    user?.role === "client" ? "/client/parametres" : dashboardPath;
+
   const goToProfile = () => {
     setProfileOpen(false);
     setMenuOpen(false);
@@ -56,9 +59,6 @@ export default function Navbar() {
     }
   };
 
-  // La photo vient d'un endroit différent selon le rôle : le client a
-  // sa propre colonne `photo` sur Utilisateur, le talent a la sienne
-  // sur profilTalent.
   const avatarUrl =
     user?.role === "talent" ? user?.profilTalent?.photo : user?.photo;
 
@@ -91,10 +91,6 @@ export default function Navbar() {
 
           {/* Actions */}
           <div className="navbar-actions">
-            <button className="navbar-icon-btn" aria-label="Rechercher">
-              <Search size={18} />
-            </button>
-
             {isAuthenticated && <NotificationBell accentColor={user?.role === "talent" ? "green" : "orange"} />}
 
             {isAuthenticated ? (
@@ -119,7 +115,7 @@ export default function Navbar() {
                     <Link to={dashboardPath} className="navbar-dropdown-link" onClick={() => setProfileOpen(false)}>
                       <LayoutDashboard size={15} /> Tableau de bord
                     </Link>
-                    <Link to="/settings" className="navbar-dropdown-link" onClick={() => setProfileOpen(false)}>
+                    <Link to={settingsPath} className="navbar-dropdown-link" onClick={() => setProfileOpen(false)}>
                       <Settings size={15} /> Paramètres
                     </Link>
                     <hr className="navbar-dropdown-divider" />
@@ -169,6 +165,9 @@ export default function Navbar() {
               </button>
               <Link to={dashboardPath} onClick={() => setMenuOpen(false)} className="navbar-mobile-link">
                 Tableau de bord
+              </Link>
+              <Link to={settingsPath} onClick={() => setMenuOpen(false)} className="navbar-mobile-link">
+                Paramètres
               </Link>
               <button onClick={handleLogout} className="navbar-mobile-link navbar-mobile-logout">
                 Déconnexion

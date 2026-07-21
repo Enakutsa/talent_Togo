@@ -13,6 +13,7 @@ import VerifyOtp from "./pages/auth/VerifyOtp";
 import ProfilCreer from "./pages/talent/ProfilCreer";
 import TalentDashboard from "./pages/talent/TalentDashboard";
 import DemandesRecues from "./pages/talent/DemandesRecues";
+import AvisRecus from "./pages/talent/AvisRecus";
 import Portfolio from "./pages/talent/Portfolio";
 import RechercheTalents from "./pages/client/RechercheTalents";
 import DetailTalent from "./pages/client/DetailTalent";
@@ -86,6 +87,7 @@ export default function App() {
         <Route path="/talent/demandes" element={<ProtectedRoute><DemandesRecues /></ProtectedRoute>} />
         <Route path="/talent/messages" element={<ProtectedRoute><MessagesTalent /></ProtectedRoute>} />
         <Route path="/talent/portfolio" element={<ProtectedRoute><Portfolio /></ProtectedRoute>} />
+        <Route path="/talent/avis" element={<ProtectedRoute><AvisRecus /></ProtectedRoute>} />
 
         {/* ── Espace client ── */}
         <Route path="/client/dashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />

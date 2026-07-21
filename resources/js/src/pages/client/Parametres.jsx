@@ -13,13 +13,14 @@ import {
 import "../../assets/styles/Parametres.css";
 
 // ── Toggle réutilisable ────────────────────────────────────────────────────
-function Toggle({ checked, onChange }) {
+function Toggle({ checked, onChange, disabled = false }) {
   return (
     <button
       type="button"
       className={`pr-toggle ${checked ? "pr-toggle-on" : ""}`}
-      onClick={() => onChange(!checked)}
+      onClick={() => !disabled && onChange(!checked)}
       aria-pressed={checked}
+      disabled={disabled}
     >
       <span className="pr-toggle-dot" />
     </button>
@@ -30,6 +31,10 @@ export default function Parametres() {
   const navigate = useNavigate();
 
   // ── Notifications ──
+  // ⚠️ Les clés email_demandes/email_messages viennent du backend
+  // (AuthController::getNotificationPrefs) mais elles contrôlent en réalité
+  // les notifications DANS LA CLOCHE (in-app), pas des emails — d'où les
+  // libellés ci-dessous qui ne mentionnent plus "email".
   const [prefs, setPrefs] = useState({
     email_demandes: true,
     email_messages: true,
@@ -155,6 +160,11 @@ export default function Parametres() {
     setDeleteError("");
   };
 
+  // Toggle maître : si désactivé, les sous-catégories n'ont plus d'effet
+  // (aucune notification n'apparaît dans la cloche, quoi qu'il arrive) —
+  // donc on les grise pour éviter toute confusion sur ce qui est actif.
+  const notificationsDesactivees = !prefs.notifications_in_app;
+
   return (
     <div className="pr-page">
       <ClientTopNav activeKey="parametres" />
@@ -174,36 +184,47 @@ export default function Parametres() {
             <p className="pr-loading">Chargement...</p>
           ) : (
             <div className="pr-rows">
+              {/* Toggle maître */}
+              <div className="pr-row">
+                <div>
+                  <p className="pr-row-label">Notifications</p>
+                  <p className="pr-row-desc">
+                    Activer les notifications dans la cloche 🔔 en haut de page.
+                  </p>
+                </div>
+                <Toggle
+                  checked={prefs.notifications_in_app}
+                  onChange={(v) => handleTogglePref("notifications_in_app", v)}
+                />
+              </div>
+
+              <div className="pr-divider" />
+
               <div className="pr-row">
                 <div>
                   <p className="pr-row-label">Réponses à mes demandes</p>
-                  <p className="pr-row-desc">Recevoir un email quand un talent répond à une demande.</p>
+                  <p className="pr-row-desc">
+                    Être notifié quand un talent accepte, refuse ou termine une de vos demandes.
+                  </p>
                 </div>
                 <Toggle
                   checked={prefs.email_demandes}
                   onChange={(v) => handleTogglePref("email_demandes", v)}
+                  disabled={notificationsDesactivees}
                 />
               </div>
 
               <div className="pr-row">
                 <div>
                   <p className="pr-row-label">Nouveaux messages</p>
-                  <p className="pr-row-desc">Recevoir un email pour chaque nouveau message.</p>
+                  <p className="pr-row-desc">
+                    Être notifié à chaque nouveau message reçu.
+                  </p>
                 </div>
                 <Toggle
                   checked={prefs.email_messages}
                   onChange={(v) => handleTogglePref("email_messages", v)}
-                />
-              </div>
-
-              <div className="pr-row">
-                <div>
-                  <p className="pr-row-label">Notifications dans l'application</p>
-                  <p className="pr-row-desc">Afficher les alertes dans la cloche en haut de page.</p>
-                </div>
-                <Toggle
-                  checked={prefs.notifications_in_app}
-                  onChange={(v) => handleTogglePref("notifications_in_app", v)}
+                  disabled={notificationsDesactivees}
                 />
               </div>
             </div>

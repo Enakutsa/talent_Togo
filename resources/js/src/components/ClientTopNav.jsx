@@ -4,7 +4,7 @@ import { AuthContext } from "../context/AuthContext";
 import NotificationBell from "./NotificationBell";
 import {
   LayoutDashboard, Heart, MessageSquare, ClipboardList,
-  LogOut, Menu, X, ChevronDown, Search, Settings, User, Home,
+  LogOut, Menu, X, ChevronDown, Settings, User, Home,
 } from "lucide-react";
 
 export const CLIENT_NAV_ITEMS = [
@@ -65,10 +65,6 @@ export default function ClientTopNav({ activeKey }) {
         </nav>
 
         <div className="cd-topnav-right">
-          <button className="cd-icon-btn" title="Rechercher" onClick={() => navigate("/recherche")}>
-            <Search size={18} />
-          </button>
-
           <NotificationBell accentColor="orange" />
 
           <div className="cd-profile-menu" ref={menuRef}>

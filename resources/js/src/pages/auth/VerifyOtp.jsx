@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { verifyLoginOtp, resendOtp } from "../../services/auth.service";
 import { AuthContext } from "../../context/AuthContext";
 import "../../assets/styles/Otp.css";
 
 export default function VerifyOtp() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useContext(AuthContext);
 
   const [code, setCode] = useState("");
@@ -18,7 +19,10 @@ export default function VerifyOtp() {
   const [blockedSeconds, setBlockedSeconds] = useState(0);
   const intervalRef = useRef(null);
 
-  const utilisateur_id = localStorage.getItem("user_id");
+  // ⚠️ sessionStorage (pas localStorage) : cohérent avec AuthContext/api.js.
+  // Suppose que la page qui redirige ici (étape email) écrit aussi avec
+  // sessionStorage.setItem("user_id", ...) — sinon ce champ sera vide.
+  const utilisateur_id = sessionStorage.getItem("user_id");
 
   // Fait défiler le décompte toutes les secondes tant que blockedSeconds > 0
   useEffect(() => {
@@ -65,17 +69,24 @@ export default function VerifyOtp() {
         code: codeEnvoye,
       });
 
-      // Peuple immédiatement AuthContext (user + token), pas seulement localStorage
+      // Peuple immédiatement AuthContext (user + token), pas seulement sessionStorage
       login(data.data.utilisateur, data.data.token);
 
-      // Redirection immédiate selon ce que renvoie le backend (talent/dashboard,
-      // talent/profil/creer, admin, ou "/" par défaut) — pas de délai artificiel,
-      // pour éviter toute course avec d'autres redirections (ex: RedirectIfTalent).
-      const redirectPath = data.data.redirect
-        ? `/${data.data.redirect}`
-        : "/";
+      // ✅ Redirection : priorité à la page que l'utilisateur visait avant
+      // d'être envoyé vers /login (mémorisée par ProtectedRoute dans
+      // location.state.from), sauf pour les redirections "forcées" par le
+      // backend (onboarding talent incomplet, ou admin).
+      const from = location.state?.from;
+      const redirectForce =
+        data.data.redirect === "talent/profil/creer" || data.data.redirect === "admin";
 
-      navigate(redirectPath, { replace: true });
+      const redirectPath = data.data.redirect ? `/${data.data.redirect}` : "/";
+
+      if (from && !redirectForce) {
+        navigate(from, { replace: true });
+      } else {
+        navigate(redirectPath, { replace: true });
+      }
 
     } catch (err) {
       const status = err.response?.status;

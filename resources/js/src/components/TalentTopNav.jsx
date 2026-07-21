@@ -6,7 +6,7 @@ import NotificationBell from "./NotificationBell";
 import {
   LayoutDashboard, User, MessageSquare, ClipboardList,
   Star, LogOut, Menu, X, ChevronDown,
-  Wifi, WifiOff, Search, Image as ImageIcon, Loader2,
+  Wifi, WifiOff, Image as ImageIcon, Loader2,
 } from "lucide-react";
 
 // "to" = route réelle vers laquelle on navigue.
@@ -17,7 +17,7 @@ export const NAV_ITEMS = [
   { key: "dashboard", label: "Tableau de bord", icon: LayoutDashboard, to: "/talent/dashboard" },
   { key: "demandes",  label: "Demandes",         icon: ClipboardList,  to: "/talent/demandes" },
   { key: "messages",  label: "Messages",          icon: MessageSquare, to: "/talent/messages" },  { key: "portfolio", label: "Portfolio",         icon: ImageIcon,     to: "/talent/portfolio" },
-  { key: "avis",      label: "Avis",              icon: Star,          to: "/talent/dashboard" },
+  { key: "avis",      label: "Avis",              icon: Star,          to: "/talent/avis" },
 
 ];
 
@@ -36,9 +36,6 @@ export default function TalentTopNav({ activeKey }) {
   const photo = user?.profilTalent?.photo || null;
   const initiales = `${prenom[0] ?? ""}${nom[0] ?? ""}`.toUpperCase();
 
-  // ✅ Charge la vraie disponibilité du profil au montage — avant ça, le
-  // toggle démarrait toujours à "Disponible" par défaut, peu importe l'état
-  // réel enregistré côté backend.
   useEffect(() => {
     getProfilTalent()
       .then((res) => setDisponible(!!res.data?.disponibilite))
@@ -55,17 +52,12 @@ export default function TalentTopNav({ activeKey }) {
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  // Navigue toujours réellement — même pour les sections encore internes
-  // au dashboard, via le state.activeKey que TalentDashboard lit au montage.
   const handleNavClick = (item) => {
     navigate(item.to, { state: { activeKey: item.key } });
     setMobileNavOpen(false);
     setMenuOpen(false);
   };
 
-  // ✅ Bascule la disponibilité : mise à jour optimiste de l'UI, appel API
-  // via le même endpoint que ProfilSection (PUT /talent/profil), et
-  // rollback si la requête échoue.
   const handleToggleDispo = () => {
     if (dispoLoading) return;
 
@@ -103,10 +95,6 @@ export default function TalentTopNav({ activeKey }) {
         </nav>
 
         <div className="td-topnav-right">
-          <button className="td-icon-btn" title="Rechercher">
-            <Search size={18} />
-          </button>
-
           <NotificationBell accentColor="green" />
 
           <div className="td-profile-menu" ref={menuRef}>

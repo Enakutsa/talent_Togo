@@ -1,5 +1,5 @@
 import { useState, useContext, useEffect, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { Mail, ArrowRight, ShieldCheck } from "lucide-react";
 import { login as loginApi, verifyLoginOtp, resendOtp } from "../../services/auth.service";
 import { AuthContext } from "../../context/AuthContext";
@@ -7,6 +7,7 @@ import "../../assets/styles/Login.css";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useContext(AuthContext);
 
   const [step, setStep] = useState("credentials"); // "credentials" | "otp"
@@ -104,13 +105,20 @@ export default function Login() {
       // ✅ CORRECTION PRINCIPALE
       login(data.data.utilisateur, data.data.token);
 
-      // ✅ stock token
-      localStorage.setItem("token", data.data.token);
+      // ✅ redirection : priorité à la page que l'utilisateur visait avant
+      // d'être redirigé vers /login (mémorisée par ProtectedRoute dans
+      // location.state.from), SAUF pour les redirections "forcées" par le
+      // backend (onboarding talent incomplet, ou admin) qui doivent
+      // toujours primer sur la page d'origine.
+      const from = location.state?.from;
+      const redirectForce =
+        data.data.redirect === "talent/profil/creer" || data.data.redirect === "admin";
 
-      // ✅ redirection : on suit ce que le backend a déjà calculé
-      // (talent/profil/creer si profil incomplet, talent/dashboard sinon,
-      // admin, ou dashboard pour un client)
-      navigate("/" + data.data.redirect);
+      if (from && !redirectForce) {
+        navigate(from);
+      } else {
+        navigate("/" + data.data.redirect);
+      }
 
     } catch (err) {
       console.log("ERREUR OTP :", err.response?.data);
