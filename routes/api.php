@@ -94,6 +94,12 @@ Route::get('/stats', [StatsController::class, 'index']);
 Route::get('/talents', [TalentController::class, 'index']);
 Route::get('/talents/{talent}', [TalentController::class, 'show']);
 
+// ✅ Meilleurs avis publics tous talents confondus — utilisé par la home
+// (section "Témoignages"). Pas d'authentification requise. Placée avant le
+// groupe /client/avis pour rester bien groupée avec le reste du contenu
+// public de la page d'accueil.
+Route::get('/avis', [AvisController::class, 'indexPublic']);
+
 
 //--------------------------------------------------------------------------
 // PORTFOLIO (CRUD) — Réservé au rôle "talent" (vérifié dans le contrôleur)

@@ -23,6 +23,9 @@ import DemandesEnvoyees from "./pages/client/DemandesEnvoyees";
 import ClientProfil from "./pages/client/ClientProfil";
 import Parametres from "./pages/client/Parametres";
 import MessagesTalent from "./pages/talent/MessagesTalent";
+import ConditionsUtilisation from "./pages/commun/ConditionsUtilisation";
+import Confidentialite from "./pages/commun/Confidentialite";
+import MentionsLegales from "./pages/commun/MentionsLegales";
 
 function PublicLayout({ children }) {
   return (
@@ -69,6 +72,13 @@ export default function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* ── Pages légales : Navbar/Footer déjà inclus dans chaque
+             composant, donc pas de PublicLayout ici (éviterait un
+             doublon). Accessibles sans connexion. ── */}
+        <Route path="/cgu" element={<ConditionsUtilisation />} />
+        <Route path="/confidentialite" element={<Confidentialite />} />
+        <Route path="/mentions-legales" element={<MentionsLegales />} />
 
         {/* ── Espace talent ── */}
         <Route path="/talent/profil/creer" element={<ProtectedRoute><ProfilCreer /></ProtectedRoute>} />

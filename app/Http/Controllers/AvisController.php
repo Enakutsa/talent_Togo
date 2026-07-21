@@ -80,6 +80,49 @@ class AvisController extends Controller
     }
 
     /**
+     * Meilleurs avis publics, tous talents confondus — utilisé pour la
+     * section "Témoignages" de la page d'accueil. Public (pas d'auth).
+     * GET /api/avis?limit=6
+     *
+     * ⚠️ Nom du client limité à "Prénom N." : ces avis ont été laissés dans
+     * un contexte privé (une demande de prestation), pas dans l'idée d'être
+     * exposés publiquement — donc pas de nom de famille complet ici.
+     */
+    public function indexPublic(Request $request)
+    {
+        $limit = min((int) $request->input('limit', 6), 20);
+
+        $avis = Avis::where('statut', 'visible')
+            ->whereNotNull('commentaire')
+            ->where('commentaire', '!=', '')
+            ->with(['client', 'profilTalent.utilisateur'])
+            ->orderByDesc('note')
+            ->latest()
+            ->limit($limit)
+            ->get()
+            ->map(function ($a) {
+                $nomFamille = $a->client?->nom ? mb_substr($a->client->nom, 0, 1) . '.' : '';
+
+                return [
+                    'id' => $a->id,
+                    'nom' => trim(($a->client?->prenom ?? 'Client') . ' ' . $nomFamille),
+                    'ville' => $a->client?->ville ?? null,
+                    'note' => $a->note,
+                    'commentaire' => $a->commentaire,
+                    // Pas d'avatar personnel exposé publiquement — voir même
+                    // logique que resolvePhotoUrl() ailleurs si tu veux
+                    // finalement en afficher un plus tard.
+                    'avatar' => null,
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => $avis,
+        ]);
+    }
+
+    /**
      * Liste des avis laissés par le client connecté (pour savoir lesquels
      * ont déjà été notés, et éviter de proposer le bouton en double).
      * GET /api/client/avis

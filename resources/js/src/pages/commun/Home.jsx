@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 import TalentCard from "../../components/talent/TalentCard";
-import { getFeaturedTalents, getStats, getCategories, getReviews } from "../../services/talent.service";
+import { getFeaturedTalents, getStats, getCategories } from "../../services/talent.service";
 import { AuthContext } from "../../context/AuthContext";
 import {
   Search, Camera, Palette, Scissors, Music2, Film, Package2, Brush, Star,
@@ -46,10 +46,14 @@ const FALLBACK_STATS = [
   { key: "villes", icon: Globe, label: "Villes couvertes", value: "6" },
 ];
 
-const FALLBACK_REVIEWS = [
-  { id: 1, nom: "Esther Kpadenou", ville: "Lomé", note: 5, commentaire: "J'ai trouvé un photographe en moins de 10 minutes pour mon mariage. Service impeccable et très professionnel !", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=80&h=80&fit=crop" },
-  { id: 2, nom: "Mawuli Adjété", ville: "Kara", note: 5, commentaire: "TalentTogo m'a permis de trouver une couturière de qualité près de chez moi. Je recommande vivement !", avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop" },
-  { id: 3, nom: "Akossiwa Lawson", ville: "Lomé", note: 4, commentaire: "Plateforme simple et rapide pour contacter directement les talents. La messagerie intégrée est top.", avatar: "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=80&h=80&fit=crop" },
+// ✅ Témoignages fixes affichés en page d'accueil. Le texte est rédigé par
+// la plateforme, mais la photo/nom viennent de vrais talents inscrits en
+// base (récupérés via getFeaturedTalents) — pas de faux profils inventés,
+// et pas de commentaires publics non modérés sur la page d'entrée du site.
+const STATIC_TESTIMONIALS = [
+  { note: 5, commentaire: "J'ai trouvé un photographe professionnel en 10 minutes. Service exceptionnel !" },
+  { note: 5, commentaire: "TalentTogo m'a permis d'atteindre des clients que je n'aurais jamais pu contacter autrement." },
+  { note: 5, commentaire: "La qualité des talents sur cette plateforme est remarquable. Je recommande vivement." },
 ];
 
 const steps = [
@@ -64,11 +68,9 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const [favorites, setFavorites] = useState([]);
 
-  // null = en cours de chargement (affiche un skeleton, jamais de fausses données)
   const [categories, setCategories] = useState(null);
   const [talents, setTalents] = useState(null);
   const [stats, setStats] = useState(null);
-  const [reviews, setReviews] = useState(null);
 
   useEffect(() => {
     getCategories()
@@ -100,13 +102,16 @@ export default function Home() {
         ]);
       })
       .catch(() => setStats(FALLBACK_STATS));
+  }, []);
 
-    getReviews()
-      .then((data) => {
-        const list = Array.isArray(data) ? data : data?.data;
-        setReviews(Array.isArray(list) && list.length ? list : FALLBACK_REVIEWS);
-      })
-      .catch(() => setReviews(FALLBACK_REVIEWS));
+  // ✅ Scroll automatique vers "Comment ça marche" si on arrive avec
+  // l'ancre depuis le footer (ex: /#comment-ca-marche depuis une autre page).
+  useEffect(() => {
+    if (window.location.hash === "#comment-ca-marche") {
+      setTimeout(() => {
+        document.getElementById("comment-ca-marche")?.scrollIntoView({ behavior: "smooth" });
+      }, 100);
+    }
   }, []);
 
   const handleSearch = (e) => {
@@ -116,9 +121,6 @@ export default function Home() {
     navigate(`/recherche?${params.toString()}`);
   };
 
-  // Réservé aux boutons "Voir tous les talents" de la section vedette :
-  // exige une connexion, contrairement aux autres liens "Voir tout"
-  // de la page qui restent libres d'accès.
   const handleVoirTousLesTalents = () => {
     if (!isAuthenticated) {
       navigate("/login", { state: { from: "/recherche" } });
@@ -150,23 +152,23 @@ export default function Home() {
           </p>
 
           <form onSubmit={handleSearch} className="hero-search-bar">
-  <div
-    className="hero-search-field"
-    onClick={() => navigate("/recherche")}
-    style={{ cursor: "pointer" }}
-  >
-    <Search size={18} className="hero-search-icon" />
-    <input
-      type="text"
-      placeholder="Cliquez sur Rechercher pour trouver un talent"
-      readOnly
-      style={{ cursor: "pointer" }}
-    />
-  </div>
-  <button type="submit" className="hero-search-btn">
-    Rechercher <ArrowRight size={16} />
-  </button>
-</form>
+            <div
+              className="hero-search-field"
+              onClick={() => navigate("/recherche")}
+              style={{ cursor: "pointer" }}
+            >
+              <Search size={18} className="hero-search-icon" />
+              <input
+                type="text"
+                placeholder="Cliquez sur Rechercher pour trouver un talent"
+                readOnly
+                style={{ cursor: "pointer" }}
+              />
+            </div>
+            <button type="submit" className="hero-search-btn">
+              Rechercher <ArrowRight size={16} />
+            </button>
+          </form>
 
           <div className="hero-quicklinks">
             {["Photographe à Lomé", "Musicien mariage", "Graphiste logo", "Couture pagne"].map((q) => (
@@ -277,7 +279,7 @@ export default function Home() {
       </section>
 
       {/* HOW IT WORKS */}
-      <section className="section">
+      <section id="comment-ca-marche" className="section">
         <div className="section-center">
           <h2 className="section-title">Comment ça marche ?</h2>
           <p className="section-subtitle">Simple, rapide et sécurisé</p>
@@ -295,56 +297,67 @@ export default function Home() {
       </section>
 
       {/* TÉMOIGNAGES CLIENTS */}
-      <section className="section testimonials-section">
-        <div className="section-center">
-          <h2 className="section-title">Ce que disent nos clients</h2>
-          <p className="section-subtitle">Des milliers d'utilisateurs satisfaits à travers le Togo</p>
-        </div>
+      {talents !== null && talents.length > 0 && (
+        <section className="section testimonials-section">
+          <div className="section-center">
+            <h2 className="section-title">Ce que disent nos clients</h2>
+            <p className="section-subtitle">Des milliers d'utilisateurs satisfaits à travers le Togo</p>
+          </div>
 
-        <div className="testimonials-grid">
-          {reviews === null
-            ? Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="testimonial-card-skeleton" />
-              ))
-            : reviews.map((r) => (
-                <div key={r.id} className="testimonial-card">
+          <div className="testimonials-grid">
+            {talents.slice(0, 3).map((t, i) => {
+              const testimonial = STATIC_TESTIMONIALS[i];
+              if (!testimonial) return null;
+
+              return (
+                <div key={t.id} className="testimonial-card">
                   <Quote size={28} className="testimonial-quote-icon" />
                   <div className="testimonial-stars">
-                    {Array.from({ length: 5 }).map((_, i) => (
+                    {Array.from({ length: 5 }).map((_, si) => (
                       <Star
-                        key={i}
+                        key={si}
                         size={14}
-                        className={i < r.note ? "testimonial-star-filled" : "testimonial-star-empty"}
+                        className={si < testimonial.note ? "testimonial-star-filled" : "testimonial-star-empty"}
                       />
                     ))}
                   </div>
-                  <p className="testimonial-text">"{r.commentaire}"</p>
+                  <p className="testimonial-text">"{testimonial.commentaire}"</p>
                   <div className="testimonial-author">
-                    <img src={r.avatar} alt={r.nom} className="testimonial-avatar" />
+                    {t.avatar ? (
+                      <img src={t.avatar} alt={t.nom} className="testimonial-avatar" />
+                    ) : (
+                      <div className="testimonial-avatar testimonial-avatar-placeholder">
+                        {(t.nom ?? "?")[0]}
+                      </div>
+                    )}
                     <div>
-                      <p className="testimonial-name">{r.nom}</p>
-                      <p className="testimonial-city">{r.ville}</p>
+                      <p className="testimonial-name">{t.nom}</p>
+                      {t.ville && <p className="testimonial-city">{t.ville}</p>}
                     </div>
                   </div>
                 </div>
-              ))}
-        </div>
-      </section>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* CTA */}
-      <section className="cta-section">
-        <div className="cta-pattern" />
-        <div className="cta-inner">
-          <h2 className="cta-title">Vous êtes un talent ? Rejoignez-nous !</h2>
-          <p className="cta-text">
+      <section className="cta-section-v2">
+        <div className="cta-v2-inner">
+          <div className="cta-v2-icon">
+            <Sparkles size={22} />
+          </div>
+          <h2 className="cta-v2-title">Vous êtes un talent ? Rejoignez-nous !</h2>
+          <p className="cta-v2-text">
             Créez votre profil professionnel gratuit, publiez votre portfolio et connectez-vous
             avec des milliers de clients potentiels au Togo et en Afrique.
           </p>
-          <div className="cta-actions">
-            <button onClick={() => navigate("/inscription")} className="btn-outline-white">
+          <div className="cta-v2-actions">
+            <button onClick={() => navigate("/register")} className="cta-v2-btn-primary">
               Créer mon profil gratuitement
             </button>
-            <button onClick={() => navigate("/recherche")} className="btn-amber-cta">
+            <button onClick={() => navigate("/recherche")} className="cta-v2-btn-secondary">
               Découvrir les talents
             </button>
           </div>

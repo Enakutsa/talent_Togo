@@ -1,0 +1,206 @@
+.conf-page {
+    background: #f7f8f7;
+    min-height: 100vh;
+  }
+  
+  /* ── Hero ── */
+  .conf-hero {
+    background: linear-gradient(135deg, #0b3d24, #1a5c34);
+    padding: 56px 24px;
+  }
+  
+  .conf-hero-inner {
+    max-width: 880px;
+    margin: 0 auto;
+  }
+  
+  .conf-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+  
+  .conf-breadcrumb-link {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.65);
+    cursor: pointer;
+    font-size: 13px;
+    padding: 0;
+  }
+  
+  .conf-breadcrumb-link:hover {
+    color: #fff;
+  }
+  
+  .conf-breadcrumb-current {
+    color: #fff;
+  }
+  
+  .conf-hero-title-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  
+  .conf-hero-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #f5730a;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  
+  .conf-hero-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 4px;
+    font-family: Sora, sans-serif;
+  }
+  
+  .conf-hero-date {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.6);
+    margin: 0;
+  }
+  
+  /* ── Corps ── */
+  .conf-body {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 48px 24px 64px;
+  }
+  
+  /* ── Highlights ── */
+  .conf-highlights {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+  
+  .conf-highlight-card {
+    background: #fff;
+    border: 1px solid #eceeec;
+    border-radius: 14px;
+    padding: 18px;
+    text-align: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+  
+  .conf-highlight-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: #eaf6ee;
+    color: #1a5c34;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 10px;
+  }
+  
+  .conf-highlight-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 4px;
+  }
+  
+  .conf-highlight-desc {
+    font-size: 11.5px;
+    color: #6b7280;
+    line-height: 1.4;
+    margin: 0;
+  }
+  
+  /* ── Sections ── */
+  .conf-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .conf-section-card {
+    background: #fff;
+    border: 1px solid #eceeec;
+    border-radius: 16px;
+    padding: 26px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+  
+  .conf-section-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 10px;
+    font-family: Sora, sans-serif;
+  }
+  
+  .conf-section-content {
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: #4b5563;
+    margin: 0;
+  }
+  
+  /* ── Footer bloc ── */
+  .conf-footer-block {
+    margin-top: 40px;
+    text-align: center;
+  }
+  
+  .conf-footer-text {
+    font-size: 13.5px;
+    color: #6b7280;
+    margin: 0 0 16px;
+  }
+  
+  .conf-footer-link {
+    color: #1a5c34;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  
+  .conf-footer-link:hover {
+    text-decoration: underline;
+  }
+  
+  .conf-home-btn {
+    padding: 12px 24px;
+    background: linear-gradient(135deg, #1a5c34, #0b3d24);
+    color: #fff;
+    font-weight: 600;
+    font-size: 13.5px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: Sora, sans-serif;
+  }
+  
+  .conf-home-btn:hover {
+    opacity: 0.92;
+  }
+  
+  /* ── Responsive ── */
+  @media (max-width: 720px) {
+    .conf-highlights {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .conf-hero-title-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+  }
