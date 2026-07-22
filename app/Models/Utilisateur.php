@@ -31,6 +31,7 @@ class Utilisateur extends Authenticatable implements FilamentUser, HasName
         'ville',
         'categorie_id',
         'photo',
+        'preferences_notifications',
     ];
 
     protected $hidden = [
@@ -44,6 +45,7 @@ class Utilisateur extends Authenticatable implements FilamentUser, HasName
             'email_verified_at' => 'datetime',
             'mot_de_passe'      => 'hashed',
             'is_verified'       => 'boolean',
+            'preferences_notifications' => 'array',
         ];
     }
 
@@ -99,6 +101,11 @@ class Utilisateur extends Authenticatable implements FilamentUser, HasName
         return $this->hasMany(Otp::class, 'utilisateur_id');
     }
 
+    public function signalements()
+    {
+        return $this->hasMany(Signalement::class, 'client_id');
+    }
+
     // ===== HELPERS =====
 
     public function isTalent(): bool
@@ -130,10 +137,4 @@ class Utilisateur extends Authenticatable implements FilamentUser, HasName
     {
         return $this->statut === 'desactive';
     }
-
-    public function signalements()
-{
-    return $this->hasMany(Signalement::class, 'client_id');
-}
-
 }

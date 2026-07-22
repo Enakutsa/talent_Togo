@@ -22,6 +22,23 @@ class UtilisateurResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'email';
 
+    // ✅ Badge avec le nombre de talents en attente de validation — même
+    // logique que SignalementResource. Uniquement les talents (role +
+    // statut), pas les clients (qui n'ont pas de validation à faire).
+    public static function getNavigationBadge(): ?string
+    {
+        $count = static::getModel()::where('role', 'talent')
+            ->where('statut', 'en_attente')
+            ->count();
+
+        return $count ?: null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return UtilisateurForm::configure($schema);

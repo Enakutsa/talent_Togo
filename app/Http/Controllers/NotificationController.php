@@ -9,16 +9,32 @@ class NotificationController extends Controller
 {
     /**
      * Liste des notifications de l'utilisateur connecté (20 plus récentes).
+     * Si l'utilisateur a désactivé le toggle maître "notifications_in_app"
+     * dans ses préférences, on renvoie une liste vide plutôt que ses
+     * anciennes notifications non lues — la cloche doit alors être
+     * complètement muette, pas juste bloquer les futures notifications.
      * GET /api/notifications
      */
     public function index(Request $request)
     {
-        $notifications = Notification::where('utilisateur_id', $request->user()->id)
+        $utilisateur = $request->user();
+        $prefs = $utilisateur->preferences_notifications;
+        $notificationsActivees = $prefs['notifications_in_app'] ?? true;
+
+        if (!$notificationsActivees) {
+            return response()->json([
+                'success' => true,
+                'data' => [],
+                'non_lues' => 0,
+            ]);
+        }
+
+        $notifications = Notification::where('utilisateur_id', $utilisateur->id)
             ->latest()
             ->limit(20)
             ->get();
 
-        $nonLues = Notification::where('utilisateur_id', $request->user()->id)
+        $nonLues = Notification::where('utilisateur_id', $utilisateur->id)
             ->where('lu', false)
             ->count();
 
