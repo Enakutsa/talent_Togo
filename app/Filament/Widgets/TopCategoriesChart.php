@@ -10,12 +10,12 @@ class TopCategoriesChart extends ChartWidget
 {
     protected ?string $heading = 'Talents par catégorie';
 
+    protected int|string|array $columnSpan = 1;
+
     protected function getData(): array
     {
-        // ✅ Part de la table utilisateurs (qui porte categorie_id) plutôt
-        // que d'une relation Categorie::utilisateurs() qui n'existe pas —
-        // pas besoin de toucher au modèle Categorie pour ce widget.
-        $rows = Utilisateur::selectRaw('categorie_id, COUNT(*) as total')
+        $rows = Utilisateur::query()
+            ->selectRaw('categorie_id, COUNT(*) as total')
             ->where('role', 'talent')
             ->where('statut', 'valide')
             ->whereNotNull('categorie_id')
@@ -24,7 +24,8 @@ class TopCategoriesChart extends ChartWidget
             ->limit(8)
             ->get();
 
-        $categorieNoms = Categorie::whereIn('id', $rows->pluck('categorie_id'))
+        $categorieNoms = Categorie::query()
+            ->whereIn('id', $rows->pluck('categorie_id'))
             ->pluck('nom', 'id');
 
         return [
@@ -36,7 +37,9 @@ class TopCategoriesChart extends ChartWidget
                     'borderRadius' => 6,
                 ],
             ],
-            'labels' => $rows->map(fn ($r) => $categorieNoms->get($r->categorie_id, '—'))->toArray(),
+            'labels' => $rows
+                ->map(fn ($row) => $categorieNoms->get($row->categorie_id, '—'))
+                ->toArray(),
         ];
     }
 

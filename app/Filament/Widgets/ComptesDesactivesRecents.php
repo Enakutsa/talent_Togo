@@ -13,6 +13,8 @@ class ComptesDesactivesRecents extends BaseWidget
 {
     protected static ?string $heading = 'Comptes désactivés récemment';
 
+    protected int|string|array $columnSpan = 1;
+
     public function table(Table $table): Table
     {
         return $table
@@ -20,17 +22,22 @@ class ComptesDesactivesRecents extends BaseWidget
                 Utilisateur::query()
                     ->where('statut', 'desactive')
                     ->latest('updated_at')
-                    ->limit(5)
             )
             ->columns([
                 Tables\Columns\TextColumn::make('nom_complet')
                     ->label('Utilisateur')
-                    ->getStateUsing(fn (Utilisateur $record) => trim($record->prenom . ' ' . $record->nom)),
+                    ->state(fn (Utilisateur $record) => trim(
+                        $record->prenom . ' ' . $record->nom
+                    )),
 
                 Tables\Columns\TextColumn::make('role')
                     ->label('Rôle')
                     ->badge()
-                    ->color(fn (string $state) => $state === 'talent' ? 'info' : 'gray'),
+                    ->color(fn (string $state) => match ($state) {
+                        'talent' => 'info',
+                        'admin' => 'danger',
+                        default => 'gray',
+                    }),
 
                 Tables\Columns\TextColumn::make('motif_rejet')
                     ->label('Motif')
@@ -39,14 +46,19 @@ class ComptesDesactivesRecents extends BaseWidget
 
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Désactivé')
-                    ->formatStateUsing(fn ($state) => $state->diffForHumans()),
+                    ->since(),
             ])
             ->actions([
                 Action::make('voir')
                     ->label('Voir')
                     ->icon('heroicon-m-eye')
-                    ->url(fn (Utilisateur $record) => UtilisateurResource::getUrl('edit', ['record' => $record])),
+                    ->url(
+                        fn (Utilisateur $record) =>
+                        UtilisateurResource::getUrl('edit', [
+                            'record' => $record,
+                        ])
+                    ),
             ])
-            ->paginated(false);
+            ->defaultPaginationPageOption(5);
     }
 }

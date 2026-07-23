@@ -9,11 +9,16 @@ class SignalementsEvolutionChart extends ChartWidget
 {
     protected ?string $heading = 'Signalements (30 derniers jours)';
 
+    protected int|string|array $columnSpan = 1;
+
+    protected ?string $maxHeight = '300px';
+
     protected function getData(): array
     {
         $debut = now()->subDays(29)->startOfDay();
 
-        $rows = Signalement::selectRaw("DATE(created_at) as jour, COUNT(*) as total")
+        $rows = Signalement::query()
+            ->selectRaw('DATE(created_at) as jour, COUNT(*) as total')
             ->where('created_at', '>=', $debut)
             ->groupBy('jour')
             ->pluck('total', 'jour');
@@ -23,7 +28,9 @@ class SignalementsEvolutionChart extends ChartWidget
 
         for ($i = 0; $i < 30; $i++) {
             $date = $debut->copy()->addDays($i);
+
             $labels[] = $date->format('d/m');
+
             $data[] = (int) ($rows->get($date->format('Y-m-d')) ?? 0);
         }
 
@@ -33,7 +40,7 @@ class SignalementsEvolutionChart extends ChartWidget
                     'label' => 'Signalements',
                     'data' => $data,
                     'borderColor' => '#dc2626',
-                    'backgroundColor' => 'rgba(220, 38, 38, 0.1)',
+                    'backgroundColor' => 'rgba(220, 38, 38, 0.10)',
                     'fill' => true,
                     'tension' => 0.3,
                 ],

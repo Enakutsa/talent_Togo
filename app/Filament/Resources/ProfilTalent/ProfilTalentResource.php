@@ -18,7 +18,13 @@ class ProfilTalentResource extends Resource
 {
     protected static ?string $model = ProfilTalent::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Gestion utilisateurs';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static ?string $navigationLabel = 'Profils Talents';
 
     public static function form(Schema $schema): Schema
     {

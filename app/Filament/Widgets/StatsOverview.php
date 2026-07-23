@@ -18,7 +18,8 @@ class StatsOverview extends BaseWidget
             ->where('statut', 'en_attente')
             ->count();
 
-        $signalementsOuverts = Signalement::where('statut', 'en_attente')->count();
+        $signalementsOuverts = Signalement::where('statut', 'en_attente')
+            ->count();
 
         $utilisateursActifs = Utilisateur::where('role', '!=', 'admin')
             ->where(function ($q) {
@@ -27,7 +28,10 @@ class StatsOverview extends BaseWidget
             })
             ->count();
 
-        $demandesEnCours = DemandePrestation::whereIn('statut', ['en_attente', 'acceptee'])->count();
+        $demandesEnCours = DemandePrestation::whereIn('statut', [
+            'en_attente',
+            'acceptee',
+        ])->count();
 
         return [
             Stat::make('Talents en attente', $talentsEnAttente)

@@ -9,14 +9,19 @@ class DemandesParStatutChart extends ChartWidget
 {
     protected ?string $heading = 'Demandes par statut';
 
-    // ✅ 'conversation' exclu volontairement : ce n'est pas un vrai statut
-    // de demande de prestation, juste un conteneur technique pour les fils
-    // de messagerie démarrés sans demande formelle (voir MessageController).
+    protected int|string|array $columnSpan = 1;
+
     protected function getData(): array
     {
-        $statuts = ['en_attente', 'acceptee', 'refusee', 'terminee'];
+        $statuts = [
+            'en_attente',
+            'acceptee',
+            'refusee',
+            'terminee',
+        ];
 
-        $counts = DemandePrestation::whereIn('statut', $statuts)
+        $counts = DemandePrestation::query()
+            ->whereIn('statut', $statuts)
             ->selectRaw('statut, COUNT(*) as total')
             ->groupBy('statut')
             ->pluck('total', 'statut');
@@ -31,14 +36,20 @@ class DemandesParStatutChart extends ChartWidget
                         $counts->get('terminee', 0),
                     ],
                     'backgroundColor' => [
-                        '#f59e0b', // en_attente - orange/jaune
-                        '#166534', // acceptee - vert
-                        '#dc2626', // refusee - rouge
-                        '#2563eb', // terminee - bleu
+                        '#f59e0b',
+                        '#16a34a',
+                        '#dc2626',
+                        '#2563eb',
                     ],
+                    'borderWidth' => 0,
                 ],
             ],
-            'labels' => ['En attente', 'Acceptées', 'Refusées', 'Terminées'],
+            'labels' => [
+                'En attente',
+                'Acceptées',
+                'Refusées',
+                'Terminées',
+            ],
         ];
     }
 

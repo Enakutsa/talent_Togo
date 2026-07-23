@@ -13,41 +13,46 @@ class TalentsInactifs extends BaseWidget
 {
     protected static ?string $heading = 'Talents inactifs depuis longtemps';
 
+    protected int|string|array $columnSpan = 1;
+
     public function table(Table $table): Table
     {
         return $table
             ->query(
-                // ✅ Pas de colonne dédiée "date du dernier changement de
-                // disponibilité" — on utilise updated_at comme proxy (mis à
-                // jour à chaque modification du profil, dont la dispo).
                 ProfilTalent::query()
                     ->with('utilisateur.categorie')
                     ->where('disponibilite', false)
                     ->where('updated_at', '<=', now()->subDays(30))
-                    ->orderBy('updated_at')
-                    ->limit(5)
+                    ->oldest('updated_at')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('nom_complet')
                     ->label('Talent')
-                    ->getStateUsing(fn (ProfilTalent $record) => trim(
-                        ($record->utilisateur?->prenom ?? '') . ' ' . ($record->utilisateur?->nom ?? '')
+                    ->state(fn (ProfilTalent $record) => trim(
+                        ($record->utilisateur?->prenom ?? '') . ' ' .
+                        ($record->utilisateur?->nom ?? '')
                     )),
 
                 Tables\Columns\TextColumn::make('utilisateur.categorie.nom')
                     ->label('Catégorie')
-                    ->badge(),
+                    ->badge()
+                    ->placeholder('—'),
 
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Indisponible depuis')
-                    ->formatStateUsing(fn ($state) => $state->diffForHumans()),
+                    ->since(),
             ])
             ->actions([
                 Action::make('voir')
                     ->label('Voir')
                     ->icon('heroicon-m-eye')
-                    ->url(fn (ProfilTalent $record) => UtilisateurResource::getUrl('edit', ['record' => $record->utilisateur_id])),
+                    ->url(
+                        fn (ProfilTalent $record) =>
+                        UtilisateurResource::getUrl('edit', [
+                            'record' => $record->utilisateur_id,
+                        ])
+                    ),
             ])
-            ->paginated(false);
+            ->defaultPaginationPageOption(5);
     }
 }

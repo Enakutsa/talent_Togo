@@ -18,7 +18,11 @@ class OtpResource extends Resource
 {
     protected static ?string $model = Otp::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShieldCheck;
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Système';
+
+    protected static ?int $navigationSort = 2;
 
     public static function form(Schema $schema): Schema
     {

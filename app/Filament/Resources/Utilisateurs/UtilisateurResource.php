@@ -20,6 +20,12 @@ class UtilisateurResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    // ✅ Groupe de navigation — regroupe cette resource sous "Gestion
+    // utilisateurs" dans la sidebar, avec Categories et Profil Talents.
+    protected static string|\UnitEnum|null $navigationGroup = 'Gestion utilisateurs';
+
+    protected static ?int $navigationSort = 1;
+
     protected static ?string $recordTitleAttribute = 'email';
 
     // ✅ Badge avec le nombre de talents en attente de validation — même

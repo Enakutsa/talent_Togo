@@ -9,13 +9,19 @@ class InscriptionsChart extends ChartWidget
 {
     protected ?string $heading = 'Inscriptions (30 derniers jours)';
 
+    protected int|string|array $columnSpan = 1;
+
+    protected ?string $maxHeight = '300px';
+
     protected function getData(): array
     {
         $debut = now()->subDays(29)->startOfDay();
 
-        // ✅ Une seule requête groupée par (jour, rôle) plutôt que 60
-        // requêtes (30 jours x 2 rôles) dans une boucle.
-        $rows = Utilisateur::selectRaw("DATE(created_at) as jour, role, COUNT(*) as total")
+        $rows = Utilisateur::selectRaw("
+                DATE(created_at) as jour,
+                role,
+                COUNT(*) as total
+            ")
             ->where('created_at', '>=', $debut)
             ->whereIn('role', ['talent', 'client'])
             ->groupBy('jour', 'role')
@@ -28,10 +34,24 @@ class InscriptionsChart extends ChartWidget
         for ($i = 0; $i < 30; $i++) {
             $date = $debut->copy()->addDays($i);
             $jourStr = $date->format('Y-m-d');
+
             $labels[] = $date->format('d/m');
 
-            $talents[] = (int) $rows->firstWhere(fn ($r) => $r->jour === $jourStr && $r->role === 'talent')?->total ?? 0;
-            $clients[] = (int) $rows->firstWhere(fn ($r) => $r->jour === $jourStr && $r->role === 'client')?->total ?? 0;
+            $talents[] = (int) (
+                $rows->firstWhere(
+                    fn ($r) =>
+                        $r->jour === $jourStr &&
+                        $r->role === 'talent'
+                )?->total ?? 0
+            );
+
+            $clients[] = (int) (
+                $rows->firstWhere(
+                    fn ($r) =>
+                        $r->jour === $jourStr &&
+                        $r->role === 'client'
+                )?->total ?? 0
+            );
         }
 
         return [

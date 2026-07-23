@@ -11,7 +11,9 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class DerniersTalentsEnAttente extends BaseWidget
 {
-    protected static ?string $heading = 'Derniers talents en attente';
+    protected static ?string $heading = 'Talents en attente';
+
+    protected int|string|array $columnSpan = 1;
 
     public function table(Table $table): Table
     {
@@ -22,31 +24,36 @@ class DerniersTalentsEnAttente extends BaseWidget
                     ->where('statut', 'en_attente')
                     ->with('categorie')
                     ->latest()
-                    ->limit(5)
             )
             ->columns([
                 Tables\Columns\TextColumn::make('nom_complet')
                     ->label('Nom')
-                    ->getStateUsing(fn (Utilisateur $record) => trim($record->prenom . ' ' . $record->nom)),
+                    ->state(fn (Utilisateur $record) => trim(
+                        $record->prenom . ' ' . $record->nom
+                    )),
 
                 Tables\Columns\TextColumn::make('categorie.nom')
                     ->label('Catégorie')
-                    ->badge(),
+                    ->badge()
+                    ->placeholder('—'),
 
                 Tables\Columns\TextColumn::make('ville')
                     ->label('Ville')
                     ->placeholder('—'),
 
                 Tables\Columns\TextColumn::make('created_at')
-                    ->label('Inscrit le')
-                    ->date('d M Y'),
+                    ->label('Inscrit')
+                    ->since(),
             ])
             ->actions([
                 Action::make('voir')
                     ->label('Voir')
                     ->icon('heroicon-m-eye')
-                    ->url(fn (Utilisateur $record) => UtilisateurResource::getUrl('edit', ['record' => $record])),
+                    ->url(fn (Utilisateur $record) => UtilisateurResource::getUrl(
+                        'edit',
+                        ['record' => $record]
+                    )),
             ])
-            ->paginated(false);
+            ->defaultPaginationPageOption(5);
     }
 }

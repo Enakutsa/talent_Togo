@@ -13,14 +13,15 @@ class DerniersSignalements extends BaseWidget
 {
     protected static ?string $heading = 'Derniers signalements';
 
+    protected int|string|array $columnSpan = 1;
+
     public function table(Table $table): Table
     {
         return $table
             ->query(
                 Signalement::query()
-                    ->with('profilTalent.utilisateur')
+                    ->with(['profilTalent.utilisateur'])
                     ->latest()
-                    ->limit(5)
             )
             ->columns([
                 Tables\Columns\TextColumn::make('motif')
@@ -30,7 +31,7 @@ class DerniersSignalements extends BaseWidget
 
                 Tables\Columns\TextColumn::make('talent_vise')
                     ->label('Talent visé')
-                    ->getStateUsing(fn (Signalement $record) => trim(
+                    ->state(fn (Signalement $record) => trim(
                         ($record->profilTalent?->utilisateur?->prenom ?? '') . ' ' .
                         ($record->profilTalent?->utilisateur?->nom ?? '')
                     )),
@@ -46,14 +47,17 @@ class DerniersSignalements extends BaseWidget
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Signalé le')
-                    ->date('d M Y'),
+                    ->since(),
             ])
             ->actions([
                 Action::make('voir')
                     ->label('Voir')
                     ->icon('heroicon-m-eye')
-                    ->url(fn (Signalement $record) => SignalementResource::getUrl('edit', ['record' => $record])),
+                    ->url(fn (Signalement $record) => SignalementResource::getUrl(
+                        'edit',
+                        ['record' => $record]
+                    )),
             ])
-            ->paginated(false);
+            ->defaultPaginationPageOption(5);
     }
 }
