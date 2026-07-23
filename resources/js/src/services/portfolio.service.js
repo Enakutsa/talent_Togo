@@ -1,4 +1,4 @@
-import api from "./auth.service";
+import api from "./api";
 
 export const getPortfolio = async () => {
   const res = await api.get("/talent/portfolio");

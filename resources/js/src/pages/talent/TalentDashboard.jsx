@@ -1,4 +1,4 @@
-import { useState, useContext, useRef, useEffect } from "react";
+import { useState, useContext, useRef, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import {
@@ -8,6 +8,7 @@ import {
 import { getProfilTalent, updateProfilTalent } from "../../services/profilTalent.service";
 import { getCategories } from "../../services/categorie.service";
 import { getDemandesRecues } from "../../services/demande.service";
+import { useAutoRefresh } from "../../hooks/useAutoRefresh";
 import TalentTopNav, { NAV_ITEMS } from "../../components/TalentTopNav";
 import "../../assets/styles/TalentDashboard.css";
 import "../../assets/styles/ProfilCreer.css";
@@ -56,19 +57,39 @@ function DashboardSection({ user }) {
   const [profil, setProfil] = useState(null);
   const [profilLoading, setProfilLoading] = useState(true);
 
-  useEffect(() => {
+  // ✅ Fetch séparé en fonctions nommées pour pouvoir les rebrancher sur
+  // l'auto-refresh (voir hooks/useAutoRefresh).
+  const fetchProfil = useCallback(() => {
     getProfilTalent()
       .then((res) => setProfil(res.data))
       .catch(() => setProfil(null))
       .finally(() => setProfilLoading(false));
   }, []);
 
-  useEffect(() => {
+  const fetchDemandes = useCallback(() => {
     getDemandesRecues()
       .then((res) => setDemandes(res.data || []))
       .catch(() => setDemandes([]))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    fetchProfil();
+  }, [fetchProfil]);
+
+  useEffect(() => {
+    fetchDemandes();
+  }, [fetchDemandes]);
+
+  // ✅ Les demandes récentes se rechargent dès qu'une action touche
+  // "/demandes" ailleurs dans l'app (ex: le client en envoie une nouvelle).
+  useAutoRefresh(fetchDemandes, { match: "demandes" });
+
+  // ✅ Les stats du profil (vues, note, nb_avis, revenus estimés) dépendent
+  // de plusieurs sources différentes (un nouvel avis, une demande acceptée
+  // ou terminée, une vue de profil...) donc on les recharge sans filtre,
+  // à CHAQUE action réussie dans l'app plutôt que de lister tous les cas.
+  useAutoRefresh(fetchProfil);
 
   const total = demandes.length;
   const enAttente = demandes.filter((d) => d.statut === "en_attente").length;

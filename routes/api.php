@@ -6,6 +6,7 @@ use App\Http\Controllers\CategorieController;
 use App\Http\Controllers\ProfilTalentController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\TalentController;
+use App\Http\Controllers\ClientController;
 use App\Http\Controllers\PortfolioController;
 use App\Http\Controllers\FavoriController;
 use App\Http\Controllers\DemandePrestationController;
@@ -93,6 +94,10 @@ Route::get('/categories', [CategorieController::class, 'index']);
 Route::get('/stats', [StatsController::class, 'index']);
 Route::get('/talents', [TalentController::class, 'index']);
 Route::get('/talents/{talent}', [TalentController::class, 'show']);
+
+// ✅ 3 clients mis en avant — utilisé par la home (section "Témoignages").
+// Pas d'authentification requise. Renvoie uniquement nom/ville/avatar.
+Route::get('/clients/featured', [ClientController::class, 'featured']);
 
 // ✅ Meilleurs avis publics tous talents confondus — utilisé par la home
 // (section "Témoignages"). Pas d'authentification requise. Placée avant le

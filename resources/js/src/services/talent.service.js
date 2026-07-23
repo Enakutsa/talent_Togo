@@ -54,3 +54,12 @@ export async function getTalentById(id) {
   const response = await api.get(`/talents/${id}`);
   return response.data;
 }
+
+/**
+ * Récupère 3 clients mis en avant (utilisés pour les témoignages en page d'accueil).
+ * GET /api/clients/featured
+ */
+export async function getFeaturedClients() {
+  const response = await api.get("/clients/featured");
+  return response.data;
+}

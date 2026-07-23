@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 import TalentCard from "../../components/talent/TalentCard";
-import { getFeaturedTalents, getStats, getCategories } from "../../services/talent.service";
+import { getFeaturedTalents, getStats, getCategories, getFeaturedClients } from "../../services/talent.service";
 import { AuthContext } from "../../context/AuthContext";
 import {
   Search, Camera, Palette, Scissors, Music2, Film, Package2, Brush, Star,
@@ -46,9 +46,17 @@ const FALLBACK_STATS = [
   { key: "villes", icon: Globe, label: "Villes couvertes", value: "6" },
 ];
 
+// ✅ Profils clients de secours (utilisés uniquement si l'API /clients/featured
+// échoue) — pour la section Témoignages, en cas de fallback.
+const FALLBACK_CLIENTS = [
+  { id: 1, nom: "Ama Sena", ville: "Lomé", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop" },
+  { id: 2, nom: "Kossi Adjovi", ville: "Kara", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop" },
+  { id: 3, nom: "Nadia Amouzou", ville: "Sokodé", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop" },
+];
+
 // ✅ Témoignages fixes affichés en page d'accueil. Le texte est rédigé par
-// la plateforme, mais la photo/nom viennent de vrais talents inscrits en
-// base (récupérés via getFeaturedTalents) — pas de faux profils inventés,
+// la plateforme, mais la photo/nom viennent de vrais CLIENTS inscrits en
+// base (récupérés via getFeaturedClients) — pas de faux profils inventés,
 // et pas de commentaires publics non modérés sur la page d'entrée du site.
 const STATIC_TESTIMONIALS = [
   { note: 5, commentaire: "J'ai trouvé un photographe professionnel en 10 minutes. Service exceptionnel !" },
@@ -71,6 +79,7 @@ export default function Home() {
   const [categories, setCategories] = useState(null);
   const [talents, setTalents] = useState(null);
   const [stats, setStats] = useState(null);
+  const [clients, setClients] = useState(null);
 
   useEffect(() => {
     getCategories()
@@ -102,6 +111,13 @@ export default function Home() {
         ]);
       })
       .catch(() => setStats(FALLBACK_STATS));
+
+    getFeaturedClients()
+      .then((data) => {
+        const list = Array.isArray(data) ? data : data?.data;
+        setClients(Array.isArray(list) && list.length ? list : FALLBACK_CLIENTS);
+      })
+      .catch(() => setClients(FALLBACK_CLIENTS));
   }, []);
 
   // ✅ Scroll automatique vers "Comment ça marche" si on arrive avec
@@ -297,7 +313,7 @@ export default function Home() {
       </section>
 
       {/* TÉMOIGNAGES CLIENTS */}
-      {talents !== null && talents.length > 0 && (
+      {clients !== null && clients.length > 0 && (
         <section className="section testimonials-section">
           <div className="section-center">
             <h2 className="section-title">Ce que disent nos clients</h2>
@@ -305,12 +321,12 @@ export default function Home() {
           </div>
 
           <div className="testimonials-grid">
-            {talents.slice(0, 3).map((t, i) => {
+            {clients.slice(0, 3).map((c, i) => {
               const testimonial = STATIC_TESTIMONIALS[i];
               if (!testimonial) return null;
 
               return (
-                <div key={t.id} className="testimonial-card">
+                <div key={c.id} className="testimonial-card">
                   <Quote size={28} className="testimonial-quote-icon" />
                   <div className="testimonial-stars">
                     {Array.from({ length: 5 }).map((_, si) => (
@@ -323,16 +339,16 @@ export default function Home() {
                   </div>
                   <p className="testimonial-text">"{testimonial.commentaire}"</p>
                   <div className="testimonial-author">
-                    {t.avatar ? (
-                      <img src={t.avatar} alt={t.nom} className="testimonial-avatar" />
+                    {c.avatar ? (
+                      <img src={c.avatar} alt={c.nom} className="testimonial-avatar" />
                     ) : (
                       <div className="testimonial-avatar testimonial-avatar-placeholder">
-                        {(t.nom ?? "?")[0]}
+                        {(c.nom ?? "?")[0]}
                       </div>
                     )}
                     <div>
-                      <p className="testimonial-name">{t.nom}</p>
-                      {t.ville && <p className="testimonial-city">{t.ville}</p>}
+                      <p className="testimonial-name">{c.nom}</p>
+                      {c.ville && <p className="testimonial-city">{c.ville}</p>}
                     </div>
                   </div>
                 </div>

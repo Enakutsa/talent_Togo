@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Star, User } from "lucide-react";
 import { getAvisRecus } from "../../services/avis.service";
+import { useAutoRefresh } from "../../hooks/useAutoRefresh";
 import TalentTopNav from "../../components/TalentTopNav";
 import "../../assets/styles/TalentDashboard.css";
 import "../../assets/styles/AvisRecus.css";
@@ -25,7 +26,11 @@ export default function AvisRecus() {
   const [total, setTotal] = useState(0);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  // ✅ Fonction de fetch extraite (useCallback pour ne pas la recréer à
+  // chaque render, sinon useAutoRefresh ré-attacherait son listener sans
+  // arrêt). Réutilisée à la fois par le chargement initial et par
+  // l'auto-refresh après une action (ex: un client laisse un nouvel avis).
+  const fetchAvis = useCallback(() => {
     getAvisRecus()
       .then((res) => {
         setAvis(res.data || []);
@@ -34,6 +39,16 @@ export default function AvisRecus() {
       })
       .catch(() => setError("Impossible de charger vos avis."));
   }, []);
+
+  useEffect(() => {
+    fetchAvis();
+  }, [fetchAvis]);
+
+  // ✅ Recharge automatiquement la liste dès qu'une action liée aux avis
+  // réussit ailleurs dans l'app (ex: un client poste un avis). Le filtre
+  // "avis" évite de recharger cette page pour des actions sans rapport
+  // (messages, demandes, etc.).
+  useAutoRefresh(fetchAvis, { match: "avis" });
 
   return (
     <div className="td-root">

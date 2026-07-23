@@ -71,28 +71,6 @@ class AuthController extends Controller
     }
 
     /**
-     * ✅ Formate un utilisateur pour le frontend, avec URLs de photo résolues
-     * (compte + profil talent). Utilisé par me() ET verifyLoginOtp() pour
-     * garantir un format identique, peu importe le moment où le frontend
-     * reçoit les données utilisateur — évite que la photo du talent
-     * n'apparaisse qu'après un rechargement de page (F5).
-     */
-    private function formatUtilisateur(Utilisateur $utilisateur): array
-    {
-        $utilisateur->loadMissing('profilTalent');
-        $profil = $utilisateur->profilTalent;
-
-        $data = $utilisateur->toArray();
-        $data['photo'] = $this->resolvePhotoUrl($utilisateur->photo);
-
-        $data['profilTalent'] = $profil
-            ? array_merge($profil->toArray(), ['photo' => $this->resolvePhotoUrl($profil->photo)])
-            : null;
-
-        return $data;
-    }
-
-    /**
      * ✅ INSCRIPTION
      */
     public function register(Request $request)
@@ -287,7 +265,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'data'    => [
-                'utilisateur' => $this->formatUtilisateur($utilisateur),
+                'utilisateur' => $utilisateur,
                 'token'       => $token,
                 'redirect'    => $redirect,
             ]
@@ -323,10 +301,23 @@ class AuthController extends Controller
 
     /**
      * ✅ UTILISATEUR CONNECTÉ
+     * Résout la photo du compte (utilisateurs.photo — clients/admins) ET
+     * celle du profil talent (profils_talents.photo — talents), séparément,
+     * chacune compatible URL absolue (Cloudinary) ou chemin local.
      */
     public function me(Request $request)
     {
-        return response()->json($this->formatUtilisateur($request->user()));
+        $utilisateur = $request->user()->load('profilTalent');
+        $profil = $utilisateur->profilTalent;
+
+        $utilisateurData = $utilisateur->toArray();
+        $utilisateurData['photo'] = $this->resolvePhotoUrl($utilisateur->photo);
+
+        $utilisateurData['profilTalent'] = $profil
+            ? array_merge($profil->toArray(), ['photo' => $this->resolvePhotoUrl($profil->photo)])
+            : null;
+
+        return response()->json($utilisateurData);
     }
 
     /**
@@ -348,7 +339,7 @@ class AuthController extends Controller
             'nom'       => 'sometimes|required|string|max:100',
             'prenom'    => 'sometimes|required|string|max:100',
             'telephone' => 'sometimes|required|string|regex:/^[0-9]{8}$/',
-            'photo'     => 'nullable|file|image|mimes:jpeg,jpg,png|max:5120',
+            'photo'     => 'nullable|file|image|mimes:jpeg,jpg,png|max:10240', // 10 Mo
         ];
 
         $changePassword = $request->filled('nouveau_mot_de_passe');
@@ -391,9 +382,13 @@ class AuthController extends Controller
 
         $utilisateur->save();
 
+        $utilisateur = $utilisateur->fresh()->load('profilTalent');
+        $data = $utilisateur->toArray();
+        $data['photo'] = $this->resolvePhotoUrl($utilisateur->photo);
+
         return response()->json([
             'success' => true,
-            'data'    => $this->formatUtilisateur($utilisateur->fresh()),
+            'data'    => $data,
         ]);
     }
 

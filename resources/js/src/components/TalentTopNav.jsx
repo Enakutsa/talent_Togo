@@ -30,6 +30,7 @@ export default function TalentTopNav({ activeKey }) {
   const [disponible, setDisponible] = useState(true);
   const [dispoLoading, setDispoLoading] = useState(false);
   const menuRef = useRef(null);
+  const closeTimeoutRef = useRef(null);
 
   const prenom = user?.prenom || "Talent";
   const nom = user?.nom || "";
@@ -50,6 +51,29 @@ export default function TalentTopNav({ activeKey }) {
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // ✅ Ouvre le menu au survol (hover), avec un petit délai à la sortie
+  // pour éviter qu'il se ferme si la souris passe rapidement entre
+  // l'avatar et le menu. Le clic reste actif en plus (utile sur mobile).
+  const handleMenuMouseEnter = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setMenuOpen(true);
+  };
+
+  const handleMenuMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setMenuOpen(false);
+    }, 200);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
   }, []);
 
   const handleNavClick = (item) => {
@@ -97,7 +121,12 @@ export default function TalentTopNav({ activeKey }) {
         <div className="td-topnav-right">
           <NotificationBell accentColor="green" />
 
-          <div className="td-profile-menu" ref={menuRef}>
+          <div
+            className="td-profile-menu"
+            ref={menuRef}
+            onMouseEnter={handleMenuMouseEnter}
+            onMouseLeave={handleMenuMouseLeave}
+          >
             <button className="td-profile-trigger" onClick={() => setMenuOpen((o) => !o)}>
               <div className="td-topnav-avatar">
                 {photo ? <img src={photo} alt={prenom} /> : <span>{initiales}</span>}

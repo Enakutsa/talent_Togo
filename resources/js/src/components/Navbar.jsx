@@ -18,6 +18,7 @@ export default function Navbar() {
   const { user, isAuthenticated, logout } = useContext(AuthContext);
 
   const profileRef = useRef(null);
+  const closeTimeoutRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -27,6 +28,30 @@ export default function Navbar() {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // ✅ Ouvre le menu au survol (hover) de l'avatar/nom, avec un petit délai
+  // à la sortie pour éviter que le menu se ferme si la souris passe
+  // rapidement entre le bouton et le menu déroulant. Le clic reste
+  // fonctionnel en plus (utile sur mobile/tactile, où il n'y a pas de hover).
+  const handleProfileMouseEnter = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setProfileOpen(true);
+  };
+
+  const handleProfileMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setProfileOpen(false);
+    }, 200);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
   }, []);
 
   const isActive = (href) =>
@@ -94,7 +119,12 @@ export default function Navbar() {
             {isAuthenticated && <NotificationBell accentColor={user?.role === "talent" ? "green" : "orange"} />}
 
             {isAuthenticated ? (
-              <div className="navbar-profile-wrap" ref={profileRef}>
+              <div
+                className="navbar-profile-wrap"
+                ref={profileRef}
+                onMouseEnter={handleProfileMouseEnter}
+                onMouseLeave={handleProfileMouseLeave}
+              >
                 <button onClick={() => setProfileOpen(!profileOpen)} className="navbar-profile-btn">
                   <img
                     src={avatarUrl || "https://ui-avatars.com/api/?name=" + encodeURIComponent(user?.nom || "U")}

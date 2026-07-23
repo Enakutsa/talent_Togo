@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   Heart, ClipboardList, Clock, CheckCircle, XCircle,
@@ -7,6 +7,7 @@ import {
 import { AuthContext } from "../../context/AuthContext";
 import { getFavoris } from "../../services/favori.service";
 import { getMesDemandes } from "../../services/demande.service";
+import { useAutoRefresh } from "../../hooks/useAutoRefresh";
 import ClientTopNav from "../../components/ClientTopNav";
 import "../../assets/styles/ClientDashboard.css";
 
@@ -23,11 +24,17 @@ export default function ClientDashboard() {
   const [demandes, setDemandes] = useState(null);
   const [counts, setCounts] = useState({ all: 0, en_attente: 0, acceptee: 0, refusee: 0 });
 
-  useEffect(() => {
+  // ✅ Fetches séparés (au lieu d'un seul bloc dans useEffect) pour pouvoir
+  // les rebrancher individuellement sur l'auto-refresh, avec un filtre
+  // différent chacun (pas de refetch des favoris quand une demande change,
+  // et inversement).
+  const fetchFavoris = useCallback(() => {
     getFavoris()
       .then((res) => setFavoris(res.data || []))
       .catch(() => setFavoris([]));
+  }, []);
 
+  const fetchDemandes = useCallback(() => {
     getMesDemandes(1)
       .then((res) => {
         setDemandes(res.data || []);
@@ -35,6 +42,17 @@ export default function ClientDashboard() {
       })
       .catch(() => setDemandes([]));
   }, []);
+
+  useEffect(() => {
+    fetchFavoris();
+    fetchDemandes();
+  }, [fetchFavoris, fetchDemandes]);
+
+  // ✅ Recharge automatiquement dès qu'une action liée aux favoris ou aux
+  // demandes réussit ailleurs dans l'app (ex: le client ajoute un favori
+  // depuis la page de recherche, ou envoie une nouvelle demande).
+  useAutoRefresh(fetchFavoris, { match: "favoris" });
+  useAutoRefresh(fetchDemandes, { match: "demandes" });
 
   const loading = favoris === null || demandes === null;
 

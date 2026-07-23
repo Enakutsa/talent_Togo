@@ -105,16 +105,29 @@ export default function Login() {
       // ✅ CORRECTION PRINCIPALE
       login(data.data.utilisateur, data.data.token);
 
-      // ✅ redirection : priorité à la page que l'utilisateur visait avant
+      // ✅ Redirection : priorité à la page que l'utilisateur visait avant
       // d'être redirigé vers /login (mémorisée par ProtectedRoute dans
-      // location.state.from), SAUF pour les redirections "forcées" par le
-      // backend (onboarding talent incomplet, ou admin) qui doivent
-      // toujours primer sur la page d'origine.
+      // location.state.from) — MAIS seulement si cette page correspond au
+      // rôle de la personne qui vient de se connecter. Sinon (ex: un
+      // client se connecte alors que "from" pointait vers une route
+      // /talent/..., peu importe comment), on ignore "from" et on suit la
+      // redirection normale calculée par le backend.
+      const role = data.data.utilisateur?.role;
       const from = location.state?.from;
+
+      const fromCorrespondAuRole =
+        from &&
+        (
+          (from.startsWith("/talent") && role === "talent") ||
+          (from.startsWith("/client") && role === "client") ||
+          (from.startsWith("/admin") && role === "admin") ||
+          (!from.startsWith("/talent") && !from.startsWith("/client") && !from.startsWith("/admin"))
+        );
+
       const redirectForce =
         data.data.redirect === "talent/profil/creer" || data.data.redirect === "admin";
 
-      if (from && !redirectForce) {
+      if (fromCorrespondAuRole && !redirectForce) {
         navigate(from);
       } else {
         navigate("/" + data.data.redirect);

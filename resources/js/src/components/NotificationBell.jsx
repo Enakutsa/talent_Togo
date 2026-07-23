@@ -20,6 +20,7 @@ export default function NotificationBell({ accentColor = "orange" }) {
   const [notifications, setNotifications] = useState([]);
   const [nonLues, setNonLues] = useState(0);
   const ref = useRef(null);
+  const closeTimeoutRef = useRef(null);
 
   const load = () => {
     getNotifications()
@@ -42,6 +43,30 @@ export default function NotificationBell({ accentColor = "orange" }) {
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // ✅ Ouvre le menu de notifications au survol (hover), avec un petit
+  // délai à la sortie pour éviter qu'il se ferme si la souris passe
+  // rapidement entre la cloche et le menu. Le clic reste actif en plus
+  // (utile sur mobile/tactile).
+  const handleMouseEnter = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setOpen(false);
+    }, 200);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
   }, []);
 
   const handleNotifClick = async (n) => {
@@ -73,7 +98,12 @@ export default function NotificationBell({ accentColor = "orange" }) {
   };
 
   return (
-    <div className={`nb-wrap nb-accent-${accentColor}`} ref={ref}>
+    <div
+      className={`nb-wrap nb-accent-${accentColor}`}
+      ref={ref}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <button className="nb-icon-btn" onClick={() => setOpen((o) => !o)} title="Notifications">
         <Bell size={18} />
         {nonLues > 0 && (

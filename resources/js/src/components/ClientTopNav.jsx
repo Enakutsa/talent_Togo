@@ -22,6 +22,7 @@ export default function ClientTopNav({ activeKey }) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const closeTimeoutRef = useRef(null);
 
   const prenom = user?.prenom || "Client";
   const nom = user?.nom || "";
@@ -35,6 +36,29 @@ export default function ClientTopNav({ activeKey }) {
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // ✅ Ouvre le menu au survol (hover), avec un petit délai à la sortie
+  // pour éviter qu'il se ferme si la souris passe rapidement entre
+  // l'avatar et le menu. Le clic reste actif en plus (utile sur mobile).
+  const handleMenuMouseEnter = () => {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    setMenuOpen(true);
+  };
+
+  const handleMenuMouseLeave = () => {
+    closeTimeoutRef.current = setTimeout(() => {
+      setMenuOpen(false);
+    }, 200);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
+    };
   }, []);
 
   const handleNavClick = (to) => {
@@ -67,7 +91,12 @@ export default function ClientTopNav({ activeKey }) {
         <div className="cd-topnav-right">
           <NotificationBell accentColor="orange" />
 
-          <div className="cd-profile-menu" ref={menuRef}>
+          <div
+            className="cd-profile-menu"
+            ref={menuRef}
+            onMouseEnter={handleMenuMouseEnter}
+            onMouseLeave={handleMenuMouseLeave}
+          >
             <button className="cd-profile-trigger" onClick={() => setMenuOpen((o) => !o)}>
               <div className="cd-topnav-avatar">
                 {user?.photo ? (

@@ -9,37 +9,37 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 
-class DerniersTalentsEnAttente extends BaseWidget
+class ComptesDesactivesRecents extends BaseWidget
 {
-    protected static ?string $heading = 'Derniers talents en attente';
+    protected static ?string $heading = 'Comptes désactivés récemment';
 
     public function table(Table $table): Table
     {
         return $table
             ->query(
                 Utilisateur::query()
-                    ->where('role', 'talent')
-                    ->where('statut', 'en_attente')
-                    ->with('categorie')
-                    ->latest()
+                    ->where('statut', 'desactive')
+                    ->latest('updated_at')
                     ->limit(5)
             )
             ->columns([
                 Tables\Columns\TextColumn::make('nom_complet')
-                    ->label('Nom')
+                    ->label('Utilisateur')
                     ->getStateUsing(fn (Utilisateur $record) => trim($record->prenom . ' ' . $record->nom)),
 
-                Tables\Columns\TextColumn::make('categorie.nom')
-                    ->label('Catégorie')
-                    ->badge(),
+                Tables\Columns\TextColumn::make('role')
+                    ->label('Rôle')
+                    ->badge()
+                    ->color(fn (string $state) => $state === 'talent' ? 'info' : 'gray'),
 
-                Tables\Columns\TextColumn::make('ville')
-                    ->label('Ville')
-                    ->placeholder('—'),
+                Tables\Columns\TextColumn::make('motif_rejet')
+                    ->label('Motif')
+                    ->placeholder('Non précisé')
+                    ->limit(40),
 
-                Tables\Columns\TextColumn::make('created_at')
-                    ->label('Inscrit le')
-                    ->date('d M Y'),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->label('Désactivé')
+                    ->formatStateUsing(fn ($state) => $state->diffForHumans()),
             ])
             ->actions([
                 Action::make('voir')

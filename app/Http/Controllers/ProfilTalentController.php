@@ -99,7 +99,7 @@ class ProfilTalentController extends Controller
             'tarif_max' => 'nullable|numeric|gte:tarif_min',
             'biographie' => 'nullable|string|max:2000',
             'disponibilite' => 'nullable|boolean',
-            'photo' => 'nullable|file|image|mimes:jpeg,jpg,png|max:5120',
+            'photo' => 'nullable|file|image|mimes:jpeg,jpg,png|max:10240', // 10 Mo
             'prenom' => 'nullable|string|max:255',
             'nom' => 'nullable|string|max:255',
             'email' => [

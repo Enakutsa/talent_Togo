@@ -1,24 +1,4 @@
-import axios from "axios";
-
-const API_URL = "http://127.0.0.1:8000/api";
-
-const api = axios.create({
-  baseURL: API_URL,
-  headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  },
-  withCredentials: false,
-});
-
-// ✅ TOKEN automatique
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+import api from "./api";
 
 // ✅ REGISTER
 export const register = async (data) => {
@@ -55,9 +35,10 @@ export const getUser = async () => {
 };
 
 // ✅ LOGOUT
+// ⚠️ La suppression du token de sessionStorage est déjà gérée par
+// AuthContext.logout() — pas besoin de la refaire ici.
 export const logout = async () => {
   const res = await api.post("/logout");
-  localStorage.removeItem("token");
   return res.data;
 };
 
@@ -68,8 +49,11 @@ export const updateUser = async (payload) => {
   const isFormData = payload instanceof FormData;
 
   if (isFormData) {
-    // Spoofing Laravel : POST avec _method=PUT
-    payload.append("_method", "PUT");
+    // Spoofing Laravel : POST avec _method=PUT (uniquement si pas déjà
+    // ajouté par l'appelant, pour éviter un champ _method en double).
+    if (!payload.has("_method")) {
+      payload.append("_method", "PUT");
+    }
     const res = await api.post("/user", payload, {
       headers: { "Content-Type": "multipart/form-data" },
     });
