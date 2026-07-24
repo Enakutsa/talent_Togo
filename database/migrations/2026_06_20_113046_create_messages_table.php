@@ -8,18 +8,18 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('messages', function (Blueprint $table) {
-            $table->boolean('modifie')->default(false)->after('contenu');
-            $table->boolean('supprime_pour_tous')->default(false)->after('modifie');
-            $table->boolean('supprime_expediteur')->default(false)->after('supprime_pour_tous');
-            $table->boolean('supprime_destinataire')->default(false)->after('supprime_expediteur');
+        Schema::create('messages', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('demande_prestation_id')->constrained('demandes_prestation')->onDelete('cascade');
+            $table->foreignId('expediteur_id')->constrained('utilisateurs')->onDelete('cascade');
+            $table->text('contenu');
+            $table->boolean('lu')->default(false);
+            $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::table('messages', function (Blueprint $table) {
-            $table->dropColumn(['modifie', 'supprime_pour_tous', 'supprime_expediteur', 'supprime_destinataire']);
-        });
+        Schema::dropIfExists('messages');
     }
 };
