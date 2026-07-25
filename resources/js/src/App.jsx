@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ProtectedRoute from "./components/ProtectedRoute";
 import RedirectIfTalent from "./components/RedirectIfTalent";
+import ScrollToTop from "./components/ScrollToTop";
 
 import Home from "./pages/commun/Home";
 import Inscription from "./pages/auth/Inscription";
@@ -41,6 +42,7 @@ function PublicLayout({ children }) {
 export default function App() {
   return (
     <AuthProvider>
+      <ScrollToTop />
       <Routes>
         {/* ── Pages publiques : inaccessibles à un talent déjà connecté ── */}
         <Route path="/" element={<RedirectIfTalent><PublicLayout><Home /></PublicLayout></RedirectIfTalent>} />

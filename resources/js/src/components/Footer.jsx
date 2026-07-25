@@ -1,9 +1,22 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { AuthContext } from "../context/AuthContext";
 import "../assets/styles/Footer.css";
 
 export default function Footer() {
-  const navigate = useNavigate();
+  const { user, isAuthenticated } = useContext(AuthContext);
+
+  // ✅ Si déjà connecté, "Créer un profil" n'a plus de sens (register est
+  // réservé aux visiteurs) — on redirige plutôt vers l'espace de
+  // l'utilisateur selon son rôle.
+  const profilLink = !isAuthenticated
+    ? "/register"
+    : user?.role === "talent"
+    ? "/talent/dashboard"
+    : "/client/dashboard";
+
+  const profilLabel = !isAuthenticated ? "Créer un profil" : "Mon espace";
 
   return (
     <footer className="footer">
@@ -32,8 +45,8 @@ export default function Footer() {
             <ul className="footer-list">
               <li><Link to="/" className="footer-link">Accueil</Link></li>
               <li><Link to="/recherche" className="footer-link">Trouver un talent</Link></li>
-              <li><Link to="/register" className="footer-link">Créer un profil</Link></li>
-              <li><button onClick={() => navigate("/")} className="footer-link footer-link-btn">Comment ça marche</button></li>
+              <li><Link to={profilLink} className="footer-link">{profilLabel}</Link></li>
+              <li><Link to="/#comment-ca-marche" className="footer-link">Comment ça marche</Link></li>
             </ul>
           </div>
 
