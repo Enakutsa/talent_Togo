@@ -15,4 +15,5 @@ CMD php artisan migrate:fresh --force && \
     php artisan db:seed --class=CategorieSeeder --force && \
     php artisan db:seed --class=AdminSeeder --force && \
     php artisan storage:link && \
+    (php artisan queue:work --tries=3 --daemon &) && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
