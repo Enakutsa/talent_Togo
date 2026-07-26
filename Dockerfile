@@ -10,10 +10,9 @@ ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm install && npm run build
 EXPOSE 8000
-# ✅ FORCE RESET DB (IMPORTANT)
-CMD php artisan migrate:fresh --force && \
+CMD php artisan migrate --force && \
     php artisan db:seed --class=CategorieSeeder --force && \
     php artisan db:seed --class=AdminSeeder --force && \
     php artisan storage:link && \
-    (php artisan queue:work --tries=3 &) && \
+    (php artisan queue:work --tries=1 -v &) && \
     php artisan serve --host=0.0.0.0 --port=${PORT:-8000}
