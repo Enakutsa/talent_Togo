@@ -74,7 +74,12 @@ export default function ClientProfil() {
 
     try {
       const res = await updateUser(payload);
-      login(res.data, token);
+      // ✅ res = { success: true, data: {...utilisateur} } — on doit passer
+      // res.data.data à login(), pas res.data (l'enveloppe entière), sinon
+      // AuthContext.user devient {success, data} au lieu du vrai utilisateur,
+      // et des champs comme user.photo restent undefined jusqu'au prochain
+      // rechargement de page (qui repasse par /user -> AuthController::me()).
+      login(res.data.data, token);
       setSuccess("Profil mis à jour avec succès.");
       setIsEditing(false);
       setChangePassword(false);

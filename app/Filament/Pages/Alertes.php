@@ -22,9 +22,7 @@ class Alertes extends Page
 
     protected static ?string $slug = 'alertes';
 
-    protected string $view = 'filament.pages.alertes';
-
-    public function getWidgets(): array
+    protected function getHeaderWidgets(): array
     {
         return [
             DerniersSignalements::class,
@@ -34,7 +32,7 @@ class Alertes extends Page
         ];
     }
 
-    public function getColumns(): int|array
+    public function getHeaderWidgetsColumns(): int|array
     {
         return 2;
     }

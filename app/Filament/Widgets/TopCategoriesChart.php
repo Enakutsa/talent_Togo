@@ -8,6 +8,8 @@ use Filament\Widgets\ChartWidget;
 
 class TopCategoriesChart extends ChartWidget
 {
+    protected ?string $pollingInterval = null;
+
     protected ?string $heading = 'Talents par catégorie';
 
     protected int|string|array $columnSpan = 1;

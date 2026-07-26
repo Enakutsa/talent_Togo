@@ -22,9 +22,7 @@ class Statistiques extends Page
 
     protected static ?string $slug = 'statistiques';
 
-    protected string $view = 'filament.pages.statistiques';
-
-    public function getWidgets(): array
+    protected function getHeaderWidgets(): array
     {
         return [
             InscriptionsChart::class,
@@ -34,7 +32,7 @@ class Statistiques extends Page
         ];
     }
 
-    public function getColumns(): int|array
+    public function getHeaderWidgetsColumns(): int|array
     {
         return 2;
     }

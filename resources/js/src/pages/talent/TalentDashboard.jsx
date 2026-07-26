@@ -57,8 +57,6 @@ function DashboardSection({ user }) {
   const [profil, setProfil] = useState(null);
   const [profilLoading, setProfilLoading] = useState(true);
 
-  // ✅ Fetch séparé en fonctions nommées pour pouvoir les rebrancher sur
-  // l'auto-refresh (voir hooks/useAutoRefresh).
   const fetchProfil = useCallback(() => {
     getProfilTalent()
       .then((res) => setProfil(res.data))
@@ -81,22 +79,13 @@ function DashboardSection({ user }) {
     fetchDemandes();
   }, [fetchDemandes]);
 
-  // ✅ Les demandes récentes se rechargent dès qu'une action touche
-  // "/demandes" ailleurs dans l'app (ex: le client en envoie une nouvelle).
   useAutoRefresh(fetchDemandes, { match: "demandes" });
-
-  // ✅ Les stats du profil (vues, note, nb_avis, revenus estimés) dépendent
-  // de plusieurs sources différentes (un nouvel avis, une demande acceptée
-  // ou terminée, une vue de profil...) donc on les recharge sans filtre,
-  // à CHAQUE action réussie dans l'app plutôt que de lister tous les cas.
   useAutoRefresh(fetchProfil);
 
   const total = demandes.length;
   const enAttente = demandes.filter((d) => d.statut === "en_attente").length;
   const demandesRecentes = demandes.slice(0, 5);
 
-  // ✅ Revenus estimés : renvoyés par ProfilTalentController::show
-  // (somme des budgets des demandes terminées, voir backend).
   const revenusEstimes = profil?.revenus_estimes ?? 0;
 
   return (
@@ -206,6 +195,7 @@ const VILLES_TOGO = [
 
 function ProfilSection() {
   const fileInputRef = useRef(null);
+  const { refreshUser } = useContext(AuthContext);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -283,7 +273,22 @@ function ProfilSection() {
     }
 
     try {
-      await updateProfilTalent(payload);
+      const res = await updateProfilTalent(payload);
+
+      // ✅ Met à jour l'avatar dans le formulaire immédiatement avec la
+      // nouvelle URL renvoyée par le backend (pas juste l'aperçu local).
+      if (res?.data?.photo) {
+        setPhotoUrl(res.data.photo);
+      }
+      setPhotoFile(null);
+      setPhotoPreview(null);
+
+      // ✅ Rafraîchit AuthContext.user (donc user.profilTalent.photo) pour
+      // que TalentTopNav affiche la nouvelle photo immédiatement, sans
+      // attendre un rechargement de page — même bug que côté client
+      // (ClientProfil.jsx), corrigé ici de la même façon.
+      await refreshUser();
+
       setSuccess("Profil mis à jour avec succès.");
       setIsEditing(false);
     } catch (err) {

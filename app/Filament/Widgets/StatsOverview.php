@@ -12,6 +12,8 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class StatsOverview extends BaseWidget
 {
+    protected ?string $pollingInterval = null;
+
     protected function getStats(): array
     {
         $talentsEnAttente = Utilisateur::where('role', 'talent')

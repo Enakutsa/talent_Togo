@@ -7,6 +7,8 @@ use Filament\Widgets\ChartWidget;
 
 class SignalementsEvolutionChart extends ChartWidget
 {
+    protected ?string $pollingInterval = null;
+
     protected ?string $heading = 'Signalements (30 derniers jours)';
 
     protected int|string|array $columnSpan = 1;

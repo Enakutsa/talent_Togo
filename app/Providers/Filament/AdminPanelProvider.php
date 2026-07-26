@@ -2,20 +2,13 @@
 
 namespace App\Providers\Filament;
 
-use App\Filament\Widgets\DernieresDemandes;
-use App\Filament\Widgets\DerniersTalentsEnAttente;
-use App\Filament\Widgets\StatsOverview;
-use App\Filament\Widgets\TopTalentsNotes;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -36,28 +29,16 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            // ✅ Les nouvelles pages "Statistiques" et "Alertes" (dans
-            // app/Filament/Pages) sont découvertes automatiquement ici,
-            // pas besoin de les ajouter manuellement dans ->pages().
+            // ✅ Notre propre App\Filament\Pages\Dashboard (qui override
+            // getWidgets() pour rester propre) est découvert ici comme les
+            // autres pages custom — plus besoin de l'ajouter dans ->pages().
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
-            ->pages([
-                Dashboard::class,
-            ])
-            // ✅ IMPORTANT : plus de ->discoverWidgets() ici. Cette méthode
-            // attachait automatiquement TOUS les widgets du dossier
-            // Filament/Widgets au tableau de bord principal, ce qui créait
-            // le fouillis initial. Désormais, seuls les widgets listés
-            // ci-dessous apparaissent sur le tableau de bord principal —
-            // les autres sont déclarés directement dans les pages
-            // Statistiques.php et Alertes.php (voir app/Filament/Pages).
-            ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
-                StatsOverview::class,
-                DerniersTalentsEnAttente::class,
-                DernieresDemandes::class,
-                TopTalentsNotes::class,
-            ])
+            // ✅ discoverWidgets() est nécessaire pour que les widgets
+            // utilisés via getHeaderWidgets() dans Statistiques/Alertes
+            // soient correctement enregistrés auprès de Livewire (sans ça :
+            // erreurs 419 en boucle). Le Dashboard reste propre grâce à
+            // App\Filament\Pages\Dashboard qui ignore ce pool global.
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

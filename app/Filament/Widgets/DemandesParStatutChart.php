@@ -7,6 +7,8 @@ use Filament\Widgets\ChartWidget;
 
 class DemandesParStatutChart extends ChartWidget
 {
+    protected ?string $pollingInterval = null;
+
     protected ?string $heading = 'Demandes par statut';
 
     protected int|string|array $columnSpan = 1;
