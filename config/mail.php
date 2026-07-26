@@ -49,6 +49,11 @@ return [
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 
+        'brevo+api' => [
+            'transport' => 'brevo+api',
+            'key' => env('BREVO_KEY'),
+        ],
+
         'ses' => [
             'transport' => 'ses',
         ],
