@@ -70,7 +70,7 @@ export default function Footer() {
               </li>
               <li className="footer-contact-item">
                 <Mail size={14} className="footer-contact-icon" />
-                <span>contact@talenttogo.tg</span>
+                <span>enakutsakokouespoir@gmail.com</span>
               </li>
               <li className="footer-contact-item">
                 <Phone size={14} className="footer-contact-icon" />

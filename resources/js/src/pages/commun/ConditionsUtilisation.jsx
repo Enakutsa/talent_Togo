@@ -86,7 +86,7 @@ export default function ConditionsUtilisation() {
           <p className="cgu-footer-text">
             Des questions sur nos conditions ? Contactez-nous à{" "}
             <a href="mailto:contact@talenttogo.tg" className="cgu-footer-link">
-              contact@talenttogo.tg
+              enakutsakokouespoir@gmail.com
             </a>
           </p>
           <button onClick={() => navigate("/")} className="cgu-home-btn">

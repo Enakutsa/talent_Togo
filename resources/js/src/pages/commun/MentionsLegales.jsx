@@ -71,7 +71,7 @@ export default function MentionsLegales() {
           <p className="ml-footer-text">
             Une question ? Contactez-nous à{" "}
             <a href="mailto:contact@talenttogo.tg" className="ml-footer-link">
-              contact@talenttogo.tg
+              enakutsakokouespoir@gmail.com
             </a>
           </p>
           <button onClick={() => navigate("/")} className="ml-home-btn">
