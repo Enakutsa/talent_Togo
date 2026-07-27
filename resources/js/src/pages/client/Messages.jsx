@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Send, MessageSquare, User, Loader2, MoreVertical, Pencil, Trash2, X, Check } from "lucide-react";
+import { Send, MessageSquare, User, Loader2, MoreVertical, Pencil, Trash2, X, Check, ArrowLeft } from "lucide-react";
 import {
   getConversationsClient, startConversation, getMessages, sendMessage,
   updateMessage, deleteMessage,
@@ -134,6 +134,11 @@ export default function Messages() {
       });
   };
 
+  // ✅ Revient à la liste des conversations (bouton retour mobile).
+  const handleBackToList = () => {
+    setActiveId(null);
+  };
+
   const activeConversation = conversations?.find((c) => c.id === activeId);
 
   return (
@@ -141,7 +146,10 @@ export default function Messages() {
       <ClientTopNav activeKey="messages" />
 
       <main className="cd-main">
-        <div className="ms-layout">
+        {/* ✅ La classe "ms-thread-open" pilote l'affichage liste/fil sur
+            mobile (voir Messages.css) — sans elle, le fil reste masqué
+            même après avoir sélectionné une conversation. */}
+        <div className={`ms-layout ${activeId ? "ms-thread-open" : ""}`}>
 
           <aside className="ms-sidebar">
             <h1 className="ms-sidebar-title">Messages</h1>
@@ -190,6 +198,16 @@ export default function Messages() {
             ) : (
               <>
                 <div className="ms-thread-header">
+                  {/* ✅ Bouton retour (visible uniquement sur mobile via CSS) */}
+                  <button
+                    type="button"
+                    className="ms-thread-back-btn"
+                    onClick={handleBackToList}
+                    aria-label="Retour aux conversations"
+                  >
+                    <ArrowLeft size={20} />
+                  </button>
+
                   <div className="ms-conv-avatar">
                     {activeConversation?.talent_photo
                       ? <img src={activeConversation.talent_photo} alt="" />
