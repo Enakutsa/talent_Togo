@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProfilTalent;
+use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
 class ProfilTalentController extends Controller
@@ -15,10 +15,15 @@ class ProfilTalentController extends Controller
         abort_unless($request->user()->isTalent(), 403, 'Réservé aux talents.');
     }
 
+    private function cloudinary(): CloudinaryService
+    {
+        return app(CloudinaryService::class);
+    }
+
     /**
      * Construit l'URL affichable d'une photo, qu'elle soit une URL
-     * Cloudinary complète (anciennes photos migrées entre-temps) ou
-     * un chemin de stockage local (nouveau comportement par défaut).
+     * Cloudinary complète (nouveau comportement par défaut) ou un
+     * chemin de stockage local (anciennes photos non migrées).
      */
     private function resolvePhotoUrl(?string $photo): ?string
     {
@@ -129,15 +134,28 @@ class ProfilTalentController extends Controller
         }
 
         if ($request->hasFile('photo')) {
-            // Supprime l'ancienne photo locale si elle existe (les anciennes
-            // photos Cloudinary ne sont pas supprimées automatiquement ici,
-            // vu qu'on ne veut plus dépendre de ce service).
-            if ($profil->photo && !str_starts_with($profil->photo, 'http')) {
-                Storage::disk('public')->delete($profil->photo);
+            // ✅ Cloudinary plutôt que le disque local : le stockage local
+            // de Render est éphémère (effacé à chaque déploiement), donc
+            // toute photo de profil y disparaîtrait au prochain déploiement.
+            if ($profil->photo_public_id) {
+                $this->cloudinary()->delete($profil->photo_public_id, 'image');
             }
 
-            $profilData['photo'] = $request->file('photo')->store('photos_talents', 'public');
-            $profilData['photo_public_id'] = null; // on n'utilise plus Cloudinary ici
+            try {
+                $upload = $this->cloudinary()->upload(
+                    $request->file('photo'),
+                    'talenttogo/profils_talents',
+                    'image'
+                );
+            } catch (\Throwable $e) {
+                return response()->json([
+                    'message' => 'Échec de l\'envoi de la photo. Réessayez ou contactez le support.',
+                    'debug' => config('app.debug') ? $e->getMessage() : null,
+                ], 503);
+            }
+
+            $profilData['photo'] = $upload['url'];
+            $profilData['photo_public_id'] = $upload['public_id'];
         }
 
         $profil->update($profilData);

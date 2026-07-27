@@ -7,15 +7,20 @@ use App\Mail\OtpMail;
 use App\Models\Utilisateur;
 use App\Models\ProfilTalent;
 use App\Models\Otp;
+use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
+    private function cloudinary(): CloudinaryService
+    {
+        return app(CloudinaryService::class);
+    }
+
     /**
      * ✅ Génère et envoie un OTP par email
      */
@@ -103,13 +108,31 @@ class AuthController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $utilisateur = DB::transaction(function () use ($request) {
+        // ✅ Upload du document AVANT la transaction DB : un upload
+        // Cloudinary qui échoue ne doit pas laisser un utilisateur à moitié
+        // créé, mais on ne veut pas non plus faire d'appel réseau externe
+        // à l'intérieur d'une transaction DB.
+        $documentUrl = null;
+        if ($request->hasFile('document_justificatif')) {
+            $file = $request->file('document_justificatif');
+            $isPdf = $file->getClientOriginalExtension() === 'pdf' || $file->getMimeType() === 'application/pdf';
 
-            $documentPath = null;
-            if ($request->hasFile('document_justificatif')) {
-                $documentPath = $request->file('document_justificatif')
-                    ->store('documents_justificatifs', 'public');
+            try {
+                $upload = $this->cloudinary()->upload(
+                    $file,
+                    'talenttogo/documents_justificatifs',
+                    $isPdf ? 'raw' : 'image'
+                );
+                $documentUrl = $upload['url'];
+            } catch (\Throwable $e) {
+                return response()->json([
+                    'message' => 'Échec de l\'envoi du document justificatif. Réessayez ou contactez le support.',
+                    'debug' => config('app.debug') ? $e->getMessage() : null,
+                ], 503);
             }
+        }
+
+        $utilisateur = DB::transaction(function () use ($request, $documentUrl) {
 
             $utilisateur = Utilisateur::create([
                 'nom'                   => $request->nom,
@@ -119,7 +142,7 @@ class AuthController extends Controller
                 'mot_de_passe'          => Hash::make($request->mot_de_passe),
                 'role'                  => $request->role,
                 'is_verified'           => true,
-                'document_justificatif' => $documentPath,
+                'document_justificatif' => $documentUrl,
                 'statut'                => $request->role === 'talent' ? 'en_attente' : 'actif',
                 'categorie_id'          => $request->role === 'talent' ? $request->categorie_id : null,
                 'ville'                 => $request->role === 'talent' ? $request->ville : null,
@@ -379,13 +402,28 @@ class AuthController extends Controller
         $utilisateur->fill($request->only(['nom', 'prenom', 'telephone']));
 
         if ($request->hasFile('photo')) {
-            // Supprime l'ancienne photo locale si elle existe (ignore les
-            // anciennes URLs Cloudinary, non supprimables via ce disque).
-            if ($utilisateur->photo && !str_starts_with($utilisateur->photo, 'http')) {
-                Storage::disk('public')->delete($utilisateur->photo);
+            // ✅ Cloudinary plutôt que le disque local : le stockage local
+            // de Render est éphémère (effacé à chaque déploiement), donc
+            // toute photo uploadée y disparaîtrait au prochain déploiement.
+            if ($utilisateur->photo_public_id) {
+                $this->cloudinary()->delete($utilisateur->photo_public_id, 'image');
             }
 
-            $utilisateur->photo = $request->file('photo')->store('photos_utilisateurs', 'public');
+            try {
+                $upload = $this->cloudinary()->upload(
+                    $request->file('photo'),
+                    'talenttogo/photos_utilisateurs',
+                    'image'
+                );
+            } catch (\Throwable $e) {
+                return response()->json([
+                    'message' => 'Échec de l\'envoi de la photo. Réessayez ou contactez le support.',
+                    'debug' => config('app.debug') ? $e->getMessage() : null,
+                ], 503);
+            }
+
+            $utilisateur->photo = $upload['url'];
+            $utilisateur->photo_public_id = $upload['public_id'];
         }
 
         if ($changePassword) {
