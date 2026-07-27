@@ -2,6 +2,16 @@ FROM php:8.2-cli
 RUN apt-get update && apt-get install -y \
     git curl libpq-dev libzip-dev zip unzip nodejs npm libicu-dev
 RUN docker-php-ext-install pdo pdo_pgsql zip intl
+
+# ✅ Augmente les limites PHP pour permettre l'upload de fichiers plus lourds
+# (portfolio jusqu'à 20 Mo, documents justificatifs, photos de profil)
+RUN { \
+    echo 'upload_max_filesize = 25M'; \
+    echo 'post_max_size = 30M'; \
+    echo 'memory_limit = 256M'; \
+    echo 'max_execution_time = 120'; \
+} > /usr/local/etc/php/conf.d/uploads.ini
+
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . .

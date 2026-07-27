@@ -15,6 +15,7 @@ const STATUT_CONFIG = {
   en_attente: { label: "En attente", cls: "cdh-badge-pending", icon: Clock },
   acceptee: { label: "Acceptée", cls: "cdh-badge-accepted", icon: CheckCircle },
   refusee: { label: "Refusée", cls: "cdh-badge-rejected", icon: XCircle },
+  terminee: { label: "Terminée", cls: "cdh-badge-completed", icon: CheckCircle },
 };
 
 export default function ClientDashboard() {
@@ -46,6 +47,13 @@ export default function ClientDashboard() {
   useEffect(() => {
     fetchFavoris();
     fetchDemandes();
+
+    // ✅ Rafraîchit périodiquement les demandes, car le changement de
+    // statut peut venir d'un autre utilisateur (le talent) sur un autre
+    // appareil — l'événement local "app:data-changed" ne peut pas le
+    // détecter dans ce cas.
+    const interval = setInterval(fetchDemandes, 15000);
+    return () => clearInterval(interval);
   }, [fetchFavoris, fetchDemandes]);
 
   // ✅ Recharge automatiquement dès qu'une action liée aux favoris ou aux

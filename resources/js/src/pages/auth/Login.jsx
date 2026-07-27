@@ -19,11 +19,7 @@ export default function Login() {
   const [utilisateurId, setUtilisateurId] = useState(null);
   const [code, setCode] = useState("");
 
-  // Décompte du blocage : on stocke le timestamp de fin de blocage, et un
-  // "tick" qui avance chaque seconde recalcule le temps restant. Plus robuste
-  // qu'un compteur décrémenté directement (évite les soucis de dépendances
-  // d'effet et de fermetures obsolètes).
-  const [blockDeadline, setBlockDeadline] = useState(null); // timestamp ms | null
+  const [blockDeadline, setBlockDeadline] = useState(null);
   const [now, setNow] = useState(Date.now());
 
   useEffect(() => {
@@ -35,7 +31,6 @@ export default function Login() {
     ? Math.max(0, Math.ceil((blockDeadline - now) / 1000))
     : 0;
 
-  // ✅ STEP EMAIL
   const handleCredentialsSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
@@ -44,8 +39,6 @@ export default function Login() {
 
     try {
       const data = await loginApi({ email });
-
-      // ✅ IMPORTANT
       setUtilisateurId(data.utilisateur_id);
       setStep("otp");
 
@@ -57,7 +50,6 @@ export default function Login() {
       } else if (err.response?.status === 404) {
         setGeneralError("Aucun compte trouvé avec cet email.");
       } else if (err.response?.status === 403) {
-        // ✅ Compte talent en attente de validation ou rejeté
         setGeneralError(
           err.response.data.message ||
             "Votre compte n'est pas encore activé."
@@ -70,12 +62,10 @@ export default function Login() {
     }
   };
 
-  // ✅ STEP OTP
   const handleOtpSubmit = async (e) => {
     e.preventDefault();
     setGeneralError("");
 
-    // ✅ sécurité
     if (!utilisateurId) {
       setGeneralError("Erreur utilisateur. Reconnectez-vous.");
       return;
@@ -91,7 +81,7 @@ export default function Login() {
     }
 
     const codeEnvoye = code;
-    setCode(""); // ✅ le code saisi disparaît dès qu'on clique, succès ou échec
+    setCode("");
     setLoading(true);
 
     try {
@@ -102,7 +92,6 @@ export default function Login() {
 
       console.log("RESPONSE OTP :", data);
 
-      // ✅ CORRECTION PRINCIPALE
       login(data.data.utilisateur, data.data.token);
 
       // ✅ Redirection : priorité à la page que l'utilisateur visait avant
@@ -112,16 +101,28 @@ export default function Login() {
       // client se connecte alors que "from" pointait vers une route
       // /talent/..., peu importe comment), on ignore "from" et on suit la
       // redirection normale calculée par le backend.
+      //
+      // ⚠️ On utilise des préfixes stricts avec "/" final ("/talent/",
+      // "/client/") pour ne PAS confondre "/talents/5" (page publique de
+      // détail d'un talent, accessible aux clients) avec "/talent/..."
+      // (espace privé réservé au talent lui-même). Sans ce "/" final,
+      // "/talents/5".startsWith("/talent") renvoyait true à tort, et un
+      // client cliquant sur un profil talent sans être connecté se
+      // retrouvait renvoyé vers l'accueil au lieu du profil visé.
       const role = data.data.utilisateur?.role;
       const from = location.state?.from;
+
+      const isTalentSpace = from?.startsWith("/talent/");
+      const isClientSpace = from?.startsWith("/client/");
+      const isAdminSpace = from?.startsWith("/admin");
 
       const fromCorrespondAuRole =
         from &&
         (
-          (from.startsWith("/talent") && role === "talent") ||
-          (from.startsWith("/client") && role === "client") ||
-          (from.startsWith("/admin") && role === "admin") ||
-          (!from.startsWith("/talent") && !from.startsWith("/client") && !from.startsWith("/admin"))
+          (isTalentSpace && role === "talent") ||
+          (isClientSpace && role === "client") ||
+          (isAdminSpace && role === "admin") ||
+          (!isTalentSpace && !isClientSpace && !isAdminSpace)
         );
 
       const redirectForce =
@@ -140,7 +141,6 @@ export default function Login() {
       const retryAfter = err.response?.data?.retry_after;
 
       if (status === 429 && retryAfter) {
-        // Déclenche le décompte "Réessayez dans Xs"
         setBlockedSeconds(retryAfter);
         setGeneralError("");
       } else if (status === 422) {
@@ -155,7 +155,6 @@ export default function Login() {
     }
   };
 
-  // ✅ RESEND
   const handleResend = async () => {
     if (blockedSeconds > 0) return;
 
@@ -173,7 +172,6 @@ export default function Login() {
     <div className="login-bg">
       <div className="login-wrap">
 
-        {/* LOGO */}
         <div className="login-logo-block">
           <Link to="/" className="login-logo-link">
             <div className="login-logo-icon">
@@ -193,7 +191,6 @@ export default function Login() {
 
         <div className="login-card">
 
-          {/* EMAIL */}
           {step === "credentials" ? (
             <>
               <h1 className="login-card-title">Connexion</h1>
@@ -244,7 +241,6 @@ export default function Login() {
             </>
           ) : (
 
-            /* OTP */
             <>
               <div className="login-otp-icon-wrap">
                 <ShieldCheck size={28} />

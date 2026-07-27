@@ -28,4 +28,19 @@ class WelcomeWidget extends Widget
 
         return trim(($user->prenom ?? '') . ' ' . ($user->nom ?? '')) ?: 'Admin';
     }
+
+    /**
+     * ✅ Déconnexion via Livewire — fonctionne correctement avec le mode
+     * SPA de Filament, contrairement à un formulaire caché soumis en JS
+     * classique qui pouvait être intercepté/ignoré par la navigation SPA.
+     */
+    public function logout()
+    {
+        Auth::guard('web')->logout();
+
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        return redirect('/admin/login');
+    }
 }

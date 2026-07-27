@@ -262,10 +262,22 @@ class AuthController extends Controller
             $redirect = 'admin';
         }
 
+        // ✅ Résoudre la photo (compte + profil talent) pour que la nav
+        // affiche la bonne image immédiatement, sans attendre un refresh.
+        $utilisateurData = $utilisateur->toArray();
+        $utilisateurData['photo'] = $this->resolvePhotoUrl($utilisateur->photo);
+
+        if ($utilisateur->profilTalent) {
+            $utilisateurData['profilTalent'] = array_merge(
+                $utilisateur->profilTalent->toArray(),
+                ['photo' => $this->resolvePhotoUrl($utilisateur->profilTalent->photo)]
+            );
+        }
+
         return response()->json([
             'success' => true,
             'data'    => [
-                'utilisateur' => $utilisateur,
+                'utilisateur' => $utilisateurData,
                 'token'       => $token,
                 'redirect'    => $redirect,
             ]
