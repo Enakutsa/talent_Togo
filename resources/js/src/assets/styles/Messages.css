@@ -203,6 +203,7 @@
   display: flex;
   justify-content: flex-start;
   margin-bottom: 4px;
+  position: relative;
 }
 
 .ms-bubble-row-me { justify-content: flex-end; }
@@ -214,6 +215,7 @@
   font-size: 13.5px;
   line-height: 1.5;
   position: relative;
+  cursor: pointer;
 }
 
 .ms-bubble p { margin: 0; }
@@ -237,6 +239,133 @@
   opacity: 0.65;
 }
 
+.ms-edited-tag {
+  font-style: italic;
+  opacity: 0.85;
+}
+
+/* ✅ Message supprimé — bulle grisée, texte en italique */
+.ms-bubble-deleted {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.ms-deleted-text {
+  font-style: italic;
+  color: #9ca3af;
+}
+
+.ms-bubble-me .ms-deleted-text {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ── Menu contextuel d'un message (Modifier / Supprimer) ─────────────────── */
+.ms-bubble-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  z-index: 30;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  min-width: 200px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+}
+
+.ms-bubble-row-me .ms-bubble-menu {
+  right: 0;
+  left: auto;
+}
+
+.ms-bubble-row:not(.ms-bubble-row-me) .ms-bubble-menu {
+  left: 0;
+  right: auto;
+}
+
+.ms-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  border: none;
+  background: none;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  text-align: left;
+  white-space: nowrap;
+  transition: background 0.12s;
+}
+
+.ms-menu-item:hover { background: #f3f4f6; }
+
+.ms-menu-item-danger { color: #dc2626; }
+.ms-menu-item-danger:hover { background: #fef2f2; }
+
+/* ── Édition inline d'un message ─────────────────────────────────────────── */
+.ms-edit-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 220px;
+}
+
+.ms-edit-input {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  font-size: 13.5px;
+  outline: none;
+  color: #111827;
+}
+
+.ms-bubble-them .ms-edit-input {
+  border-color: #d1d5db;
+}
+
+.ms-edit-actions {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.ms-edit-confirm,
+.ms-edit-cancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+}
+
+.ms-edit-confirm {
+  background: #fff;
+  color: #166534;
+}
+
+.ms-edit-cancel {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.ms-bubble-them .ms-edit-cancel {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+/* ── Zone de saisie ───────────────────────────────────────────────────────── */
 .ms-thread-input-row {
   display: flex;
   gap: 10px;
@@ -274,6 +403,66 @@
 .ms-send-btn:hover:not(:disabled) { background: #14532d; }
 .ms-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
+/* ── Modale de confirmation de suppression ───────────────────────────────── */
+.ms-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 24, 39, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+
+.ms-confirm-modal {
+  background: #fff;
+  border-radius: 14px;
+  padding: 24px;
+  max-width: 360px;
+  width: 100%;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+
+.ms-confirm-text {
+  margin: 0 0 18px 0;
+  font-size: 14px;
+  color: #111827;
+  line-height: 1.5;
+}
+
+.ms-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.ms-confirm-cancel {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ms-confirm-cancel:hover { background: #f9fafb; }
+
+.ms-confirm-delete {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: #dc2626;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.ms-confirm-delete:hover { background: #b91c1c; }
+
 /* ── Responsive : navigation liste <-> fil façon WhatsApp ───────────────── */
 /* ✅ Avant : la sidebar disparaissait purement et simplement sur mobile,
    sans aucun moyen d'y revenir -> écran bloqué sur "Sélectionnez une
@@ -298,4 +487,10 @@
   .ms-layout.ms-thread-open .ms-thread  { display: flex; }
 
   .ms-thread-back-btn { display: flex; }
+
+  /* Le menu contextuel doit rester bien visible sur petit écran, on évite
+     qu'il dépasse hors de l'écran sur les bulles proches du bord. */
+  .ms-bubble-menu {
+    min-width: 180px;
+  }
 }
