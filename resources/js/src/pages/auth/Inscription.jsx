@@ -441,13 +441,23 @@ export default function Inscription() {
               </div>
               <span className="auth-checkbox-text">
                 J&apos;accepte les{" "}
-                <Link to="/cgu" className="auth-inline-link">
+                <a
+                  href="/cgu"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="auth-inline-link"
+                >
                   Conditions d&apos;utilisation
-                </Link>{" "}
+                </a>{" "}
                 et la{" "}
-                <Link to="/confidentialite" className="auth-inline-link">
+                <a
+                  href="/confidentialite"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="auth-inline-link"
+                >
                   Politique de confidentialité
-                </Link>
+                </a>
               </span>
             </label>
 
