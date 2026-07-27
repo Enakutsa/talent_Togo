@@ -23,19 +23,6 @@ class TalentController extends Controller
     }
 
     /**
-     * Calcule la note moyenne et le total d'avis (uniquement les avis visibles).
-     */
-    private function calcNote(ProfilTalent $profil): array
-    {
-        $avis  = $profil->relationLoaded('avis') ? $profil->avis : $profil->avis()->get();
-        $avis  = $avis->where('statut', 'visible');
-        $total = $avis->count();
-        $note  = $total > 0 ? round($avis->avg('note'), 1) : 0;
-
-        return ['note' => $note, 'total' => $total];
-    }
-
-    /**
      * Liste des talents validés, avec filtres optionnels.
      * GET /api/talents
      * GET /api/talents?featured=1                → les 3 derniers inscrits validés
@@ -50,7 +37,22 @@ class TalentController extends Controller
     {
         $query = ProfilTalent::query()
             ->whereHas('utilisateur', fn ($q) => $q->where('statut', 'valide'))
-            ->with(['utilisateur.categorie', 'portfolios', 'avis']);
+            ->with([
+                'utilisateur.categorie',
+                // ── Uniquement les colonnes nécessaires à l'affichage,
+                // au lieu de charger toutes les images/vidéos du
+                // portfolio de chaque talent (moins de données
+                // transférées depuis Postgres). La sélection de la
+                // couverture (dernière image) reste faite en PHP,
+                // comme avant, pour ne rien changer au comportement.
+                'portfolios:id,profil_talent_id,type,media_url,created_at',
+            ])
+            // ── Note moyenne et nombre d'avis calculés directement en
+            // SQL (agrégation Postgres) au lieu de charger toutes les
+            // lignes "avis" de chaque talent et calculer la moyenne en
+            // PHP. C'est le changement qui a le plus d'impact ici.
+            ->withCount(['avis as avis_count' => fn ($q) => $q->where('statut', 'visible')])
+            ->withAvg(['avis as avis_note' => fn ($q) => $q->where('statut', 'visible')], 'note');
 
         // ── Recherche texte : nom/prénom de l'utilisateur ou nom de catégorie ──
         if ($request->filled('q')) {
@@ -102,7 +104,9 @@ class TalentController extends Controller
                 $query->orderBy('tarif_min', 'desc');
                 break;
             case 'note':
-                // Trié après récupération (nécessite la note calculée) — voir plus bas
+                // ✅ Maintenant possible directement en SQL grâce à
+                // withAvg, plus besoin de trier en mémoire après coup.
+                $query->orderByDesc('avis_note_avg');
                 break;
             case 'recent':
             default:
@@ -117,11 +121,6 @@ class TalentController extends Controller
 
         $profils = $query->get();
 
-        // Tri par note : fait en mémoire car la note est calculée via calcNote()
-        if ($request->input('sort') === 'note') {
-            $profils = $profils->sortByDesc(fn ($p) => $this->calcNote($p)['note'])->values();
-        }
-
         return response()->json([
             'success' => true,
             'data'    => $profils->map(fn ($p) => $this->formatTalentCard($p)),
@@ -134,7 +133,9 @@ class TalentController extends Controller
      */
     public function show(ProfilTalent $talent)
     {
-        $talent->load(['utilisateur.categorie', 'portfolios', 'avis.client']);
+        $talent->load(['utilisateur.categorie', 'portfolios', 'avis.client'])
+            ->loadCount(['avis as avis_count' => fn ($q) => $q->where('statut', 'visible')])
+            ->loadAvg(['avis as avis_note' => fn ($q) => $q->where('statut', 'visible')], 'note');
 
         abort_unless($talent->utilisateur?->statut === 'valide', 404);
 
@@ -163,15 +164,13 @@ class TalentController extends Controller
             ? $this->resolvePhotoUrl($couverture->media_url)
             : $photoUrl;
 
-        $noteInfo = $this->calcNote($profil);
-
         return [
             'id'          => $profil->id,
             'nom'         => trim(($profil->utilisateur?->prenom ?? '') . ' ' . ($profil->utilisateur?->nom ?? '')),
             'categorie'   => $profil->utilisateur?->categorie?->nom ?? '—',
             'ville'       => $profil->utilisateur?->ville ?? null,
-            'note'        => $noteInfo['note'],
-            'avis'        => $noteInfo['total'],
+            'note'        => $profil->avis_note_avg ? round((float) $profil->avis_note_avg, 1) : 0,
+            'avis'        => (int) $profil->avis_count,
             'tarif'       => (float) ($profil->tarif_min ?? 0),
             'tarif_max'   => (float) ($profil->tarif_max ?? 0),
             'avatar'      => $photoUrl,
@@ -188,7 +187,6 @@ class TalentController extends Controller
     private function formatTalentDetail(ProfilTalent $profil): array
     {
         $photoUrl = $this->resolvePhotoUrl($profil->photo);
-        $noteInfo = $this->calcNote($profil);
 
         // Portfolio complet
         $portfolios = $profil->portfolios->map(fn ($p) => [
@@ -223,8 +221,8 @@ class TalentController extends Controller
             'categorie'   => $profil->utilisateur?->categorie?->nom ?? '—',
             'ville'       => $profil->utilisateur?->ville ?? null,
             'biographie'  => $profil->biographie,
-            'note'        => $noteInfo['note'],
-            'avis'        => $noteInfo['total'],
+            'note'        => $profil->avis_note_avg ? round((float) $profil->avis_note_avg, 1) : 0,
+            'avis'        => (int) $profil->avis_count,
             'tarif'       => (float) ($profil->tarif_min ?? 0),
             'tarif_min'   => (float) ($profil->tarif_min ?? 0),
             'tarif_max'   => (float) ($profil->tarif_max ?? 0),
