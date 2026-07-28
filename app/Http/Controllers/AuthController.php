@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -43,7 +44,17 @@ class AuthController extends Controller
 
         try {
             Mail::to($utilisateur->email)->queue(new OtpMail($code));
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+            // ⚠️ Sans ce log, un échec d'envoi (Brevo en panne, quota
+            // dépassé, etc.) passait totalement inaperçu — impossible de
+            // savoir pourquoi un utilisateur ne recevait jamais son code.
+            Log::error('Échec envoi OTP', [
+                'utilisateur_id' => $utilisateur->id,
+                'email'          => $utilisateur->email,
+                'type'           => $type,
+                'erreur'         => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -56,7 +67,13 @@ class AuthController extends Controller
         foreach ($admins as $admin) {
             try {
                 Mail::to($admin->email)->queue(new NouveauTalentMail($talent));
-            } catch (\Exception $e) {}
+            } catch (\Exception $e) {
+                Log::error('Échec notification admin nouveau talent', [
+                    'admin_id' => $admin->id,
+                    'talent_id' => $talent->id,
+                    'erreur'   => $e->getMessage(),
+                ]);
+            }
         }
     }
 
@@ -163,13 +180,17 @@ class AuthController extends Controller
             $this->notifierAdminsNouveauTalent($utilisateur);
         }
 
-        $token = $utilisateur->createToken('auth_token')->plainTextToken;
-
+        // ⚠️ Retiré : createToken() ici délivrait un token Sanctum valide
+        // immédiatement après inscription, sans passer par la vérification
+        // OTP — alors que le flow de connexion normal (login()) l'exige
+        // toujours. Comme la redirection est de toute façon vers /login
+        // (voir 'redirect' ci-dessous), ce token n'était jamais utilisé
+        // côté frontend. Le retirer évite de délivrer un accès valide à un
+        // compte non vérifié.
         return response()->json([
             'success' => true,
             'data'    => [
                 'utilisateur' => $utilisateur,
-                'token'       => $token,
                 'redirect'    => 'login',
             ]
         ], 201);

@@ -25,13 +25,17 @@ class ClientController extends Controller
     /**
      * ✅ 3 clients mis en avant sur la page d'accueil (section "Témoignages").
      * On ne renvoie QUE des infos publiques minimales (nom, ville, avatar) —
-     * pas d'email, téléphone, etc. Les 3 plus récents clients actifs.
+     * pas d'email, téléphone, etc. Les 3 plus récents clients actifs qui ont
+     * une photo de profil renseignée (sans photo, la carte témoignage casse
+     * visuellement — voir Home.jsx).
      * GET /api/clients/featured
      */
     public function featured()
     {
         $clients = Utilisateur::where('role', 'client')
             ->where('statut', 'actif')
+            ->whereNotNull('photo')
+            ->where('photo', '!=', '')
             ->orderByDesc('created_at')
             ->limit(3)
             ->get(['id', 'nom', 'prenom', 'ville', 'photo']);

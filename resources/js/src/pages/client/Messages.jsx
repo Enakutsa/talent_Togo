@@ -6,6 +6,7 @@ import {
   updateMessage, deleteMessage,
 } from "../../services/message.service";
 import ClientTopNav from "../../components/ClientTopNav";
+import "../../assets/styles/ClientDashboard.css";
 import "../../assets/styles/Messages.css";
 
 export default function Messages() {
