@@ -5,6 +5,9 @@ import { BrowserRouter } from "react-router-dom";
 // ✅ BON CHEMIN
 import App from "./App";
 
+// ✅ THEME GLOBAL — variables CSS (couleurs, polices, espacements)
+import "./assets/styles/theme.css";
+
 // ✅ IMPORT CSS GLOBAL
 import "./assets/styles/Home.css";
 

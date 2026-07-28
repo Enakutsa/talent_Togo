@@ -1,11 +1,11 @@
 .footer {
-  background: #06120c;
+  background: var(--color-stone-900);
   color: #fff;
 }
 
 .footer-top-bar {
   height: 3px;
-  background: linear-gradient(90deg, #1a5c34, #f5730a);
+  background: var(--color-green-600);
 }
 
 .footer-inner {
@@ -30,43 +30,46 @@
 .footer-brand-icon {
   width: 34px;
   height: 34px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, #f5730a, #dd6608);
+  border-radius: var(--radius-md);
+  background: var(--color-orange-600);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
+  font-weight: 600;
   font-size: 15px;
   color: #fff;
+  font-family: var(--font-heading);
 }
 
 .footer-brand-text {
-  font-weight: 700;
-  font-size: 18px;
-  font-family: Sora, sans-serif;
+  font-weight: 600;
+  font-size: 19px;
+  font-family: var(--font-heading);
   color: #fff;
+  letter-spacing: -0.01em;
 }
 
 .footer-brand-accent {
-  color: #f5730a;
+  color: var(--color-orange-500);
 }
 
 .footer-desc {
   color: rgba(255, 255, 255, 0.6);
   font-size: 13.5px;
-  line-height: 1.6;
+  line-height: 1.65;
   margin: 0 0 20px;
   max-width: 320px;
+  font-family: var(--font-body);
 }
 
 .footer-col-title {
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   color: rgba(255, 255, 255, 0.45);
   margin: 0 0 16px;
-  font-family: Sora, sans-serif;
+  font-family: var(--font-body);
 }
 
 .footer-list {
@@ -88,11 +91,11 @@
   padding: 0;
   cursor: pointer;
   text-align: left;
-  font-family: inherit;
+  font-family: var(--font-body);
 }
 
 .footer-link:hover {
-  color: #f5730a;
+  color: var(--color-orange-500);
 }
 
 .footer-link-btn {
@@ -105,10 +108,11 @@
   gap: 10px;
   color: rgba(255, 255, 255, 0.75);
   font-size: 13.5px;
+  font-family: var(--font-body);
 }
 
 .footer-contact-icon {
-  color: #f5730a;
+  color: var(--color-orange-500);
   flex-shrink: 0;
 }
 
@@ -127,12 +131,14 @@
   color: rgba(255, 255, 255, 0.55);
   font-size: 12.5px;
   margin: 0;
+  font-family: var(--font-body);
 }
 
 .footer-signature {
   color: rgba(255, 255, 255, 0.4);
   font-size: 11.5px;
   margin: 0;
+  font-family: var(--font-body);
 }
 
 @media (max-width: 860px) {

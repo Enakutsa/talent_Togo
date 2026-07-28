@@ -1,0 +1,74 @@
+/* ============================================
+   THEME GLOBAL — TalentTogo
+   Fichier additif : ne modifie aucune classe existante.
+   Les fichiers CSS actuels continuent de fonctionner
+   tels quels tant qu'on ne les modifie pas un par un.
+   ============================================ */
+
+/* Polices : une police d'accroche distinctive pour les titres
+   (pas la police système par défaut, trop "IA générique"),
+   + une police claire pour le texte courant. */
+   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+   :root {
+     /* ── Typographie ── */
+     --font-heading: 'Fraunces', Georgia, serif;
+     --font-body: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+   
+     /* ── Couleurs primaires (talent = vert) ── */
+     --color-green-50:  #f0fdf5;
+     --color-green-100: #dcfce8;
+     --color-green-300: #86efac;
+     --color-green-500: #22a35d;
+     --color-green-600: #166534;  /* ta couleur existante, inchangée */
+     --color-green-700: #14532d;
+     --color-green-900: #0a2e18;
+   
+     /* ── Couleurs accent (client = orange) ── */
+     --color-orange-50:  #fff7ed;
+     --color-orange-100: #ffedd5;
+     --color-orange-300: #fdba74;
+     --color-orange-500: #f97316;
+     --color-orange-600: #ea580c;  /* ta couleur existante, inchangée */
+     --color-orange-700: #c2410c;
+   
+     /* ── Neutres chauds (pas de gris froid générique) ── */
+     --color-cream-50:  #fdfcfa;
+     --color-cream-100: #f7f4ef;
+     --color-cream-200: #ede7dd;
+     --color-stone-400: #a8a196;
+     --color-stone-600: #6b6459;
+     --color-stone-800: #3a352e;
+     --color-stone-900: #221f1a;
+   
+     /* ── Sémantique ── */
+     --color-bg: var(--color-cream-50);
+     --color-bg-alt: var(--color-cream-100);
+     --color-text: var(--color-stone-900);
+     --color-text-muted: var(--color-stone-600);
+     --color-border: var(--color-cream-200);
+     --color-danger: #dc2626;
+     --color-success: var(--color-green-600);
+   
+     /* ── Rayons ── */
+     --radius-sm: 8px;
+     --radius-md: 12px;
+     --radius-lg: 16px;
+     --radius-xl: 24px;
+     --radius-full: 999px;
+   
+     /* ── Ombres (douces, chaudes — pas de gris pur) ── */
+     --shadow-sm: 0 1px 2px rgba(58, 53, 46, 0.06);
+     --shadow-md: 0 4px 12px rgba(58, 53, 46, 0.08);
+     --shadow-lg: 0 12px 32px rgba(58, 53, 46, 0.12);
+   
+     /* ── Espacements ── */
+     --space-1: 4px;
+     --space-2: 8px;
+     --space-3: 12px;
+     --space-4: 16px;
+     --space-6: 24px;
+     --space-8: 32px;
+     --space-12: 48px;
+     --space-16: 64px;
+   }

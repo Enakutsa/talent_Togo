@@ -11,14 +11,16 @@ import {
 import "../../assets/styles/Home.css";
 
 const CATEGORY_ICONS = {
-  Photographe: Camera,
-  Graphiste: Palette,
-  Couturier: Scissors,
-  Musicien: Music2,
-  Vidéaste: Film,
-  Artisan: Package2,
-  Maquilleur: Brush,
-  Danseur: Star,
+  "Photographe": Camera,
+  "Graphiste": Palette,
+  "Couturier / Couturière": Scissors,
+  "Musicien / DJ": Music2,
+  "Vidéaste": Film,
+  "Décorateur événementiel": Package2,
+  "Maquilleur / Maquilleuse": Brush,
+  "Coiffeur / Coiffeuse": Star,
+  "Développeur": Star,
+  "Autre": Star,
 };
 
 /* ===== Données de secours (utilisées uniquement si l'API échoue vraiment) ===== */
@@ -154,7 +156,6 @@ export default function Home() {
 
         <div className="hero-inner">
           <div className="hero-badge">
-            <Sparkles size={14} />
             <span>La plateforme des talents togolais</span>
           </div>
 
@@ -222,14 +223,9 @@ export default function Home() {
 
       {/* CATEGORIES */}
       <section className="section">
-        <div className="section-header-row">
-          <div>
-            <h2 className="section-title-left">Explorez par catégorie</h2>
-            <p className="section-subtitle-left">Toutes les compétences créatives du Togo</p>
-          </div>
-          <button onClick={() => navigate("/recherche")} className="section-link">
-            Voir tout <ChevronRight size={16} />
-          </button>
+        <div className="section-center">
+          <h2 className="section-title">Explorez par catégorie</h2>
+          <p className="section-subtitle">Toutes les compétences créatives du Togo</p>
         </div>
 
         <div className="categories-grid">
@@ -253,6 +249,12 @@ export default function Home() {
                   </button>
                 );
               })}
+        </div>
+
+        <div className="categories-cta-wrap">
+          <button onClick={() => navigate("/recherche")} className="section-link">
+            Voir tout <ChevronRight size={16} />
+          </button>
         </div>
       </section>
 
