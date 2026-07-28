@@ -104,9 +104,22 @@ class UtilisateursTable
                 TextColumn::make('document_justificatif')
                     ->label('Document')
                     ->formatStateUsing(fn ($state) => $state ? 'Voir le document' : 'Aucun')
-                    ->url(fn ($record) => $record->document_justificatif
-                        ? \Illuminate\Support\Facades\Storage::url($record->document_justificatif)
-                        : null)
+                    ->url(function ($record) {
+                        $path = $record->document_justificatif;
+
+                        if (! $path) {
+                            return null;
+                        }
+
+                        // Si le chemin est déjà une URL absolue (Cloudinary, S3...),
+                        // on l'utilise telle quelle. Sinon on passe par Storage::url()
+                        // pour les fichiers en stockage local.
+                        if (str_starts_with($path, 'http://') || str_starts_with($path, 'https://')) {
+                            return $path;
+                        }
+
+                        return \Illuminate\Support\Facades\Storage::url($path);
+                    })
                     ->openUrlInNewTab()
                     ->color(fn ($record) => $record->document_justificatif ? 'primary' : 'gray')
                     ->icon('heroicon-o-document-text')

@@ -40,6 +40,9 @@ const VILLES_TOGO = [
   "Dapaong",
 ];
 
+// Autorise lettres (avec accents), espaces, apostrophes et tirets
+const NAME_REGEX = /^[a-zA-ZÀ-ÿ\s'-]+$/;
+
 export default function Inscription() {
   const navigate = useNavigate();
 
@@ -79,8 +82,32 @@ export default function Inscription() {
     setForm({ ...form, [field]: e.target.value });
   };
 
+  // Handler dédié pour nom/prénom : filtre les caractères non-alphabétiques
+  // au fur et à mesure de la saisie (empêche de taper des chiffres/symboles)
+  const handleNameChange = (field) => (e) => {
+    const value = e.target.value.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "");
+    setForm({ ...form, [field]: value });
+  };
+
+  const ALLOWED_DOC_EXTENSIONS = ["pdf"];
+
   const handleFileChange = (e) => {
-    setDocument(e.target.files[0] || null);
+    const file = e.target.files[0] || null;
+
+    if (file) {
+      const ext = file.name.split(".").pop().toLowerCase();
+      if (!ALLOWED_DOC_EXTENSIONS.includes(ext)) {
+        setGeneralError(
+          "Le document justificatif doit être un fichier PDF (pas une photo ni un document Word)."
+        );
+        e.target.value = ""; // reset l'input file
+        setDocument(null);
+        return;
+      }
+    }
+
+    setGeneralError("");
+    setDocument(file);
   };
 
   const handleSubmit = async (e) => {
@@ -94,6 +121,14 @@ export default function Inscription() {
     }
     if (!agree) {
       setGeneralError("Veuillez accepter les conditions d'utilisation.");
+      return;
+    }
+    if (!form.prenom.trim() || !NAME_REGEX.test(form.prenom.trim())) {
+      setGeneralError("Le prénom ne doit contenir que des lettres.");
+      return;
+    }
+    if (!form.nom.trim() || !NAME_REGEX.test(form.nom.trim())) {
+      setGeneralError("Le nom ne doit contenir que des lettres.");
       return;
     }
     if (!form.email.toLowerCase().endsWith("@gmail.com")) {
@@ -247,7 +282,7 @@ export default function Inscription() {
                     className="input-field"
                     placeholder="Koffi"
                     value={form.prenom}
-                    onChange={handleChange("prenom")}
+                    onChange={handleNameChange("prenom")}
                     required
                   />
                 </div>
@@ -263,7 +298,7 @@ export default function Inscription() {
                     className="input-field"
                     placeholder="Mensah"
                     value={form.nom}
-                    onChange={handleChange("nom")}
+                    onChange={handleNameChange("nom")}
                     required
                   />
                 </div>
@@ -413,7 +448,7 @@ export default function Inscription() {
                 <label className="dropzone-wrap">
                   <input
                     type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
+                    accept=".pdf,.doc,.docx"
                     onChange={handleFileChange}
                     className="file-input-hidden"
                   />
@@ -422,7 +457,7 @@ export default function Inscription() {
                     {document ? document.name : "Cliquez pour uploader"}
                   </span>
                   <span className="dropzone-subtitle">
-                    RCCM, CNI ou carte professionnelle (JPG, PNG, PDF — max 5 MB)
+                    RCCM, CNI ou carte professionnelle (PDF, DOC, DOCX — max 5 MB)
                   </span>
                 </label>
                 {errors.document_justificatif && (

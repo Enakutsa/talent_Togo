@@ -107,7 +107,7 @@ class AuthController extends Controller
         ];
 
         if ($request->role === 'talent') {
-            $rules['document_justificatif'] = 'required|file|mimes:pdf,jpg,jpeg,png|max:5120';
+            $rules['document_justificatif'] = 'required|file|mimes:pdf|max:5120';
             $rules['categorie_id']          = 'required|exists:categories,id';
             $rules['ville']                 = 'required|string|max:100';
         }
@@ -116,6 +116,7 @@ class AuthController extends Controller
             'email.regex'                    => 'L\'adresse e-mail doit être une adresse Gmail (@gmail.com).',
             'telephone.regex'                => 'Le numéro de téléphone doit contenir exactement 8 chiffres.',
             'document_justificatif.required' => 'Le document justificatif est obligatoire pour les talents.',
+            'document_justificatif.mimes'    => 'Le document justificatif doit être un fichier PDF.',
             'categorie_id.required'          => 'Veuillez choisir une catégorie.',
             'categorie_id.exists'            => 'Catégorie invalide.',
             'ville.required'                 => 'Veuillez indiquer votre ville.',
@@ -129,16 +130,23 @@ class AuthController extends Controller
         // Cloudinary qui échoue ne doit pas laisser un utilisateur à moitié
         // créé, mais on ne veut pas non plus faire d'appel réseau externe
         // à l'intérieur d'une transaction DB.
+        //
+        // Le document justificatif est désormais toujours un PDF (validé
+        // ci-dessus par 'mimes:pdf'). On upload en resource_type 'image' —
+        // et non 'raw' — car Cloudinary traite les PDF comme des "images
+        // spéciales" sous ce type, ce qui permet un affichage INLINE dans
+        // le navigateur (ouverture dans l'onglet) au lieu de forcer un
+        // téléchargement, ce que fait 'raw' par défaut pour tout fichier
+        // considéré comme un blob opaque.
         $documentUrl = null;
         if ($request->hasFile('document_justificatif')) {
             $file = $request->file('document_justificatif');
-            $isPdf = $file->getClientOriginalExtension() === 'pdf' || $file->getMimeType() === 'application/pdf';
 
             try {
                 $upload = $this->cloudinary()->upload(
                     $file,
                     'talenttogo/documents_justificatifs',
-                    $isPdf ? 'raw' : 'image'
+                    'image'
                 );
                 $documentUrl = $upload['url'];
             } catch (\Throwable $e) {
@@ -177,7 +185,12 @@ class AuthController extends Controller
         });
 
         if ($utilisateur->role === 'talent') {
-            $this->notifierAdminsNouveauTalent($utilisateur);
+            // ✅ dispatch(...)->afterResponse() : exécute l'envoi des
+            // notifications APRÈS que la réponse HTTP soit déjà partie
+            // vers le frontend, sans attendre le queue worker.
+            dispatch(function () use ($utilisateur) {
+                $this->notifierAdminsNouveauTalent($utilisateur);
+            })->afterResponse();
         }
 
         // ⚠️ Retiré : createToken() ici délivrait un token Sanctum valide
@@ -196,7 +209,7 @@ class AuthController extends Controller
         ], 201);
     }
 
-    /**
+     /**
      * ✅ LOGIN → OTP par email
      */
     public function login(Request $request)
