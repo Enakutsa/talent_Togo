@@ -1,8 +1,8 @@
 /* ── Fond ─────────────────────────────────────────────────────────────────── */
 .dt-bg {
   min-height: 100vh;
-  background: #f9fafb;
-  font-family: Inter, sans-serif;
+  background: var(--color-bg-alt);
+  font-family: var(--font-body);
 }
 
 /* ── Loading / Error ─────────────────────────────────────────────────────── */
@@ -13,13 +13,13 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  color: #6b7280;
+  color: var(--color-text-muted);
   font-size: 14px;
 }
 
 .dt-spinner {
   animation: dt-spin 1s linear infinite;
-  color: #6d28d9;
+  color: var(--color-green-700);
 }
 
 @keyframes dt-spin { to { transform: rotate(360deg); } }
@@ -37,7 +37,7 @@
   gap: 6px;
   font-size: 13px;
   font-weight: 500;
-  color: #6d28d9;
+  color: var(--color-green-700);
   background: none;
   border: none;
   cursor: pointer;
@@ -45,7 +45,7 @@
   transition: color 0.15s;
 }
 
-.dt-back-btn:hover { color: #4c1d95; }
+.dt-back-btn:hover { color: var(--color-green-900); }
 
 /* ── Container ───────────────────────────────────────────────────────────── */
 .dt-container {
@@ -64,10 +64,10 @@
 /* ── Card ────────────────────────────────────────────────────────────────── */
 .dt-card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 24px;
-  border: 1px solid #f3f4f6;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
   margin-bottom: 20px;
 }
 
@@ -86,19 +86,19 @@
 .dt-avatar {
   width: 80px;
   height: 80px;
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   object-fit: cover;
 }
 
 .dt-avatar-placeholder {
   width: 80px;
   height: 80px;
-  border-radius: 16px;
-  background: #f3f4f6;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-alt);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #9ca3af;
+  color: var(--color-stone-400);
 }
 
 .dt-online-dot {
@@ -108,7 +108,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #10b981;
+  background: var(--color-green-600);
   border: 2px solid #fff;
 }
 
@@ -122,9 +122,10 @@
 
 .dt-nom {
   font-size: 22px;
-  font-weight: 700;
-  color: #111827;
-  font-family: Sora, sans-serif;
+  font-weight: 600;
+  color: var(--color-text);
+  font-family: var(--font-heading);
+  letter-spacing: -0.01em;
   margin: 0;
 }
 
@@ -133,18 +134,18 @@
   margin-top: 6px;
   font-size: 12px;
   font-weight: 600;
-  color: #6d28d9;
-  background: #ede9fe;
+  color: var(--color-green-700);
+  background: var(--color-green-100);
   padding: 3px 12px;
-  border-radius: 20px;
+  border-radius: var(--radius-full);
 }
 
 /* Favori */
 .dt-fav-btn {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
-  border: 2px solid #e5e7eb;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--color-border);
   background: #fff;
   display: flex;
   align-items: center;
@@ -159,7 +160,7 @@
   background: #fef2f2;
 }
 
-.dt-heart        { color: #9ca3af; }
+.dt-heart        { color: var(--color-stone-400); }
 .dt-heart-filled { color: #ef4444; fill: #ef4444; }
 
 /* Méta */
@@ -176,11 +177,11 @@
   align-items: center;
   gap: 5px;
   font-size: 13px;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
-.dt-note-val   { font-size: 13px; font-weight: 700; color: #111827; }
-.dt-note-count { font-size: 12px; color: #9ca3af; }
+.dt-note-val   { font-size: 13px; font-weight: 700; color: var(--color-text); }
+.dt-note-count { font-size: 12px; color: var(--color-stone-400); }
 
 .dt-dispo-badge {
   display: flex;
@@ -190,7 +191,7 @@
   font-weight: 500;
 }
 
-.dt-dispo-on  { color: #059669; }
+.dt-dispo-on  { color: var(--color-green-600); }
 .dt-dispo-off { color: #ef4444; }
 
 .dt-dispo-dot-sm {
@@ -199,27 +200,27 @@
   border-radius: 50%;
 }
 
-.dot-on  { background: #10b981; }
+.dot-on  { background: var(--color-green-600); }
 .dot-off { background: #f87171; }
 
 /* ── Sections ────────────────────────────────────────────────────────────── */
 .dt-section {
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--color-bg-alt);
 }
 
 .dt-section-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: #111827;
-  font-family: Sora, sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  font-family: var(--font-heading);
   margin: 0 0 12px;
 }
 
 .dt-bio {
-  font-size: 13px;
-  color: #4b5563;
+  font-size: 13.5px;
+  color: var(--color-stone-800);
   line-height: 1.7;
   margin: 0;
 }
@@ -234,10 +235,10 @@
 
 .dt-portfolio-item {
   aspect-ratio: 4/3;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   overflow: hidden;
   cursor: pointer;
-  background: #f3f4f6;
+  background: var(--color-bg-alt);
 }
 
 .dt-portfolio-img {
@@ -265,11 +266,11 @@
   gap: 8px;
 }
 
-.dt-avis-count { font-weight: 400; color: #9ca3af; font-size: 13px; }
+.dt-avis-count { font-weight: 400; color: var(--color-stone-400); font-size: 13px; }
 
 .dt-no-avis {
   font-size: 13px;
-  color: #9ca3af;
+  color: var(--color-stone-400);
   text-align: center;
   padding: 20px 0;
 }
@@ -278,7 +279,7 @@
 
 .dt-avis-row {
   padding: 16px 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-bg-alt);
 }
 
 .dt-avis-row:last-child { border-bottom: none; padding-bottom: 0; }
@@ -301,21 +302,21 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #ede9fe;
-  color: #6d28d9;
+  background: var(--color-green-100);
+  color: var(--color-green-700);
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: Sora, sans-serif;
+  font-family: var(--font-heading);
 }
 
 .dt-avis-name {
   font-size: 13px;
   font-weight: 600;
-  color: #111827;
-  font-family: Sora, sans-serif;
+  color: var(--color-text);
+  font-family: var(--font-body);
   margin: 0 0 2px;
 }
 
@@ -325,27 +326,27 @@
   gap: 8px;
 }
 
-.dt-avis-date  { font-size: 11px; color: #9ca3af; }
+.dt-avis-date  { font-size: 11px; color: var(--color-stone-400); }
 
 .dt-avis-text {
   font-size: 13px;
-  color: #4b5563;
+  color: var(--color-stone-800);
   line-height: 1.6;
   margin: 0;
 }
 
 /* ── Étoiles ─────────────────────────────────────────────────────────────── */
 .dt-stars       { display: inline-flex; align-items: center; gap: 2px; }
-.dt-star-filled { color: #f59e0b; fill: #f59e0b; }
-.dt-star-empty  { color: #e5e7eb; fill: #e5e7eb; }
+.dt-star-filled { color: var(--color-orange-500); fill: var(--color-orange-500); }
+.dt-star-empty  { color: var(--color-border); fill: var(--color-border); }
 
 /* ── Booking card ────────────────────────────────────────────────────────── */
 .dt-booking-card {
   background: #fff;
-  border-radius: 16px;
+  border-radius: var(--radius-lg);
   padding: 24px;
-  border: 1px solid #f3f4f6;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sm);
   position: sticky;
   top: 24px;
   display: flex;
@@ -355,25 +356,25 @@
 
 .dt-tarif-block { margin-bottom: 8px; }
 
-.dt-tarif-label { font-size: 11px; color: #9ca3af; margin: 0 0 4px; }
+.dt-tarif-label { font-size: 11px; color: var(--color-stone-400); margin: 0 0 4px; }
 
 .dt-tarif-value {
   font-size: 28px;
-  font-weight: 700;
-  color: #6d28d9;
-  font-family: Sora, sans-serif;
+  font-weight: 600;
+  color: var(--color-green-700);
+  font-family: var(--font-heading);
   margin: 0;
 }
 
 .dt-tarif-unit  { font-size: 16px; }
-.dt-tarif-max   { font-size: 11px; color: #9ca3af; margin: 4px 0 0; }
+.dt-tarif-max   { font-size: 11px; color: var(--color-stone-400); margin: 4px 0 0; }
 
 .dt-infos-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding-bottom: 16px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-bg-alt);
 }
 
 .dt-info-row {
@@ -387,13 +388,13 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  color: #6b7280;
+  color: var(--color-text-muted);
 }
 
-.dt-info-icon { color: #6d28d9; }
-.dt-info-val  { font-weight: 600; color: #111827; font-size: 13px; }
+.dt-info-icon { color: var(--color-green-700); }
+.dt-info-val  { font-weight: 600; color: var(--color-text); font-size: 13px; }
 
-/* ✅ Bouton Demande de prestation (violet principal) */
+/* ✅ Bouton Demande de prestation (orange, CTA principal du site) */
 .dt-contact-btn {
   width: 100%;
   display: flex;
@@ -401,19 +402,19 @@
   justify-content: center;
   gap: 8px;
   padding: 14px;
-  background: linear-gradient(135deg, #6d28d9, #7c3aed);
+  background: var(--color-orange-600);
   color: #fff;
   font-size: 14px;
-  font-weight: 700;
-  border-radius: 12px;
+  font-weight: 600;
+  border-radius: var(--radius-md);
   border: none;
   cursor: pointer;
-  transition: opacity 0.2s;
-  font-family: Sora, sans-serif;
-  box-shadow: 0 4px 12px rgba(109,40,217,0.3);
+  transition: background 0.2s;
+  font-family: var(--font-body);
+  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
 }
 
-.dt-contact-btn:hover { opacity: 0.9; }
+.dt-contact-btn:hover { background: var(--color-orange-700); }
 
 /* ✅ Bouton Messagerie interne (vert TalentTogo) */
 .dt-message-btn {
@@ -423,20 +424,20 @@
   justify-content: center;
   gap: 8px;
   padding: 13px;
-  background: #f0fdf4;
-  color: #166534;
+  background: var(--color-green-50);
+  color: var(--color-green-700);
   font-size: 14px;
   font-weight: 600;
-  border-radius: 12px;
-  border: 2px solid #bbf7d0;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-green-300);
   cursor: pointer;
   transition: all 0.2s;
-  font-family: Sora, sans-serif;
+  font-family: var(--font-body);
 }
 
 .dt-message-btn:hover {
-  background: #dcfce7;
-  border-color: #86efac;
+  background: var(--color-green-100);
+  border-color: var(--color-green-500);
 }
 
 /* Bouton favori card */
@@ -447,15 +448,15 @@
   justify-content: center;
   gap: 8px;
   padding: 12px;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
   background: #fff;
-  color: #374151;
+  color: var(--color-stone-800);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
-  font-family: Inter, sans-serif;
+  font-family: var(--font-body);
 }
 
 .dt-fav-card-btn:hover       { border-color: #fca5a5; }
@@ -465,7 +466,7 @@
 .dt-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(26, 24, 20, 0.55);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -475,23 +476,23 @@
 
 .dt-modal {
   background: #fff;
-  border-radius: 20px;
+  border-radius: var(--radius-xl);
   width: 100%;
   max-width: 480px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
 
 .dt-modal-header {
   padding: 20px 24px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--color-bg-alt);
 }
 
 .dt-modal-title {
   font-size: 16px;
-  font-weight: 700;
-  color: #111827;
-  font-family: Sora, sans-serif;
+  font-weight: 600;
+  color: var(--color-text);
+  font-family: var(--font-heading);
   margin: 0;
 }
 
@@ -500,17 +501,17 @@
 .dt-modal-textarea {
   width: 100%;
   padding: 12px 14px;
-  border: 2px solid #e5e7eb;
-  border-radius: 10px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
   font-size: 13px;
-  font-family: Inter, sans-serif;
+  font-family: var(--font-body);
   resize: none;
   outline: none;
   box-sizing: border-box;
   transition: border-color 0.2s;
 }
 
-.dt-modal-textarea:focus { border-color: #6d28d9; }
+.dt-modal-textarea:focus { border-color: var(--color-green-600); }
 
 .dt-modal-actions {
   display: flex;
@@ -521,38 +522,38 @@
 .dt-modal-cancel {
   flex: 1;
   padding: 12px;
-  border: 2px solid #e5e7eb;
-  border-radius: 10px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
   background: #fff;
-  color: #374151;
+  color: var(--color-stone-800);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  font-family: Inter, sans-serif;
+  font-family: var(--font-body);
 }
 
-.dt-modal-cancel:hover { background: #f9fafb; }
+.dt-modal-cancel:hover { background: var(--color-bg-alt); }
 
 .dt-modal-send {
   flex: 1;
   padding: 12px;
   border: none;
-  border-radius: 10px;
-  background: #6d28d9;
+  border-radius: var(--radius-sm);
+  background: var(--color-green-700);
   color: #fff;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
-  font-family: Sora, sans-serif;
+  font-family: var(--font-body);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  transition: opacity 0.2s;
+  transition: background 0.2s;
 }
 
 .dt-modal-send:disabled         { opacity: 0.4; cursor: not-allowed; }
-.dt-modal-send:not(:disabled):hover { opacity: 0.9; }
+.dt-modal-send:not(:disabled):hover { background: var(--color-green-900); }
 
 /* Modal succès */
 .dt-modal-success {
@@ -564,39 +565,42 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #d1fae5;
+  background: var(--color-green-100);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 16px;
-  color: #059669;
+  color: var(--color-green-700);
 }
 
 .dt-success-title {
   font-size: 17px;
-  font-weight: 700;
-  color: #111827;
-  font-family: Sora, sans-serif;
+  font-weight: 600;
+  color: var(--color-text);
+  font-family: var(--font-heading);
   margin: 0 0 8px;
 }
 
 .dt-success-text {
   font-size: 13px;
-  color: #6b7280;
+  color: var(--color-text-muted);
   margin: 0 0 20px;
 }
 
 .dt-success-btn {
   padding: 10px 28px;
-  background: #6d28d9;
+  background: var(--color-green-700);
   color: #fff;
   font-size: 13px;
   font-weight: 600;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: none;
   cursor: pointer;
-  font-family: Sora, sans-serif;
+  font-family: var(--font-body);
+  transition: background 0.2s;
 }
+
+.dt-success-btn:hover { background: var(--color-green-900); }
 
 /* ── Preview portfolio ───────────────────────────────────────────────────── */
 .dt-preview-overlay {
@@ -614,7 +618,7 @@
 .dt-preview-img {
   max-width: 900px;
   width: 100%;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
@@ -640,12 +644,12 @@
   gap: 5px;
   font-size: 12.5px;
   font-weight: 600;
-  color: #374151;
+  color: var(--color-stone-800);
   margin-bottom: 6px;
 }
 
 .dt-modal-required {
-  color: #dc2626;
+  color: var(--color-danger);
 }
 
 .dt-modal-row {
@@ -657,22 +661,23 @@
 .dt-modal-input {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
   font-size: 13.5px;
-  color: #111827;
+  color: var(--color-text);
+  font-family: var(--font-body);
 }
 
 .dt-modal-input:focus {
   outline: none;
-  border-color: #7c3aed;
+  border-color: var(--color-green-600);
 }
 
 .dt-modal-error {
-  color: #dc2626;
+  color: var(--color-danger);
   background: #fef2f2;
   padding: 8px 12px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 12.5px;
   margin-bottom: 12px;
 }
@@ -685,7 +690,7 @@
 
 .dt-modal-hint {
   font-size: 11.5px;
-  color: #9ca3af;
+  color: var(--color-stone-400);
   margin: 4px 0 0;
 }
 
@@ -698,7 +703,7 @@
   width: 100%;
   background: none;
   border: none;
-  color: #9ca3af;
+  color: var(--color-stone-400);
   font-size: 12.5px;
   font-weight: 500;
   padding: 10px;
@@ -708,11 +713,11 @@
 }
 
 .dt-report-btn:hover {
-  color: #dc2626;
+  color: var(--color-danger);
 }
 
 .dt-modal-send-danger {
-  background: #dc2626 !important;
+  background: var(--color-danger) !important;
 }
 
 .dt-modal-send-danger:hover:not(:disabled) {
