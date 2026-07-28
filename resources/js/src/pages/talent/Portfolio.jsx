@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Eye, Trash2, Image as ImageIcon } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Eye, Trash2, Image as ImageIcon, X, Loader2 } from "lucide-react";
 import { getPortfolio, addPortfolioItem, deletePortfolioItem } from "../../services/portfolio.service";
 import TalentTopNav from "../../components/TalentTopNav";
 import "../../assets/styles/TalentDashboard.css";
@@ -27,6 +27,17 @@ export default function Portfolio() {
   useEffect(() => {
     loadItems();
   }, []);
+
+  const closePreview = useCallback(() => setPreview(null), []);
+
+  useEffect(() => {
+    if (!preview) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") closePreview();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [preview, closePreview]);
 
   const handleFileSelect = async (e) => {
     const file = e.target.files[0];
@@ -75,7 +86,10 @@ export default function Portfolio() {
       <main className="td-main">
         {loading ? (
           <div className="td-page">
-            <p className="text-gray-500 text-sm">Chargement...</p>
+            <div className="td-portfolio-loading">
+              <Loader2 size={20} className="td-portfolio-spin" />
+              <span>Chargement du portfolio...</span>
+            </div>
           </div>
         ) : (
           <div className="td-page">
@@ -138,7 +152,7 @@ export default function Portfolio() {
                         disabled={deletingId === item.id}
                         title="Supprimer"
                       >
-                        <Trash2 size={14} />
+                        {deletingId === item.id ? <Loader2 size={14} className="td-portfolio-spin" /> : <Trash2 size={14} />}
                       </button>
                     </div>
                   </div>
@@ -150,8 +164,16 @@ export default function Portfolio() {
       </main>
 
       {preview && (
-        <div className="td-portfolio-modal" onClick={() => setPreview(null)}>
+        <div className="td-portfolio-modal" onClick={closePreview}>
           <div className="td-portfolio-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              className="td-portfolio-modal-close"
+              onClick={closePreview}
+              aria-label="Fermer"
+            >
+              <X size={18} />
+            </button>
             {preview.type === "video" ? (
               <video src={preview.media_url} controls autoPlay className="td-portfolio-modal-media" />
             ) : (

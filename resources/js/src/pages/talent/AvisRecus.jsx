@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { Star, User } from "lucide-react";
+import { Star, User, Loader2 } from "lucide-react";
 import { getAvisRecus } from "../../services/avis.service";
 import { useAutoRefresh } from "../../hooks/useAutoRefresh";
 import TalentTopNav from "../../components/TalentTopNav";
@@ -66,7 +66,10 @@ export default function AvisRecus() {
           {error && <p className="profil-creer-error">{error}</p>}
 
           {avis === null ? (
-            <p className="text-gray-500 text-sm">Chargement...</p>
+            <div className="ar-loading">
+              <Loader2 size={20} className="ar-loading-spin" />
+              <span>Chargement de vos avis...</span>
+            </div>
           ) : (
             <>
               {total > 0 && (

@@ -22,6 +22,7 @@ export default function MessagesTalent() {
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const menuRef = useRef(null);
 
   const loadConversations = useCallback(() => {
@@ -56,6 +57,16 @@ export default function MessagesTalent() {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
+
+  // Ferme la modale de confirmation avec Échap
+  useEffect(() => {
+    if (!confirmDelete) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape" && !deleting) setConfirmDelete(null);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [confirmDelete, deleting]);
 
   const handleSend = () => {
     if (!input.trim() || !activeId) return;
@@ -93,7 +104,9 @@ export default function MessagesTalent() {
       .catch(() => setError("Impossible de modifier ce message."));
   };
 
+  // ✅ Appelée uniquement depuis la modale de confirmation ci-dessous.
   const handleDelete = (id, mode) => {
+    setDeleting(true);
     deleteMessage(id, mode)
       .then(() => {
         if (mode === "tous") {
@@ -107,6 +120,7 @@ export default function MessagesTalent() {
       })
       .catch(() => setError("Impossible de supprimer ce message."))
       .finally(() => {
+        setDeleting(false);
         setConfirmDelete(null);
         setOpenMenuId(null);
       });
@@ -133,7 +147,10 @@ export default function MessagesTalent() {
             <h1 className="ms-sidebar-title">Messages</h1>
 
             {conversations === null ? (
-              <p className="ms-empty-text">Chargement...</p>
+              <div className="ms-sidebar-loading">
+                <Loader2 size={18} className="ms-spin" />
+                <span>Chargement...</span>
+              </div>
             ) : conversations.length === 0 ? (
               <div className="ms-empty">
                 <MessageSquare size={26} />
@@ -287,6 +304,43 @@ export default function MessagesTalent() {
 
         {error && <p className="td-error">{error}</p>}
       </main>
+
+      {/* ✅ Modale de confirmation de suppression — manquait dans la version
+          précédente : confirmDelete était bien renseigné par les boutons du
+          menu contextuel, mais rien ne s'en servait pour appeler handleDelete. */}
+      {confirmDelete && (
+        <div className="ms-confirm-overlay" onClick={() => !deleting && setConfirmDelete(null)}>
+          <div className="ms-confirm-modal" onClick={(e) => e.stopPropagation()}>
+            <h2 className="ms-confirm-title">
+              {confirmDelete.mode === "tous"
+                ? "Supprimer ce message pour tout le monde ?"
+                : "Supprimer ce message pour moi ?"}
+            </h2>
+            <p className="ms-confirm-text">
+              {confirmDelete.mode === "tous"
+                ? "Cette action est irréversible. Le message sera remplacé par \"Message supprimé\" pour vous et votre interlocuteur."
+                : "Le message disparaîtra uniquement de votre côté de la conversation."}
+            </p>
+            <div className="ms-confirm-actions">
+              <button
+                className="ms-confirm-cancel"
+                onClick={() => setConfirmDelete(null)}
+                disabled={deleting}
+              >
+                Annuler
+              </button>
+              <button
+                className="ms-confirm-delete"
+                onClick={() => handleDelete(confirmDelete.id, confirmDelete.mode)}
+                disabled={deleting}
+              >
+                {deleting ? <Loader2 size={14} className="ms-spin" /> : null}
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
