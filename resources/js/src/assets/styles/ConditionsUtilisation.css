@@ -1,173 +1,175 @@
 .cgu-page {
-    background: #f7f8f7;
-    min-height: 100vh;
-  }
-  
-  /* ── Hero ── */
-  .cgu-hero {
-    background: linear-gradient(135deg, #0b3d24, #1a5c34);
-    padding: 56px 24px;
-  }
-  
-  .cgu-hero-inner {
-    max-width: 880px;
-    margin: 0 auto;
-  }
-  
-  .cgu-breadcrumb {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    color: rgba(255, 255, 255, 0.65);
-    font-size: 13px;
-    margin-bottom: 20px;
-  }
-  
-  .cgu-breadcrumb-link {
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.65);
-    cursor: pointer;
-    font-size: 13px;
-    padding: 0;
-  }
-  
-  .cgu-breadcrumb-link:hover {
-    color: #fff;
-  }
-  
-  .cgu-breadcrumb-current {
-    color: #fff;
-  }
-  
+  background: var(--color-bg);
+  min-height: 100vh;
+  font-family: var(--font-body);
+}
+
+/* ── Hero ── */
+.cgu-hero {
+  background: linear-gradient(135deg, var(--color-green-900), var(--color-green-700));
+  padding: 56px 24px;
+}
+
+.cgu-hero-inner {
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+.cgu-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.cgu-breadcrumb-link {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+  font-family: var(--font-body);
+}
+
+.cgu-breadcrumb-link:hover {
+  color: #fff;
+}
+
+.cgu-breadcrumb-current {
+  color: #fff;
+}
+
+.cgu-hero-title-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.cgu-hero-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--color-orange-600);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cgu-hero-title {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px;
+}
+
+.cgu-hero-date {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+}
+
+/* ── Corps ── */
+.cgu-body {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+}
+
+/* ── Bandeau important ── */
+.cgu-notice {
+  background: var(--color-orange-50);
+  border: 1px solid var(--color-orange-300);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  margin-bottom: 36px;
+}
+
+.cgu-notice p {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--color-orange-700);
+  margin: 0;
+}
+
+/* ── Sections ── */
+.cgu-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cgu-section-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 26px;
+  box-shadow: var(--shadow-sm);
+}
+
+.cgu-section-title {
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0 0 10px;
+}
+
+.cgu-section-content {
+  font-size: 13.5px;
+  line-height: 1.7;
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+/* ── Footer bloc ── */
+.cgu-footer-block {
+  margin-top: 40px;
+  text-align: center;
+}
+
+.cgu-footer-text {
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+  margin: 0 0 16px;
+}
+
+.cgu-footer-link {
+  color: var(--color-green-700);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.cgu-footer-link:hover {
+  text-decoration: underline;
+}
+
+.cgu-home-btn {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, var(--color-green-700), var(--color-green-900));
+  color: #fff;
+  font-weight: 600;
+  font-size: 13.5px;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: var(--font-body);
+}
+
+.cgu-home-btn:hover {
+  opacity: 0.92;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
   .cgu-hero-title-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  
-  .cgu-hero-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background: #f5730a;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-  
-  .cgu-hero-title {
-    font-size: 26px;
-    font-weight: 700;
-    color: #fff;
-    margin: 0 0 4px;
-    font-family: Sora, sans-serif;
-  }
-  
-  .cgu-hero-date {
-    font-size: 13px;
-    color: rgba(255, 255, 255, 0.6);
-    margin: 0;
-  }
-  
-  /* ── Corps ── */
-  .cgu-body {
-    max-width: 880px;
-    margin: 0 auto;
-    padding: 48px 24px 64px;
-  }
-  
-  /* ── Bandeau important ── */
-  .cgu-notice {
-    background: #fff7ed;
-    border: 1px solid #fed7aa;
-    border-radius: 12px;
-    padding: 18px 20px;
-    margin-bottom: 36px;
-  }
-  
-  .cgu-notice p {
-    font-size: 13.5px;
-    line-height: 1.7;
-    color: #9a3412;
-    margin: 0;
-  }
-  
-  /* ── Sections ── */
-  .cgu-sections {
-    display: flex;
     flex-direction: column;
-    gap: 16px;
+    align-items: flex-start;
+    gap: 12px;
   }
-  
-  .cgu-section-card {
-    background: #fff;
-    border: 1px solid #eceeec;
-    border-radius: 16px;
-    padding: 26px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-  }
-  
-  .cgu-section-title {
-    font-size: 16px;
-    font-weight: 700;
-    color: #111827;
-    margin: 0 0 10px;
-    font-family: Sora, sans-serif;
-  }
-  
-  .cgu-section-content {
-    font-size: 13.5px;
-    line-height: 1.7;
-    color: #4b5563;
-    margin: 0;
-  }
-  
-  /* ── Footer bloc ── */
-  .cgu-footer-block {
-    margin-top: 40px;
-    text-align: center;
-  }
-  
-  .cgu-footer-text {
-    font-size: 13.5px;
-    color: #6b7280;
-    margin: 0 0 16px;
-  }
-  
-  .cgu-footer-link {
-    color: #1a5c34;
-    font-weight: 600;
-    text-decoration: none;
-  }
-  
-  .cgu-footer-link:hover {
-    text-decoration: underline;
-  }
-  
-  .cgu-home-btn {
-    padding: 12px 24px;
-    background: linear-gradient(135deg, #1a5c34, #0b3d24);
-    color: #fff;
-    font-weight: 600;
-    font-size: 13.5px;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    font-family: Sora, sans-serif;
-  }
-  
-  .cgu-home-btn:hover {
-    opacity: 0.92;
-  }
-  
-  /* ── Responsive ── */
-  @media (max-width: 480px) {
-    .cgu-hero-title-row {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
-    }
-  }
+}

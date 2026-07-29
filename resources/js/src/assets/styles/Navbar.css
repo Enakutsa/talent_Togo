@@ -317,3 +317,9 @@
   .navbar-login-btn:hover {
     background: var(--color-bg-alt);
   }
+
+  .navbar-logo-icon-img {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }

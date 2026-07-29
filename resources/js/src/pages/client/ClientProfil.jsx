@@ -149,12 +149,21 @@ export default function ClientProfil() {
                   type="file"
                   accept="image/jpeg,image/png"
                   onChange={handlePhotoChange}
-                  className="hidden"
+                  className="cp-file-input-hidden"
                 />
               </div>
               <div>
                 <p className="cp-name">{user?.prenom} {user?.nom}</p>
                 <p className="cp-role">Client</p>
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="cp-photo-label-btn"
+                  >
+                    <Camera size={13} /> Choisir une photo de profil
+                  </button>
+                )}
               </div>
 
               {!isEditing ? (

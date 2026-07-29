@@ -58,7 +58,7 @@
 
 .ms-empty-btn {
   padding: 8px 18px;
-  background: var(--color-green-600);
+  background: var(--color-orange-600);
   color: #fff;
   border: none;
   border-radius: var(--radius-sm);
@@ -88,14 +88,14 @@
 }
 
 .ms-conv-item:hover { background: var(--color-cream-100); }
-.ms-conv-active     { background: var(--color-green-50); }
+.ms-conv-active     { background: var(--color-orange-50); }
 
 .ms-conv-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--color-green-50);
-  color: var(--color-green-700);
+  background: var(--color-orange-50);
+  color: var(--color-orange-600);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -169,8 +169,6 @@
   border-bottom: 1px solid var(--color-cream-200);
 }
 
-/* ✅ Bouton retour (mobile uniquement) pour revenir à la liste des
-   conversations depuis un fil ouvert. */
 .ms-thread-back-btn {
   display: none;
   align-items: center;
@@ -240,7 +238,7 @@
 }
 
 .ms-bubble-me {
-  background: var(--color-green-600);
+  background: var(--color-orange-600);
   color: #fff;
   border-bottom-right-radius: 4px;
 }
@@ -257,7 +255,6 @@
   opacity: 0.85;
 }
 
-/* ✅ Message supprimé — bulle grisée, texte en italique */
 .ms-bubble-deleted {
   cursor: default;
   opacity: 0.6;
@@ -367,7 +364,7 @@
 
 .ms-edit-confirm {
   background: #fff;
-  color: var(--color-green-600);
+  color: var(--color-orange-600);
 }
 
 .ms-edit-cancel {
@@ -402,7 +399,7 @@
 }
 
 .ms-thread-input:focus {
-  border-color: var(--color-green-500);
+  border-color: var(--color-orange-500);
   background: #fff;
 }
 
@@ -410,7 +407,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--color-green-600);
+  background: var(--color-orange-600);
   color: #fff;
   border: none;
   display: flex;
@@ -421,7 +418,7 @@
   transition: background 0.15s ease;
 }
 
-.ms-send-btn:hover:not(:disabled) { background: var(--color-green-700); }
+.ms-send-btn:hover:not(:disabled) { background: var(--color-orange-700); }
 .ms-send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ── Modale de confirmation de suppression ───────────────────────────────── */
@@ -504,11 +501,6 @@
 .ms-confirm-delete:disabled { opacity: 0.6; cursor: not-allowed; }
 
 /* ── Responsive : navigation liste <-> fil façon WhatsApp ───────────────── */
-/* ✅ Avant : la sidebar disparaissait purement et simplement sur mobile,
-   sans aucun moyen d'y revenir -> écran bloqué sur "Sélectionnez une
-   conversation" en permanence. Maintenant : un seul panneau visible à la
-   fois, contrôlé par la classe .ms-thread-open posée sur .ms-layout
-   (ajoutée en JS dès qu'une conversation est sélectionnée). */
 @media (max-width: 768px) {
   .ms-layout {
     grid-template-columns: 1fr;
@@ -518,18 +510,14 @@
     border-right: none;
   }
 
-  /* Par défaut (aucune conversation sélectionnée) : liste visible, fil masqué */
   .ms-sidebar { display: flex; }
   .ms-thread  { display: none; }
 
-  /* Une fois une conversation sélectionnée : fil visible, liste masquée */
   .ms-layout.ms-thread-open .ms-sidebar { display: none; }
   .ms-layout.ms-thread-open .ms-thread  { display: flex; }
 
   .ms-thread-back-btn { display: flex; }
 
-  /* Le menu contextuel doit rester bien visible sur petit écran, on évite
-     qu'il dépasse hors de l'écran sur les bulles proches du bord. */
   .ms-bubble-menu {
     min-width: 180px;
   }
@@ -553,7 +541,7 @@
   }
 
   .ms-thread-input {
-    font-size: 16px; /* évite le zoom automatique iOS au focus */
+    font-size: 16px;
   }
 
   .ms-sidebar-title {

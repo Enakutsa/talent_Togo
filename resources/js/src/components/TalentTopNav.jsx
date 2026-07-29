@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { getProfilTalent, updateProfilTalent } from "../services/profilTalent.service";
 import NotificationBell from "./NotificationBell";
+import logo from "../assets/logo.svg";
 import {
   LayoutDashboard, User, MessageSquare, ClipboardList,
   Star, LogOut, Menu, X, ChevronDown,
@@ -101,7 +102,7 @@ export default function TalentTopNav({ activeKey }) {
     <>
       <header className="td-topnav">
         <div className="td-topnav-left">
-          <div className="td-logo-icon"><span>T</span></div>
+          <img src={logo} alt="TalentTogo" className="td-logo-icon-img" />
           <span className="td-logo-text">Talent<span className="td-logo-accent">Togo</span></span>
         </div>
 

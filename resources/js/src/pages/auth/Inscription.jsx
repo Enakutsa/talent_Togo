@@ -457,7 +457,7 @@ export default function Inscription() {
                     {document ? document.name : "Cliquez pour uploader"}
                   </span>
                   <span className="dropzone-subtitle">
-                    RCCM, CNI ou carte professionnelle (PDF, DOC, DOCX — max 5 MB)
+                    RCCM, CNI ou carte professionnelle (PDF, DOC, DOCX )
                   </span>
                 </label>
                 {errors.document_justificatif && (

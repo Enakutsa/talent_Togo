@@ -170,11 +170,10 @@ export default function Profil() {
                   <Camera size={13} />
                 </button>
               )}
-              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" onChange={handlePhotoChange} className="hidden" />
+              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" onChange={handlePhotoChange} className="profil-creer-file-input-hidden" />
             </div>
             <div>
               <p className="profil-creer-photo-label">Photo de profil</p>
-              <p className="profil-creer-photo-hint">JPG ou PNG — 3 Mo max</p>
             </div>
           </div>
 

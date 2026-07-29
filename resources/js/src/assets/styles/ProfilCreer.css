@@ -402,3 +402,7 @@
     font-size: 15px;
   }
 }
+
+.profil-creer-file-input-hidden {
+  display: none;
+}

@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Menu, X, User, LogOut, Settings, LayoutDashboard } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
 import NotificationBell from "./NotificationBell";
+import logo from "../assets/logo.svg";
 import "../assets/styles/Navbar.css";
 
 const links = [
@@ -93,9 +94,7 @@ export default function Navbar() {
         <div className="navbar-row">
           {/* Logo */}
           <Link to="/" className="navbar-logo">
-            <div className="navbar-logo-icon">
-              <span>T</span>
-            </div>
+            <img src={logo} alt="TalentTogo" className="navbar-logo-icon-img" />
             <span className="navbar-logo-text">
               Talent<span className="navbar-logo-accent">Togo</span>
             </span>

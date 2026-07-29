@@ -2,6 +2,7 @@ import { useContext, useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import NotificationBell from "./NotificationBell";
+import logo from "../assets/logo.svg";
 import {
   LayoutDashboard, Heart, MessageSquare, ClipboardList,
   LogOut, Menu, X, ChevronDown, Settings, User, Home,
@@ -71,7 +72,7 @@ export default function ClientTopNav({ activeKey }) {
     <>
       <header className="cd-topnav">
         <div className="cd-topnav-left">
-          <div className="cd-logo-icon"><span>T</span></div>
+          <img src={logo} alt="TalentTogo" className="cd-logo-icon-img" />
           <span className="cd-logo-text">Talent<span className="cd-logo-accent">Togo</span></span>
         </div>
 
