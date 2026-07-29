@@ -14,6 +14,7 @@ use App\Http\Controllers\AvisController;
 use App\Http\Controllers\SignalementController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\CloudinarySignatureController;
 
 
 /*
@@ -186,3 +187,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/notifications/{id}/lu', [NotificationController::class, 'marquerLue']);
     Route::patch('/notifications/tout-lire', [NotificationController::class, 'toutMarquerLu']);
 });
+
+// ✅ Signature Cloudinary pour l'upload direct navigateur -> Cloudinary
+// (utilisée par le formulaire d'inscription talent, avant même que le
+// compte existe — d'où la route publique). Throttle strict : cet endpoint
+// ne fait qu'émettre une signature, quelqu'un qui le spam pourrait sinon
+// s'en servir pour uploader massivement vers notre compte Cloudinary.
+
+
+Route::post('/cloudinary/signature', [CloudinarySignatureController::class, 'sign'])
+    ->middleware('throttle:10,1');

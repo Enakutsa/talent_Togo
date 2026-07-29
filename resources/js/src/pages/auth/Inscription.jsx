@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { register } from "../../services/auth.service";
 import { getCategories } from "../../services/categorie.service";
+import { uploadDirectToCloudinary } from "../../services/cloudinaryDirect.service";
 import "../../assets/styles/Inscription.css";
 
 // Principales villes du Togo, du Sud au Nord
@@ -49,6 +50,7 @@ export default function Inscription() {
   const [role, setRole] = useState(null);
   const [agree, setAgree] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(null); // "upload" | "creation" | null
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -69,9 +71,6 @@ export default function Inscription() {
 
   const [document, setDocument] = useState(null);
 
-  // Charge les catégories une seule fois (utile seulement pour les talents,
-  // mais on précharge dès l'arrivée sur la page pour éviter un délai
-  // au moment où l'utilisateur choisit "Talent")
   useEffect(() => {
     getCategories()
       .then((res) => setCategories(res?.data || []))
@@ -82,8 +81,6 @@ export default function Inscription() {
     setForm({ ...form, [field]: e.target.value });
   };
 
-  // Handler dédié pour nom/prénom : filtre les caractères non-alphabétiques
-  // au fur et à mesure de la saisie (empêche de taper des chiffres/symboles)
   const handleNameChange = (field) => (e) => {
     const value = e.target.value.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "");
     setForm({ ...form, [field]: value });
@@ -100,7 +97,7 @@ export default function Inscription() {
         setGeneralError(
           "Le document justificatif doit être un fichier PDF (pas une photo ni un document Word)."
         );
-        e.target.value = ""; // reset l'input file
+        e.target.value = "";
         setDocument(null);
         return;
       }
@@ -155,40 +152,48 @@ export default function Inscription() {
     setLoading(true);
 
     try {
-      let payload;
+      let payload = {
+        nom: form.nom,
+        prenom: form.prenom,
+        email: form.email,
+        telephone: form.telephone,
+        mot_de_passe: form.mot_de_passe,
+        mot_de_passe_confirmation: form.mot_de_passe_confirmation,
+        role,
+      };
 
       if (role === "talent") {
-        payload = new FormData();
-        payload.append("nom", form.nom);
-        payload.append("prenom", form.prenom);
-        payload.append("email", form.email);
-        payload.append("telephone", form.telephone);
-        payload.append("mot_de_passe", form.mot_de_passe);
-        payload.append("mot_de_passe_confirmation", form.mot_de_passe_confirmation);
-        payload.append("role", role);
-        payload.append("document_justificatif", document);
-        payload.append("categorie_id", form.categorie_id);
-        payload.append("ville", form.ville);
-      } else {
+        // ✅ Upload direct navigateur → Cloudinary (voir
+        // cloudinaryDirect.service.js) — se fait AVANT l'appel à
+        // /auth/register, qui ne reçoit que l'URL résultante et non plus
+        // le fichier brut. Élimine le second trajet réseau
+        // (navigateur → Laravel → Cloudinary) qui doublait le temps
+        // d'upload ressenti par le talent lors de l'inscription.
+        setLoadingStep("upload");
+        let documentUpload;
+        try {
+          documentUpload = await uploadDirectToCloudinary(document);
+        } catch (uploadErr) {
+          setGeneralError("Échec de l'envoi du document justificatif. Réessayez.");
+          setLoading(false);
+          setLoadingStep(null);
+          return;
+        }
+
         payload = {
-          nom: form.nom,
-          prenom: form.prenom,
-          email: form.email,
-          telephone: form.telephone,
-          mot_de_passe: form.mot_de_passe,
-          mot_de_passe_confirmation: form.mot_de_passe_confirmation,
-          role,
+          ...payload,
+          document_justificatif_url: documentUpload.url,
+          categorie_id: form.categorie_id,
+          ville: form.ville,
         };
       }
 
+      setLoadingStep("creation");
       const res = await register(payload);
 
-      // Redirection selon le rôle
       if (res?.data?.redirect === "profil") {
-        // Talent → compléter le profil
         navigate("/talent/profil/creer");
       } else {
-        // Client → page de connexion
         navigate("/login");
       }
     } catch (err) {
@@ -200,6 +205,7 @@ export default function Inscription() {
       }
     } finally {
       setLoading(false);
+      setLoadingStep(null);
     }
   };
 
@@ -208,9 +214,10 @@ export default function Inscription() {
       <div className="auth-wrap">
         <div className="auth-logo-block">
           <Link to="/" className="auth-logo-link">
-            <div className="auth-logo-icon">
-              <span>T</span>
-            </div>
+            <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="21" cy="21" r="19" fill="#fff7ed" stroke="#ea580c" strokeWidth="2"/>
+              <text x="21" y="28" textAnchor="middle" fontSize="16" fontWeight="700" fill="#166534" fontFamily="Georgia, 'Fraunces', serif">TT</text>
+            </svg>
             <span className="auth-logo-text">
               Talent<span className="auth-logo-accent">Togo</span>
             </span>
@@ -448,7 +455,7 @@ export default function Inscription() {
                 <label className="dropzone-wrap">
                   <input
                     type="file"
-                    accept=".pdf,.doc,.docx"
+                    accept=".pdf"
                     onChange={handleFileChange}
                     className="file-input-hidden"
                   />
@@ -457,7 +464,7 @@ export default function Inscription() {
                     {document ? document.name : "Cliquez pour uploader"}
                   </span>
                   <span className="dropzone-subtitle">
-                    RCCM, CNI ou carte professionnelle (PDF, DOC, DOCX )
+                    RCCM, CNI ou carte professionnelle (PDF uniquement)
                   </span>
                 </label>
                 {errors.document_justificatif && (
@@ -502,7 +509,14 @@ export default function Inscription() {
               disabled={loading || !role || !agree}
             >
               {loading ? (
-                <span className="auth-spinner" />
+                <>
+                  <span className="auth-spinner" />
+                  {loadingStep === "upload"
+                    ? "Envoi du document en cours..."
+                    : loadingStep === "creation"
+                    ? "Création du compte..."
+                    : "Veuillez patienter..."}
+                </>
               ) : (
                 <>
                   Créer mon compte <ArrowRight size={18} />

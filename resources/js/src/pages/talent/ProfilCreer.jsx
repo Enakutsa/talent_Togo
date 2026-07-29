@@ -8,7 +8,7 @@ import "../../assets/styles/ProfilCreer.css";
 
 export default function ProfilCreer() {
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
+  const { user, refreshUser } = useContext(AuthContext);
   const fileInputRef = useRef(null);
 
   const [saving, setSaving] = useState(false);
@@ -69,6 +69,14 @@ const nomCategorie =
 
     try {
       await updateProfilTalent(payload);
+
+      // ✅ Rafraîchit AuthContext.user (donc user.profilTalent.photo et
+      // user.profilTalent.estComplet) AVANT de naviguer vers le dashboard.
+      // Sans ça, TalentTopNav affiche encore l'ancien état (pas de photo)
+      // jusqu'à un rechargement manuel — même bug que ClientProfil.jsx et
+      // TalentDashboard.jsx/ProfilSection, corrigé ici de la même façon.
+      await refreshUser();
+
       navigate("/talent/dashboard");
     } catch (err) {
       if (err.response?.status === 422) {

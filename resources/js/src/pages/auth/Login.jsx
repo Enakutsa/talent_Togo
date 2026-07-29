@@ -174,9 +174,10 @@ export default function Login() {
 
         <div className="login-logo-block">
           <Link to="/" className="login-logo-link">
-            <div className="login-logo-icon">
-              <span>T</span>
-            </div>
+            <svg width="42" height="42" viewBox="0 0 42 42" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="21" cy="21" r="19" fill="#fff7ed" stroke="#ea580c" strokeWidth="2"/>
+              <text x="21" y="28" textAnchor="middle" fontSize="16" fontWeight="700" fill="#166534" fontFamily="Georgia, 'Fraunces', serif">TT</text>
+            </svg>
             <span className="login-logo-text">
               Talent<span className="login-logo-accent">Togo</span>
             </span>

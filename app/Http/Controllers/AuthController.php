@@ -107,55 +107,35 @@ class AuthController extends Controller
         ];
 
         if ($request->role === 'talent') {
-            $rules['document_justificatif'] = 'required|file|mimes:pdf|max:5120';
-            $rules['categorie_id']          = 'required|exists:categories,id';
-            $rules['ville']                 = 'required|string|max:100';
+            // ✅ Le navigateur a déjà uploadé le PDF directement vers
+            // Cloudinary (voir CloudinarySignatureController) — on reçoit
+            // ici l'URL résultante, plus le fichier brut. Ça élimine le
+            // second trajet réseau (navigateur -> Laravel -> Cloudinary)
+            // qui doublait le temps d'upload ressenti.
+            $rules['document_justificatif_url'] = ['required', 'url', 'starts_with:https://res.cloudinary.com/'];
+            $rules['categorie_id']              = 'required|exists:categories,id';
+            $rules['ville']                     = 'required|string|max:100';
         }
 
         $validator = Validator::make($request->all(), $rules, [
-            'email.regex'                    => 'L\'adresse e-mail doit être une adresse Gmail (@gmail.com).',
-            'telephone.regex'                => 'Le numéro de téléphone doit contenir exactement 8 chiffres.',
-            'document_justificatif.required' => 'Le document justificatif est obligatoire pour les talents.',
-            'document_justificatif.mimes'    => 'Le document justificatif doit être un fichier PDF.',
-            'categorie_id.required'          => 'Veuillez choisir une catégorie.',
-            'categorie_id.exists'            => 'Catégorie invalide.',
-            'ville.required'                 => 'Veuillez indiquer votre ville.',
+            'email.regex'                        => 'L\'adresse e-mail doit être une adresse Gmail (@gmail.com).',
+            'telephone.regex'                    => 'Le numéro de téléphone doit contenir exactement 8 chiffres.',
+            'document_justificatif_url.required' => 'Le document justificatif est obligatoire pour les talents.',
+            'document_justificatif_url.url'      => 'Document justificatif invalide.',
+            'categorie_id.required'              => 'Veuillez choisir une catégorie.',
+            'categorie_id.exists'                => 'Catégorie invalide.',
+            'ville.required'                     => 'Veuillez indiquer votre ville.',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        // ✅ Upload du document AVANT la transaction DB : un upload
-        // Cloudinary qui échoue ne doit pas laisser un utilisateur à moitié
-        // créé, mais on ne veut pas non plus faire d'appel réseau externe
-        // à l'intérieur d'une transaction DB.
-        //
-        // Le document justificatif est désormais toujours un PDF (validé
-        // ci-dessus par 'mimes:pdf'). On upload en resource_type 'image' —
-        // et non 'raw' — car Cloudinary traite les PDF comme des "images
-        // spéciales" sous ce type, ce qui permet un affichage INLINE dans
-        // le navigateur (ouverture dans l'onglet) au lieu de forcer un
-        // téléchargement, ce que fait 'raw' par défaut pour tout fichier
-        // considéré comme un blob opaque.
-        $documentUrl = null;
-        if ($request->hasFile('document_justificatif')) {
-            $file = $request->file('document_justificatif');
-
-            try {
-                $upload = $this->cloudinary()->upload(
-                    $file,
-                    'talenttogo/documents_justificatifs',
-                    'image'
-                );
-                $documentUrl = $upload['url'];
-            } catch (\Throwable $e) {
-                return response()->json([
-                    'message' => 'Échec de l\'envoi du document justificatif. Réessayez ou contactez le support.',
-                    'debug' => config('app.debug') ? $e->getMessage() : null,
-                ], 503);
-            }
-        }
+        // ✅ Plus d'upload à faire ici : le document est déjà sur
+        // Cloudinary, uploadé directement par le navigateur.
+        $documentUrl = $request->role === 'talent'
+            ? $request->input('document_justificatif_url')
+            : null;
 
         $utilisateur = DB::transaction(function () use ($request, $documentUrl) {
 
