@@ -3,6 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Star, MapPin, CheckCircle, Heart } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
 import { toggleFavori } from "../../services/favori.service";
+import { optimizeImage } from "../../utils/cloudinary";
 import "../../assets/styles/TalentCard.css";
 
 export default function TalentCard({
@@ -64,7 +65,15 @@ export default function TalentCard({
   return (
     <div className="talent-card">
       <div className="talent-card-cover">
-        <img src={portfolio} alt={nom} className="talent-card-cover-img" />
+        {/* ✅ optimizeImage : redimensionne + compresse via Cloudinary
+            (w_500,q_auto,f_auto) au lieu de charger l'image originale
+            qui pouvait faire plusieurs Mo. loading="lazy" en bonus. */}
+        <img
+          src={optimizeImage(portfolio, 500)}
+          alt={nom}
+          className="talent-card-cover-img"
+          loading="lazy"
+        />
         <div className="talent-card-cover-gradient" />
 
         <button
@@ -84,7 +93,14 @@ export default function TalentCard({
       <div className="talent-card-body">
         <div className="talent-card-header">
           <div className="talent-card-avatar-wrap">
-            <img src={avatar} alt={nom} className="talent-card-avatar" />
+            {/* ✅ avatar affiché en petit (80px sur la carte) donc pas
+                besoin de charger l'image en pleine résolution */}
+            <img
+              src={optimizeImage(avatar, 80)}
+              alt={nom}
+              className="talent-card-avatar"
+              loading="lazy"
+            />
             {disponible && <span className="talent-card-online-dot" />}
           </div>
           <div className="talent-card-identity">

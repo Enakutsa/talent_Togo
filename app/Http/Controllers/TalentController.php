@@ -37,6 +37,13 @@ class TalentController extends Controller
     {
         $query = ProfilTalent::query()
             ->whereHas('utilisateur', fn ($q) => $q->where('statut', 'valide'))
+            // ✅ Un talent validé par l'admin mais qui n'a jamais complété
+            // ProfilCreer (pas de photo, pas de tarif fixé) ne doit PAS
+            // apparaître dans le listing public, même s'il a un compte
+            // "valide" — voir ProfilTalent::estComplet() pour la même
+            // logique côté "mon profil".
+            ->whereNotNull('photo')
+            ->whereNotNull('tarif_min')
             ->with([
                 'utilisateur.categorie',
                 // ── Uniquement les colonnes nécessaires à l'affichage,
@@ -137,7 +144,13 @@ class TalentController extends Controller
             ->loadCount(['avis as avis_count' => fn ($q) => $q->where('statut', 'visible')])
             ->loadAvg(['avis as avis_note' => fn ($q) => $q->where('statut', 'visible')], 'note');
 
-        abort_unless($talent->utilisateur?->statut === 'valide', 404);
+        // ✅ Même règle que le listing : un talent validé mais dont le
+        // profil n'est pas complet (pas de photo/tarif) ne doit pas être
+        // consultable, même en accédant directement à son URL.
+        abort_unless(
+            $talent->utilisateur?->statut === 'valide' && $talent->estComplet(),
+            404
+        );
 
         $talent->increment('vues');
 

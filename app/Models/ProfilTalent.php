@@ -55,19 +55,23 @@ class ProfilTalent extends Model
         return $this->hasMany(Favori::class, 'profil_talent_id');
     }
 
+    public function signalements()
+    {
+        return $this->hasMany(Signalement::class, 'profil_talent_id');
+    }
+
     // ===== HELPERS =====
 
-    // ⚠️ categorie_id et ville vivent maintenant sur Utilisateur.
+    // ⚠️ categorie_id et ville vivent maintenant sur Utilisateur, mais
+    // sont déjà obligatoires à l'inscription — donc toujours renseignés
+    // dès la création du compte, même si le talent n'a jamais ouvert
+    // ProfilCreer. Le VRAI signal que ProfilCreer a été rempli, c'est le
+    // tarif_min (et la photo), saisis uniquement sur cette page.
     public function estComplet(): bool
     {
         return !is_null($this->utilisateur?->ville)
             && !is_null($this->utilisateur?->categorie_id)
-            && !is_null($this->photo);
+            && !is_null($this->photo)
+            && !is_null($this->tarif_min);
     }
-
-    public function signalements()
-{
-    return $this->hasMany(Signalement::class, 'profil_talent_id');
-}
-
 }
