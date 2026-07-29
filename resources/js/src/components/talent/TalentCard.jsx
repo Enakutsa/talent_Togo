@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Star, MapPin, CheckCircle, Heart } from "lucide-react";
 import { AuthContext } from "../../context/AuthContext";
 import { toggleFavori } from "../../services/favori.service";
@@ -129,9 +129,14 @@ export default function TalentCard({
               {Number(tarif).toLocaleString("fr-FR")} FCFA
             </p>
           </div>
-          <a href={`/talents/${id}`} onClick={handleVoirProfil} className="talent-card-cta">
+          {/* ✅ Link (React Router) au lieu de <a href> : reste en
+              navigation SPA côté client. Avant, <a href> forçait le
+              navigateur à recharger TOUTE la page depuis le serveur à
+              chaque clic (nouveau téléchargement + réexécution du bundle
+              JS), d'où le flash blanc de 1-2s systématique. */}
+          <Link to={`/talents/${id}`} onClick={handleVoirProfil} className="talent-card-cta">
             Voir profil
-          </a>
+          </Link>
         </div>
       </div>
     </div>

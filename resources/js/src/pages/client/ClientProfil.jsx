@@ -74,12 +74,11 @@ export default function ClientProfil() {
 
     try {
       const res = await updateUser(payload);
-      // ✅ res = { success: true, data: {...utilisateur} } — on doit passer
-      // res.data.data à login(), pas res.data (l'enveloppe entière), sinon
-      // AuthContext.user devient {success, data} au lieu du vrai utilisateur,
-      // et des champs comme user.photo restent undefined jusqu'au prochain
-      // rechargement de page (qui repasse par /user -> AuthController::me()).
-      login(res.data.data, token);
+      // ✅ updateUser() (dans auth.service.js) fait `return res.data;` sur
+      // la réponse axios -> elle renvoie donc déjà {success, data} tel quel
+      // (le JSON du backend), pas encore "dépaqueté". Donc ici res =
+      // {success, data}, et l'utilisateur se trouve dans res.data.
+      login(res.data, token);
       setSuccess("Profil mis à jour avec succès.");
       setIsEditing(false);
       setChangePassword(false);

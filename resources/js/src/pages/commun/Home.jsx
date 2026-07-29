@@ -23,43 +23,11 @@ const CATEGORY_ICONS = {
   "Autre": Star,
 };
 
-/* ===== Données de secours (utilisées uniquement si l'API échoue vraiment) ===== */
-const FALLBACK_CATEGORIES = [
-  { label: "Photographe", count: 48 },
-  { label: "Graphiste", count: 32 },
-  { label: "Couturier", count: 61 },
-  { label: "Musicien", count: 27 },
-  { label: "Vidéaste", count: 19 },
-  { label: "Artisan", count: 54 },
-  { label: "Maquilleur", count: 38 },
-  { label: "Danseur", count: 15 },
-];
-
-const FALLBACK_TALENTS = [
-  { id: 1, nom: "Koffi Mensah", categorie: "Photographe", ville: "Lomé", note: 4.9, avis: 124, tarif: 50000, avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop", portfolio: "https://images.unsplash.com/photo-1472148083604-64f1084980b9?w=400&h=300&fit=crop", disponible: true, competences: ["Portrait", "Mariage", "Mode"] },
-  { id: 2, nom: "Akosua Doe", categorie: "Graphiste", ville: "Lomé", note: 4.7, avis: 89, tarif: 30000, avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop", portfolio: "https://images.unsplash.com/photo-1561070791-2526d30994b5?w=400&h=300&fit=crop", disponible: true, competences: ["Logo", "Identité visuelle", "Print"] },
-  { id: 3, nom: "Yao Agbenyenu", categorie: "Couturier", ville: "Kara", note: 4.8, avis: 67, tarif: 45000, avatar: "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=100&h=100&fit=crop", portfolio: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=300&fit=crop", disponible: false, competences: ["Pagne", "Sur mesure", "Broderie"] },
-];
-
-const FALLBACK_STATS = [
-  { key: "talents", icon: Users, label: "Talents inscrits", value: "500+" },
-  { key: "clients", icon: Briefcase, label: "Clients actifs", value: "1 200+" },
-  { key: "prestations", icon: Star, label: "Prestations réalisées", value: "3 400+" },
-  { key: "villes", icon: Globe, label: "Villes couvertes", value: "6" },
-];
-
-// ✅ Profils clients de secours (utilisés uniquement si l'API /clients/featured
-// échoue) — pour la section Témoignages, en cas de fallback.
-const FALLBACK_CLIENTS = [
-  { id: 1, nom: "Ama Sena", ville: "Lomé", avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop" },
-  { id: 2, nom: "Kossi Adjovi", ville: "Kara", avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop" },
-  { id: 3, nom: "Nadia Amouzou", ville: "Sokodé", avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop" },
-];
-
-// ✅ Témoignages fixes affichés en page d'accueil. Le texte est rédigé par
-// la plateforme, mais la photo/nom viennent de vrais CLIENTS inscrits en
-// base (récupérés via getFeaturedClients) — pas de faux profils inventés,
-// et pas de commentaires publics non modérés sur la page d'entrée du site.
+// ✅ Texte des témoignages rédigé par la plateforme, mais associé
+// uniquement à de VRAIS clients inscrits en base (nom/ville/photo via
+// getFeaturedClients). Cette section ne s'affiche que s'il existe au
+// moins un vrai client à présenter (voir plus bas) — jamais de profil
+// entièrement inventé.
 const STATIC_TESTIMONIALS = [
   { note: 5, commentaire: "J'ai trouvé un photographe professionnel en 10 minutes. Service exceptionnel !" },
   { note: 5, commentaire: "TalentTogo m'a permis d'atteindre des clients que je n'aurais jamais pu contacter autrement." },
@@ -83,43 +51,45 @@ export default function Home() {
   const [stats, setStats] = useState(null);
   const [clients, setClients] = useState(null);
 
+  // ✅ Plus de données fictives en cas d'échec ou de liste vide : on
+  // affiche exactement ce que l'API renvoie. Un site en production ne
+  // doit jamais montrer de faux talents/faux clients à un visiteur, que
+  // ce soit parce que l'appel a échoué ou parce que la base est encore
+  // vide (nouveau déploiement, environnement de dev...). Chaque section
+  // gère elle-même son propre état vide honnête plus bas dans le JSX.
   useEffect(() => {
     getCategories()
       .then((data) => {
         const list = Array.isArray(data) ? data : data?.data;
-        setCategories(Array.isArray(list) && list.length ? list : FALLBACK_CATEGORIES);
+        setCategories(Array.isArray(list) ? list : []);
       })
-      .catch(() => setCategories(FALLBACK_CATEGORIES));
+      .catch(() => setCategories([]));
 
     getFeaturedTalents()
       .then((data) => {
         const list = Array.isArray(data) ? data : data?.data;
-        setTalents(Array.isArray(list) && list.length ? list : FALLBACK_TALENTS);
+        setTalents(Array.isArray(list) ? list : []);
       })
-      .catch(() => setTalents(FALLBACK_TALENTS));
+      .catch(() => setTalents([]));
 
     getStats()
       .then((res) => {
         const data = res?.data ?? res;
-        if (!data) {
-          setStats(FALLBACK_STATS);
-          return;
-        }
         setStats([
-          { key: "talents", icon: Users, label: "Talents inscrits", value: data.talents ?? "500+" },
-          { key: "clients", icon: Briefcase, label: "Clients actifs", value: data.clients ?? "1 200+" },
-          { key: "prestations", icon: Star, label: "Prestations réalisées", value: data.prestations ?? "3 400+" },
-          { key: "villes", icon: Globe, label: "Villes couvertes", value: data.villes ?? "6" },
+          { key: "talents",      icon: Users,     label: "Talents inscrits",       value: data?.talents      ?? "0" },
+          { key: "clients",      icon: Briefcase, label: "Clients actifs",         value: data?.clients      ?? "0" },
+          { key: "prestations",  icon: Star,      label: "Prestations réalisées",  value: data?.prestations  ?? "0" },
+          { key: "villes",       icon: Globe,     label: "Villes couvertes",       value: data?.villes       ?? "0" },
         ]);
       })
-      .catch(() => setStats(FALLBACK_STATS));
+      .catch(() => setStats([]));
 
     getFeaturedClients()
       .then((data) => {
         const list = Array.isArray(data) ? data : data?.data;
-        setClients(Array.isArray(list) && list.length ? list : FALLBACK_CLIENTS);
+        setClients(Array.isArray(list) ? list : []);
       })
-      .catch(() => setClients(FALLBACK_CLIENTS));
+      .catch(() => setClients([]));
   }, []);
 
   // ✅ Scroll automatique vers "Comment ça marche" si on arrive avec
@@ -202,24 +172,28 @@ export default function Home() {
         </div>
       </section>
 
-      {/* STATS */}
-      <section className="stats-section">
-        <div className="stats-grid">
-          {stats === null
-            ? Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="stat-item-skeleton" />
-              ))
-            : stats.map(({ key, icon: Icon, label, value }) => (
-                <div key={key} className="stat-item">
-                  <div className="stat-icon-wrap">
-                    <Icon size={22} />
+      {/* STATS — masqué entièrement si l'API n'a rien renvoyé (échec ou
+          statistiques toutes nulles), plutôt que d'afficher des zéros
+          vides qui ne veulent rien dire visuellement. */}
+      {(stats === null || stats.length > 0) && (
+        <section className="stats-section">
+          <div className="stats-grid">
+            {stats === null
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="stat-item-skeleton" />
+                ))
+              : stats.map(({ key, icon: Icon, label, value }) => (
+                  <div key={key} className="stat-item">
+                    <div className="stat-icon-wrap">
+                      <Icon size={22} />
+                    </div>
+                    <span className="stat-value">{value}</span>
+                    <span className="stat-label">{label}</span>
                   </div>
-                  <span className="stat-value">{value}</span>
-                  <span className="stat-label">{label}</span>
-                </div>
-              ))}
-        </div>
-      </section>
+                ))}
+          </div>
+        </section>
+      )}
 
       {/* CATEGORIES */}
       <section className="section">
@@ -228,12 +202,20 @@ export default function Home() {
           <p className="section-subtitle">Toutes les compétences créatives du Togo</p>
         </div>
 
-        <div className="categories-grid">
-          {categories === null
-            ? Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="category-card-skeleton" />
-              ))
-            : categories.map(({ label, count }) => {
+        {categories === null ? (
+          <div className="categories-grid">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="category-card-skeleton" />
+            ))}
+          </div>
+        ) : categories.length === 0 ? (
+          <p className="section-subtitle" style={{ textAlign: "center" }}>
+            Aucune catégorie disponible pour le moment.
+          </p>
+        ) : (
+          <>
+            <div className="categories-grid">
+              {categories.map(({ label, count }) => {
                 const Icon = CATEGORY_ICONS[label] || Star;
                 return (
                   <button
@@ -249,13 +231,15 @@ export default function Home() {
                   </button>
                 );
               })}
-        </div>
+            </div>
 
-        <div className="categories-cta-wrap">
-          <button onClick={() => navigate("/recherche")} className="section-link">
-            Voir tout <ChevronRight size={16} />
-          </button>
-        </div>
+            <div className="categories-cta-wrap">
+              <button onClick={() => navigate("/recherche")} className="section-link">
+                Voir tout <ChevronRight size={16} />
+              </button>
+            </div>
+          </>
+        )}
       </section>
 
       {/* FEATURED TALENTS */}
@@ -271,12 +255,20 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="talents-grid">
-            {talents === null
-              ? Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="talent-card-skeleton" />
-                ))
-              : talents.slice(0, 3).map((t) => (
+          {talents === null ? (
+            <div className="talents-grid">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="talent-card-skeleton" />
+              ))}
+            </div>
+          ) : talents.length === 0 ? (
+            <p className="section-subtitle-left">
+              Aucun talent mis en avant pour le moment. Revenez bientôt !
+            </p>
+          ) : (
+            <>
+              <div className="talents-grid">
+                {talents.slice(0, 3).map((t) => (
                   <TalentCard
                     key={t.id}
                     {...t}
@@ -286,13 +278,15 @@ export default function Home() {
                     }
                   />
                 ))}
-          </div>
+              </div>
 
-          <div className="featured-cta-wrap">
-            <button onClick={handleVoirTousLesTalents} className="btn-primary">
-              Voir tous les talents <ArrowRight size={16} />
-            </button>
-          </div>
+              <div className="featured-cta-wrap">
+                <button onClick={handleVoirTousLesTalents} className="btn-primary">
+                  Voir tous les talents <ArrowRight size={16} />
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -314,7 +308,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* TÉMOIGNAGES CLIENTS */}
+      {/* TÉMOIGNAGES CLIENTS — n'apparaît que s'il existe au moins un
+          vrai client à présenter. Rien à afficher -> section masquée
+          entièrement, jamais de profil inventé pour combler le vide. */}
       {clients !== null && clients.length > 0 && (
         <section className="section testimonials-section">
           <div className="section-center">

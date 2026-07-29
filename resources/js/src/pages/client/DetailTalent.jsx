@@ -29,6 +29,11 @@ function Stars({ note, size = 14 }) {
 // surcharger la page quand un talent a beaucoup d'avis.
 const MAX_AVIS_AFFICHES = 5;
 
+// ✅ Plafond de sécurité absolu, aligné sur la limite de la colonne
+// "budget" en base (numeric(10,2) → max 99 999 999,99). Sert de garde-fou
+// même quand le talent n'a pas défini de tarif_max.
+const BUDGET_MAX_ABSOLU = 99999999;
+
 export default function DetailTalent() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -69,39 +74,6 @@ export default function DetailTalent() {
       .catch(() => setError("Impossible de charger ce profil."))
       .finally(() => setLoading(false));
   }, [id]);
-
-  const handleSend = async () => {
-    if (!messageInitial.trim()) return;
-
-    // ✅ Le budget proposé ne peut pas être inférieur au tarif minimum
-    // fixé par le talent sur son profil.
-    if (budget && Number(budget) < tarif) {
-      setSendError(`Le budget ne peut pas être inférieur au tarif minimum de ${tarif.toLocaleString("fr-FR")} FCFA.`);
-      return;
-    }
-
-    setSendError("");
-    setSending(true);
-
-    try {
-      await envoyerDemande({
-        profil_talent_id: talent.id,
-        message_initial: messageInitial,
-        date_souhaitee: dateSouhaitee || null,
-        budget: budget || null,
-      });
-      setSent(true);
-    } catch (err) {
-      if (err.response?.status === 422) {
-        const firstError = Object.values(err.response.data.errors || {})[0]?.[0];
-        setSendError(firstError || "Certains champs sont invalides.");
-      } else {
-        setSendError(err.response?.data?.message || "Une erreur est survenue. Réessayez.");
-      }
-    } finally {
-      setSending(false);
-    }
-  };
 
   const resetModal = () => {
     setShowContact(false);
@@ -184,11 +156,58 @@ export default function DetailTalent() {
   const avisListe   = talent.avis_liste  ?? [];
   const avatar      = talent.avatar      ?? null;
 
+  // ✅ Plafond effectif du budget : le tarif_max du talent s'il en a
+  // défini un, sinon le plafond absolu aligné sur la colonne DB.
+  const budgetPlafond = tarifMax > 0 ? tarifMax : BUDGET_MAX_ABSOLU;
+  const budgetDepasse = budget !== "" && Number(budget) > budgetPlafond;
+  const budgetTropBas = budget !== "" && Number(budget) < tarif;
+
+  const handleSend = async () => {
+    if (!messageInitial.trim()) return;
+
+    // ✅ Le budget proposé ne peut pas être inférieur au tarif minimum
+    // fixé par le talent sur son profil.
+    if (budgetTropBas) {
+      setSendError(`Le budget ne peut pas être inférieur au tarif minimum de ${tarif.toLocaleString("fr-FR")} FCFA.`);
+      return;
+    }
+
+    // ✅ Le budget proposé ne peut pas dépasser le tarif max du talent
+    // (s'il en a défini un), ni le plafond absolu sinon — au lieu de
+    // laisser passer une valeur qui ferait planter l'enregistrement
+    // côté serveur avec une erreur SQL brute affichée à l'utilisateur.
+    if (budgetDepasse) {
+      setSendError(`Vous avez dépassé le budget maximum autorisé (${budgetPlafond.toLocaleString("fr-FR")} FCFA).`);
+      return;
+    }
+
+    setSendError("");
+    setSending(true);
+
+    try {
+      await envoyerDemande({
+        profil_talent_id: talent.id,
+        message_initial: messageInitial,
+        date_souhaitee: dateSouhaitee || null,
+        budget: budget || null,
+      });
+      setSent(true);
+    } catch (err) {
+      if (err.response?.status === 422) {
+        const firstError = Object.values(err.response.data.errors || {})[0]?.[0];
+        setSendError(firstError || "Certains champs sont invalides.");
+      } else {
+        setSendError(err.response?.data?.message || "Une erreur est survenue. Réessayez.");
+      }
+    } finally {
+      setSending(false);
+    }
+  };
+
   // ✅ On n'affiche que les 5 avis les plus récents, pour ne pas surcharger
   // la page. Le backend (TalentController::formatTalentDetail) trie déjà
   // avis_liste du plus récent au plus ancien, donc ce sont bien les 5
   // derniers — et ça se met à jour automatiquement à chaque nouvel avis.
-  const MAX_AVIS_AFFICHES = 5;
   const avisAffiches = avisListe.slice(0, MAX_AVIS_AFFICHES);
 
   const todayStr = new Date().toISOString().split("T")[0];
@@ -462,14 +481,21 @@ export default function DetailTalent() {
                     <input
                       type="number"
                       min={tarif}
+                      max={budgetPlafond}
                       placeholder={`Min. ${tarif.toLocaleString("fr-FR")}`}
-                      className="dt-modal-input"
+                      className={`dt-modal-input ${budgetDepasse ? "dt-modal-input-error" : ""}`}
                       value={budget}
                       onChange={(e) => setBudget(e.target.value)}
                     />
-                    <p className="dt-modal-hint">
-                      Tarif minimum du talent : {tarif.toLocaleString("fr-FR")} FCFA
-                    </p>
+                    {budgetDepasse ? (
+                      <p className="dt-modal-hint dt-modal-hint-error">
+                        Vous avez dépassé le budget maximum ({budgetPlafond.toLocaleString("fr-FR")} FCFA).
+                      </p>
+                    ) : (
+                      <p className="dt-modal-hint">
+                        Tarif minimum du talent : {tarif.toLocaleString("fr-FR")} FCFA
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -477,7 +503,7 @@ export default function DetailTalent() {
                   <button onClick={resetModal} className="dt-modal-cancel">Annuler</button>
                   <button
                     onClick={handleSend}
-                    disabled={!messageInitial.trim() || sending || (budget && Number(budget) < tarif)}
+                    disabled={!messageInitial.trim() || sending || budgetTropBas || budgetDepasse}
                     className="dt-modal-send"
                   >
                     {sending ? "Envoi..." : <><Send size={14} /> Envoyer</>}

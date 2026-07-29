@@ -92,6 +92,8 @@
   transition: all 0.2s;
   white-space: nowrap;
   font-family: var(--font-body);
+  /* ✅ Zone de tap confortable sur mobile/Android (min. recommandé ~44px) */
+  min-height: 44px;
 }
 
 .rc-hero-filter-btn:hover {
@@ -157,7 +159,10 @@
 
 .rc-layout { display: flex; gap: 28px; align-items: flex-start; }
 
-/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+/* ── Sidebar filtres ─────────────────────────────────────────────────────
+   Par défaut (mobile-first) : caché. Devient un DRAWER plein écran sur
+   mobile/tablette quand ouvert (voir media query ci-dessous), et un
+   sidebar classique en flux normal sur desktop (≥1024px). ── */
 .rc-sidebar {
   width: 240px;
   flex-shrink: 0;
@@ -169,14 +174,39 @@
   display: none;
 }
 
-.rc-sidebar-open { display: block; }
-
 .rc-sidebar-title {
   font-size: 15px;
   font-weight: 600;
   color: var(--color-text);
   font-family: var(--font-heading);
   margin: 0 0 20px;
+}
+
+/* ✅ En-tête mobile du drawer (titre + bouton fermer) — masqué sur
+   desktop où le titre normal ci-dessus suffit. */
+.rc-sidebar-mobile-header {
+  display: none;
+}
+
+.rc-sidebar-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--color-bg-alt);
+  color: var(--color-text);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.rc-sidebar-close-btn:active { background: var(--color-border); }
+
+/* ✅ Fond assombri derrière le drawer mobile, cliquable pour fermer. */
+.rc-sidebar-backdrop {
+  display: none;
 }
 
 .rc-filter-group { margin-bottom: 20px; }
@@ -207,7 +237,7 @@
 .rc-cat-btn {
   width: 100%;
   text-align: left;
-  padding: 8px 10px;
+  padding: 10px;
   border-radius: var(--radius-sm);
   border: none;
   background: none;
@@ -216,6 +246,8 @@
   cursor: pointer;
   transition: all 0.15s;
   font-family: var(--font-body);
+  /* ✅ Zone de tap confortable sur mobile */
+  min-height: 40px;
 }
 
 .rc-cat-btn:hover   { background: var(--color-green-50); color: var(--color-green-700); }
@@ -237,6 +269,10 @@
   cursor: pointer;
   font-family: var(--font-body);
   transition: border-color 0.2s;
+  /* ✅ Hauteur confortable pour le tap + évite le zoom auto de Chrome
+     Android sur les champs avec une taille de police < 16px */
+  min-height: 44px;
+  font-size: 16px;
 }
 
 .rc-select:focus { border-color: var(--color-green-700); }
@@ -255,6 +291,9 @@
   width: 100%;
   accent-color: var(--color-green-700);
   cursor: pointer;
+  /* ✅ Hauteur de piste tactile plus grande sur mobile (le curseur natif
+     reste petit, mais la zone cliquable autour est agrandie). */
+  height: 28px;
 }
 
 .rc-range-labels {
@@ -271,11 +310,13 @@
   align-items: center;
   gap: 10px;
   cursor: pointer;
+  /* ✅ Zone de tap confortable sur mobile */
+  min-height: 40px;
 }
 
 .rc-checkbox {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 5px;
   border: 2px solid var(--color-border);
   display: flex;
@@ -302,7 +343,7 @@
   justify-content: center;
   gap: 6px;
   width: 100%;
-  padding: 10px;
+  padding: 12px;
   border: 1.5px solid var(--color-green-300);
   border-radius: var(--radius-sm);
   background: #fff;
@@ -313,9 +354,17 @@
   margin-top: 4px;
   transition: background 0.2s;
   font-family: var(--font-body);
+  min-height: 44px;
 }
 
 .rc-reset-btn:hover { background: var(--color-green-50); }
+
+/* ✅ Bouton "Voir les résultats" — uniquement affiché en bas du drawer
+   mobile (collé en bas, toujours accessible même si la liste de filtres
+   dépasse l'écran et nécessite de scroller). */
+.rc-sidebar-apply-btn {
+  display: none;
+}
 
 /* ── Résultats ───────────────────────────────────────────────────────────── */
 .rc-results { flex: 1; min-width: 0; }
@@ -439,6 +488,7 @@
   cursor: pointer;
   font-family: var(--font-body);
   transition: background 0.2s;
+  min-height: 44px;
 }
 
 .rc-empty-reset:hover { background: var(--color-green-900); }
@@ -562,8 +612,101 @@
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
+
+/* Desktop / tablette large : sidebar classique dans le flux, toujours visible */
 @media (min-width: 1024px) {
   .rc-sidebar { display: block; }
+}
+
+/* ✅ Mobile & tablette (<1024px) : le sidebar devient un DRAWER plein
+   écran qui glisse depuis la gauche, avec fond assombri cliquable,
+   en-tête avec bouton fermer, et bouton "Voir les résultats" collé en
+   bas. Résout le bug où le panneau de filtres s'écrasait à côté de la
+   grille au lieu de s'ouvrir correctement sur Android/mobile. */
+@media (max-width: 1023px) {
+  .rc-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 72%;
+    max-width: 300px;
+    border-radius: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(-100%);
+    transition: transform 0.28s ease;
+    /* Zone de scroll interne : la liste de filtres peut être plus haute
+       que l'écran (beaucoup de catégories par ex.), donc on scrolle le
+       contenu du drawer, pas la page derrière (verrouillée en JS). */
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+    padding-bottom: 88px; /* place pour le bouton "Voir les résultats" collé en bas */
+  }
+
+  .rc-sidebar-open {
+    transform: translateX(0);
+  }
+
+  .rc-sidebar-title {
+    display: none; /* remplacé par le titre dans rc-sidebar-mobile-header */
+  }
+
+  .rc-sidebar-mobile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 0 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .rc-sidebar-mobile-header h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-text);
+    font-family: var(--font-heading);
+    margin: 0;
+  }
+
+  .rc-sidebar-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 20, 20, 0.35);
+    z-index: 999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+  }
+
+  .rc-sidebar-backdrop-open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .rc-sidebar-apply-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: 16px;
+    padding: 14px;
+    background: var(--color-green-700);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    box-shadow: var(--shadow-lg);
+    z-index: 1001;
+  }
 }
 
 @media (max-width: 640px) {
