@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { Link } from "react-router-dom";
 import { Mail, MapPin, Phone } from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
+import logo from "../assets/logo.svg";
 import "../assets/styles/Footer.css";
 
 export default function Footer() {
@@ -27,9 +28,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="footer-brand-col">
             <div className="footer-brand">
-              <div className="footer-brand-icon">
-                <span>T</span>
-              </div>
+              <img src={logo} alt="TalentTogo" className="footer-brand-icon-img" />
               <span className="footer-brand-text">
                 Talent<span className="footer-brand-accent">Togo</span>
               </span>

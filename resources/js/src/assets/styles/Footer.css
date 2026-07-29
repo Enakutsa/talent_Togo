@@ -162,3 +162,9 @@
     align-items: flex-start;
   }
 }
+
+.footer-brand-icon-img {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
