@@ -37,7 +37,14 @@ const BUDGET_MAX_ABSOLU = 99999999;
 export default function DetailTalent() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated, user } = useContext(AuthContext);
+
+  // ✅ Un talent connecté qui consulte le profil d'un autre talent ne peut
+  // ni demander de prestation, ni le signaler — ces actions n'ont de sens
+  // que côté client. On grise ces boutons plutôt que de les cacher, pour
+  // que le talent comprenne que l'action existe mais ne lui est pas
+  // destinée (au lieu d'un bouton qui disparaît sans explication).
+  const isTalentViewer = isAuthenticated && user?.role === "talent";
 
   const [talent, setTalent]           = useState(null);
   const [loading, setLoading]         = useState(true);
@@ -162,8 +169,27 @@ export default function DetailTalent() {
   const budgetDepasse = budget !== "" && Number(budget) > budgetPlafond;
   const budgetTropBas = budget !== "" && Number(budget) < tarif;
 
+  // ✅ Tous les champs (message, date, budget) sont désormais obligatoires
+  // pour envoyer une demande de prestation.
+  const champsIncomplets = !messageInitial.trim() || !dateSouhaitee || !budget;
+
   const handleSend = async () => {
-    if (!messageInitial.trim()) return;
+    // ✅ Garde-fou supplémentaire : même si le bouton est désactivé côté
+    // UI pour un talent, on bloque aussi l'action elle-même.
+    if (isTalentViewer) return;
+
+    if (!messageInitial.trim()) {
+      setSendError("Le message est requis.");
+      return;
+    }
+    if (!dateSouhaitee) {
+      setSendError("La date souhaitée est requise.");
+      return;
+    }
+    if (!budget) {
+      setSendError("Le budget est requis.");
+      return;
+    }
 
     // ✅ Le budget proposé ne peut pas être inférieur au tarif minimum
     // fixé par le talent sur son profil.
@@ -188,8 +214,8 @@ export default function DetailTalent() {
       await envoyerDemande({
         profil_talent_id: talent.id,
         message_initial: messageInitial,
-        date_souhaitee: dateSouhaitee || null,
-        budget: budget || null,
+        date_souhaitee: dateSouhaitee,
+        budget: budget,
       });
       setSent(true);
     } catch (err) {
@@ -246,8 +272,14 @@ export default function DetailTalent() {
                       <span className="dt-categorie-badge">{talent.categorie}</span>
                     </div>
                     <button
-                      onClick={() => setIsFav(!isFav)}
+                      onClick={() => {
+                        if (isTalentViewer) return;
+                        setIsFav(!isFav);
+                      }}
+                      disabled={isTalentViewer}
+                      title={isTalentViewer ? "Réservé aux clients" : undefined}
                       className={`dt-fav-btn ${isFav ? "dt-fav-active" : ""}`}
+                      style={isTalentViewer ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
                     >
                       <Heart size={18} className={isFav ? "dt-heart-filled" : "dt-heart"} />
                     </button>
@@ -256,7 +288,11 @@ export default function DetailTalent() {
                   <div className="dt-meta-row">
                     <div className="dt-meta-item">
                       <Stars note={note} />
-                      <span className="dt-note-val">{note}</span>
+                      {/* ✅ Si le talent n'a aucun avis, on affiche "Nouveau"
+                          au lieu de "0", pour rester cohérent avec le "—"
+                          affiché pour "Projets réalisés" quand il n'y a pas
+                          de donnée. */}
+                      <span className="dt-note-val">{nbAvis > 0 ? note : "Nouveau"}</span>
                       <span className="dt-note-count">({nbAvis} avis)</span>
                     </div>
                     <div className="dt-meta-item">
@@ -314,7 +350,9 @@ export default function DetailTalent() {
                 </h2>
                 <div className="dt-avis-global">
                   <Stars note={note} size={16} />
-                  <span className="dt-note-val">{note}/5</span>
+                  {/* ✅ Même logique ici : "Nouveau" au lieu de "0/5" quand
+                      le talent n'a pas encore d'avis. */}
+                  <span className="dt-note-val">{nbAvis > 0 ? `${note}/5` : "Nouveau"}</span>
                 </div>
               </div>
 
@@ -384,41 +422,65 @@ export default function DetailTalent() {
                 ))}
               </div>
 
-              {/* ✅ Bouton Demande de prestation */}
+              {/* ✅ Bouton Demande de prestation — grisé pour un talent
+                  qui consulte le profil d'un autre talent. */}
               <button
                 onClick={() => {
+                  if (isTalentViewer) return;
                   if (!isAuthenticated) { navigate("/login"); return; }
                   setShowContact(true);
                 }}
+                disabled={isTalentViewer}
+                title={isTalentViewer ? "Réservé aux clients" : undefined}
                 className="dt-contact-btn"
+                style={isTalentViewer ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
               >
                 <Check size={18} /> Demander une prestation
               </button>
 
-              {/* ✅ Bouton Messagerie interne */}
+              {/* ✅ Bouton Messagerie interne — grisé pour un talent
+                  qui consulte le profil d'un autre talent. */}
               <button
-                onClick={handleMessage}
+                onClick={() => {
+                  if (isTalentViewer) return;
+                  handleMessage();
+                }}
+                disabled={isTalentViewer}
+                title={isTalentViewer ? "Réservé aux clients" : undefined}
                 className="dt-message-btn"
+                style={isTalentViewer ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
               >
                 <MessageSquare size={16} /> Envoyer un message
               </button>
 
-              {/* Bouton favori */}
+              {/* Bouton favori — grisé pour un talent qui consulte le
+                  profil d'un autre talent. */}
               <button
-                onClick={() => setIsFav(!isFav)}
+                onClick={() => {
+                  if (isTalentViewer) return;
+                  setIsFav(!isFav);
+                }}
+                disabled={isTalentViewer}
+                title={isTalentViewer ? "Réservé aux clients" : undefined}
                 className={`dt-fav-card-btn ${isFav ? "dt-fav-card-active" : ""}`}
+                style={isTalentViewer ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
               >
                 <Heart size={16} className={isFav ? "dt-heart-filled" : ""} />
                 {isFav ? "Retiré des favoris" : "Ajouter aux favoris"}
               </button>
 
-              {/* ✅ Bouton Signaler */}
+              {/* ✅ Bouton Signaler — grisé pour un talent qui consulte
+                  le profil d'un autre talent. */}
               <button
                 onClick={() => {
+                  if (isTalentViewer) return;
                   if (!isAuthenticated) { navigate("/login"); return; }
                   setShowReport(true);
                 }}
+                disabled={isTalentViewer}
+                title={isTalentViewer ? "Réservé aux clients" : undefined}
                 className="dt-report-btn"
+                style={isTalentViewer ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
               >
                 <Flag size={14} /> Signaler ce profil
               </button>
@@ -428,7 +490,7 @@ export default function DetailTalent() {
       </div>
 
       {/* ── Modal demande de prestation ── */}
-      {showContact && (
+      {showContact && !isTalentViewer && (
         <div className="dt-modal-overlay" onClick={() => !sent && resetModal()}>
           <div className="dt-modal" onClick={(e) => e.stopPropagation()}>
             <div className="dt-modal-header">
@@ -464,7 +526,7 @@ export default function DetailTalent() {
                 <div className="dt-modal-row">
                   <div className="dt-modal-field">
                     <label className="dt-modal-label">
-                      <Calendar size={13} /> Date souhaitée
+                      <Calendar size={13} /> Date souhaitée <span className="dt-modal-required">*</span>
                     </label>
                     <input
                       type="date"
@@ -476,7 +538,7 @@ export default function DetailTalent() {
                   </div>
                   <div className="dt-modal-field">
                     <label className="dt-modal-label">
-                      <Wallet size={13} /> Budget (FCFA)
+                      <Wallet size={13} /> Budget (FCFA) <span className="dt-modal-required">*</span>
                     </label>
                     <input
                       type="number"
@@ -503,7 +565,7 @@ export default function DetailTalent() {
                   <button onClick={resetModal} className="dt-modal-cancel">Annuler</button>
                   <button
                     onClick={handleSend}
-                    disabled={!messageInitial.trim() || sending || budgetTropBas || budgetDepasse}
+                    disabled={champsIncomplets || sending || budgetTropBas || budgetDepasse}
                     className="dt-modal-send"
                   >
                     {sending ? "Envoi..." : <><Send size={14} /> Envoyer</>}
@@ -516,7 +578,7 @@ export default function DetailTalent() {
       )}
 
       {/* ── Modal signalement ── */}
-      {showReport && (
+      {showReport && !isTalentViewer && (
         <div className="dt-modal-overlay" onClick={() => !reportSent && resetReportModal()}>
           <div className="dt-modal" onClick={(e) => e.stopPropagation()}>
             <div className="dt-modal-header">

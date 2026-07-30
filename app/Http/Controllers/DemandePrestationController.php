@@ -98,55 +98,58 @@ class DemandePrestationController extends Controller
      * POST /api/client/demandes
      */
     public function store(Request $request)
-    {
-        abort_unless($request->user()->isClient(), 403, 'Réservé aux clients.');
+{
+    abort_unless($request->user()->isClient(), 403, 'Réservé aux clients.');
 
-        $validator = Validator::make($request->all(), [
-            'profil_talent_id' => 'required|exists:profils_talents,id',
-            'message_initial' => 'required|string|max:1000',
-            'date_souhaitee' => 'nullable|date|after_or_equal:today',
-            'budget' => 'nullable|numeric|min:0',
-        ], [
-            'message_initial.required' => 'Veuillez rédiger un message avant d\'envoyer.',
-            'date_souhaitee.after_or_equal' => 'La date souhaitée ne peut pas être dans le passé.',
-        ]);
+    $validator = Validator::make($request->all(), [
+        'profil_talent_id' => 'required|exists:profils_talents,id',
+        'message_initial' => 'required|string|max:1000',
+        'date_souhaitee' => 'required|date|after_or_equal:today',
+        'budget' => 'required|numeric|min:0',
+    ], [
+        'message_initial.required' => 'Veuillez rédiger un message avant d\'envoyer.',
+        'date_souhaitee.required' => 'La date souhaitée est requise.',
+        'date_souhaitee.after_or_equal' => 'La date souhaitée ne peut pas être dans le passé.',
+        'budget.required' => 'Le budget est requis.',
+        'budget.numeric' => 'Le budget doit être un nombre.',
+        'budget.min' => 'Le budget ne peut pas être négatif.',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        $profil = ProfilTalent::with('utilisateur')->find($request->profil_talent_id);
-
-        if (!$profil || $profil->utilisateur?->statut !== 'valide') {
-            return response()->json(['message' => 'Ce talent n\'est plus disponible sur la plateforme.'], 404);
-        }
-
-        $demande = DemandePrestation::create([
-            'client_id' => $request->user()->id,
-            'profil_talent_id' => $profil->id,
-            'statut' => 'en_attente',
-            'message_initial' => $request->message_initial,
-            'date_souhaitee' => $request->date_souhaitee,
-            'budget' => $request->budget,
-        ]);
-
-        try {
-            Mail::to($profil->utilisateur->email)->queue(new NouvelleDemandeMail($demande));
-        } catch (\Exception $e) {}
-
-        NotificationService::creer(
-            $profil->utilisateur,
-            'nouvelle_demande',
-            "Nouvelle demande de prestation de {$request->user()->prenom} {$request->user()->nom}",
-            ['demande_id' => $demande->id]
-        );
-
-        return response()->json([
-            'success' => true,
-            'data' => $this->formatPourClient($demande->load('profilTalent.utilisateur.categorie')),
-        ], 201);
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
     }
 
+    $profil = ProfilTalent::with('utilisateur')->find($request->profil_talent_id);
+
+    if (!$profil || $profil->utilisateur?->statut !== 'valide') {
+        return response()->json(['message' => 'Ce talent n\'est plus disponible sur la plateforme.'], 404);
+    }
+
+    $demande = DemandePrestation::create([
+        'client_id' => $request->user()->id,
+        'profil_talent_id' => $profil->id,
+        'statut' => 'en_attente',
+        'message_initial' => $request->message_initial,
+        'date_souhaitee' => $request->date_souhaitee,
+        'budget' => $request->budget,
+    ]);
+
+    try {
+        Mail::to($profil->utilisateur->email)->queue(new NouvelleDemandeMail($demande));
+    } catch (\Exception $e) {}
+
+    NotificationService::creer(
+        $profil->utilisateur,
+        'nouvelle_demande',
+        "Nouvelle demande de prestation de {$request->user()->prenom} {$request->user()->nom}",
+        ['demande_id' => $demande->id]
+    );
+
+    return response()->json([
+        'success' => true,
+        'data' => $this->formatPourClient($demande->load('profilTalent.utilisateur.categorie')),
+    ], 201);
+}
     /**
      * Le talent répond à une demande reçue :
      * - en_attente -> acceptee / refusee

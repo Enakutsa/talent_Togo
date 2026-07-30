@@ -58,8 +58,14 @@ class TalentController extends Controller
             // SQL (agrégation Postgres) au lieu de charger toutes les
             // lignes "avis" de chaque talent et calculer la moyenne en
             // PHP. C'est le changement qui a le plus d'impact ici.
+            //
+            // ⚠️ IMPORTANT : contrairement à withCount, withAvg N'AJOUTE
+            // AUCUN SUFFIXE automatique à l'alias donné après "as". Il
+            // faut donc écrire "avis_note_avg" en toutes lettres ici,
+            // sinon l'attribut lu dans formatTalentCard/formatTalentDetail
+            // ($profil->avis_note_avg) n'existe pas et retombe à 0.
             ->withCount(['avis as avis_count' => fn ($q) => $q->where('statut', 'visible')])
-            ->withAvg(['avis as avis_note' => fn ($q) => $q->where('statut', 'visible')], 'note');
+            ->withAvg(['avis as avis_note_avg' => fn ($q) => $q->where('statut', 'visible')], 'note');
 
         // ── Recherche texte : nom/prénom de l'utilisateur ou nom de catégorie ──
         if ($request->filled('q')) {
@@ -142,7 +148,10 @@ class TalentController extends Controller
     {
         $talent->load(['utilisateur.categorie', 'portfolios', 'avis.client'])
             ->loadCount(['avis as avis_count' => fn ($q) => $q->where('statut', 'visible')])
-            ->loadAvg(['avis as avis_note' => fn ($q) => $q->where('statut', 'visible')], 'note');
+            // ⚠️ Même correction que dans index() : alias explicite
+            // "avis_note_avg" pour matcher $profil->avis_note_avg lu
+            // dans formatTalentDetail().
+            ->loadAvg(['avis as avis_note_avg' => fn ($q) => $q->where('statut', 'visible')], 'note');
 
         // ✅ Même règle que le listing : un talent validé mais dont le
         // profil n'est pas complet (pas de photo/tarif) ne doit pas être

@@ -92,103 +92,116 @@ class AuthController extends Controller
         return asset('storage/' . $photo);
     }
 
-    /**
-     * ✅ INSCRIPTION
-     */
-    public function register(Request $request)
-    {
-        $rules = [
-            'nom'          => 'required|string|max:100',
-            'prenom'       => 'required|string|max:100',
-            'email'        => 'required|email|unique:utilisateurs,email|regex:/^[\w.+-]+@gmail\.com$/i',
-            'telephone'    => 'required|string|regex:/^[0-9]{8}$/',
-            'mot_de_passe' => 'required|min:8|confirmed',
-            'role'         => 'required|in:talent,client',
-        ];
+   /**
+ * ✅ INSCRIPTION
+ */
+public function register(Request $request)
+{
+    $rules = [
+        'nom'          => 'required|string|max:100',
+        'prenom'       => 'required|string|max:100',
+        'email'        => 'required|email|unique:utilisateurs,email|regex:/^[\w.+-]+@gmail\.com$/i',
+        // ✅ Le premier chiffre doit être 7, 9 (mobile) ou 2 (fixe /
+        // entreprise), suivi de 7 chiffres quelconques — au lieu
+        // d'accepter n'importe quelle suite de 8 chiffres, ce qui
+        // laissait passer des numéros invalides comme ceux commençant
+        // par 6.
+        'telephone'    => 'required|string|regex:/^[792][0-9]{7}$/',
+        'mot_de_passe' => [
+            'required',
+            'string',
+            'size:8',
+            'regex:/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8}$/',
+            'confirmed',
+        ],
+        'role'         => 'required|in:talent,client',
+    ];
 
-        if ($request->role === 'talent') {
-            // ✅ Le navigateur a déjà uploadé le PDF directement vers
-            // Cloudinary (voir CloudinarySignatureController) — on reçoit
-            // ici l'URL résultante, plus le fichier brut. Ça élimine le
-            // second trajet réseau (navigateur -> Laravel -> Cloudinary)
-            // qui doublait le temps d'upload ressenti.
-            $rules['document_justificatif_url'] = ['required', 'url', 'starts_with:https://res.cloudinary.com/'];
-            $rules['categorie_id']              = 'required|exists:categories,id';
-            $rules['ville']                     = 'required|string|max:100';
-        }
-
-        $validator = Validator::make($request->all(), $rules, [
-            'email.regex'                        => 'L\'adresse e-mail doit être une adresse Gmail (@gmail.com).',
-            'telephone.regex'                    => 'Le numéro de téléphone doit contenir exactement 8 chiffres.',
-            'document_justificatif_url.required' => 'Le document justificatif est obligatoire pour les talents.',
-            'document_justificatif_url.url'      => 'Document justificatif invalide.',
-            'categorie_id.required'              => 'Veuillez choisir une catégorie.',
-            'categorie_id.exists'                => 'Catégorie invalide.',
-            'ville.required'                     => 'Veuillez indiquer votre ville.',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        // ✅ Plus d'upload à faire ici : le document est déjà sur
-        // Cloudinary, uploadé directement par le navigateur.
-        $documentUrl = $request->role === 'talent'
-            ? $request->input('document_justificatif_url')
-            : null;
-
-        $utilisateur = DB::transaction(function () use ($request, $documentUrl) {
-
-            $utilisateur = Utilisateur::create([
-                'nom'                   => $request->nom,
-                'prenom'                => $request->prenom,
-                'email'                 => $request->email,
-                'telephone'             => $request->telephone,
-                'mot_de_passe'          => Hash::make($request->mot_de_passe),
-                'role'                  => $request->role,
-                'is_verified'           => true,
-                'document_justificatif' => $documentUrl,
-                'statut'                => $request->role === 'talent' ? 'en_attente' : 'actif',
-                'categorie_id'          => $request->role === 'talent' ? $request->categorie_id : null,
-                'ville'                 => $request->role === 'talent' ? $request->ville : null,
-            ]);
-
-            if ($request->role === 'talent') {
-                ProfilTalent::create([
-                    'utilisateur_id' => $utilisateur->id,
-                    'disponibilite'  => false,
-                    'vues'           => 0,
-                ]);
-            }
-
-            return $utilisateur;
-        });
-
-        if ($utilisateur->role === 'talent') {
-            // ✅ dispatch(...)->afterResponse() : exécute l'envoi des
-            // notifications APRÈS que la réponse HTTP soit déjà partie
-            // vers le frontend, sans attendre le queue worker.
-            dispatch(function () use ($utilisateur) {
-                $this->notifierAdminsNouveauTalent($utilisateur);
-            })->afterResponse();
-        }
-
-        // ⚠️ Retiré : createToken() ici délivrait un token Sanctum valide
-        // immédiatement après inscription, sans passer par la vérification
-        // OTP — alors que le flow de connexion normal (login()) l'exige
-        // toujours. Comme la redirection est de toute façon vers /login
-        // (voir 'redirect' ci-dessous), ce token n'était jamais utilisé
-        // côté frontend. Le retirer évite de délivrer un accès valide à un
-        // compte non vérifié.
-        return response()->json([
-            'success' => true,
-            'data'    => [
-                'utilisateur' => $utilisateur,
-                'redirect'    => 'login',
-            ]
-        ], 201);
+    if ($request->role === 'talent') {
+        // ✅ Le navigateur a déjà uploadé le PDF directement vers
+        // Cloudinary (voir CloudinarySignatureController) — on reçoit
+        // ici l'URL résultante, plus le fichier brut. Ça élimine le
+        // second trajet réseau (navigateur -> Laravel -> Cloudinary)
+        // qui doublait le temps d'upload ressenti.
+        $rules['document_justificatif_url'] = ['required', 'url', 'starts_with:https://res.cloudinary.com/'];
+        $rules['categorie_id']              = 'required|exists:categories,id';
+        $rules['ville']                     = 'required|string|max:100';
     }
 
+    $validator = Validator::make($request->all(), $rules, [
+        'email.regex'                        => 'L\'adresse e-mail doit être une adresse Gmail (@gmail.com).',
+        'telephone.regex'                    => 'Le numéro doit être un numéro togolais valide (8 chiffres, commençant par 7, 9 ou 2).',
+        'mot_de_passe.size'                  => 'Le mot de passe doit contenir exactement 8 caractères.',
+        'mot_de_passe.regex'                 => 'Le mot de passe doit contenir au moins une lettre, un chiffre et un caractère spécial.',
+        'mot_de_passe.confirmed'             => 'Les mots de passe ne correspondent pas.',
+        'document_justificatif_url.required' => 'Le document justificatif est obligatoire pour les talents.',
+        'document_justificatif_url.url'      => 'Document justificatif invalide.',
+        'categorie_id.required'              => 'Veuillez choisir une catégorie.',
+        'categorie_id.exists'                => 'Catégorie invalide.',
+        'ville.required'                     => 'Veuillez indiquer votre ville.',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json(['errors' => $validator->errors()], 422);
+    }
+
+    // ✅ Plus d'upload à faire ici : le document est déjà sur
+    // Cloudinary, uploadé directement par le navigateur.
+    $documentUrl = $request->role === 'talent'
+        ? $request->input('document_justificatif_url')
+        : null;
+
+    $utilisateur = DB::transaction(function () use ($request, $documentUrl) {
+
+        $utilisateur = Utilisateur::create([
+            'nom'                   => $request->nom,
+            'prenom'                => $request->prenom,
+            'email'                 => $request->email,
+            'telephone'             => $request->telephone,
+            'mot_de_passe'          => Hash::make($request->mot_de_passe),
+            'role'                  => $request->role,
+            'is_verified'           => true,
+            'document_justificatif' => $documentUrl,
+            'statut'                => $request->role === 'talent' ? 'en_attente' : 'actif',
+            'categorie_id'          => $request->role === 'talent' ? $request->categorie_id : null,
+            'ville'                 => $request->role === 'talent' ? $request->ville : null,
+        ]);
+
+        if ($request->role === 'talent') {
+            ProfilTalent::create([
+                'utilisateur_id' => $utilisateur->id,
+                'disponibilite'  => false,
+                'vues'           => 0,
+            ]);
+        }
+
+        return $utilisateur;
+    });
+
+    if ($utilisateur->role === 'talent') {
+        // ✅ dispatch(...)->afterResponse() : exécute l'envoi des
+        // notifications APRÈS que la réponse HTTP soit déjà partie
+        // vers le frontend, sans attendre le queue worker.
+        dispatch(function () use ($utilisateur) {
+            $this->notifierAdminsNouveauTalent($utilisateur);
+        })->afterResponse();
+    }
+
+    // ⚠️ Retiré : createToken() ici délivrait un token Sanctum valide
+    // immédiatement après inscription, sans passer par la vérification
+    // OTP — alors que le flow de connexion normal (login()) l'exige
+    // toujours. Comme la redirection est de toute façon vers /login
+    // (voir 'redirect' ci-dessous), ce token n'était jamais utilisé
+    // côté frontend. Le retirer évite de délivrer un accès valide à un
+    // compte non vérifié.
+    return response()->json([
+        'success' => true,
+        'data'    => [
+            'utilisateur' => $utilisateur,
+            'redirect'    => 'login',
+        ]
+    ], 201);
+}
      /**
      * ✅ LOGIN → OTP par email
      */

@@ -70,6 +70,22 @@ export default function Inscription() {
   });
 
   const [document, setDocument] = useState(null);
+  const [pwdTouched, setPwdTouched] = useState(false);
+  const [phoneTouched, setPhoneTouched] = useState(false);
+
+  // Numéro togolais valide : commence par 9, 7 ou 2, suivi de 7 chiffres
+  const PHONE_REGEX = /^[972]\d{7}$/;
+  const phoneIsValid = PHONE_REGEX.test(form.telephone);
+
+  // Critères de validation du mot de passe
+  const pwd = form.mot_de_passe;
+  const pwdChecks = {
+    length: pwd.length === 8,
+    letter: /[A-Za-z]/.test(pwd),
+    digit: /\d/.test(pwd),
+    special: /[^A-Za-z0-9\s]/.test(pwd),
+  };
+  const pwdIsValid = Object.values(pwdChecks).every(Boolean);
 
   useEffect(() => {
     getCategories()
@@ -83,6 +99,12 @@ export default function Inscription() {
 
   const handleNameChange = (field) => (e) => {
     const value = e.target.value.replace(/[^a-zA-ZÀ-ÿ\s'-]/g, "");
+    setForm({ ...form, [field]: value });
+  };
+
+  // Mot de passe limité à 8 caractères max
+  const handlePasswordChange = (field) => (e) => {
+    const value = e.target.value.slice(0, 8);
     setForm({ ...form, [field]: value });
   };
 
@@ -132,8 +154,20 @@ export default function Inscription() {
       setGeneralError("L'adresse e-mail doit être une adresse Gmail (@gmail.com).");
       return;
     }
-    if (!/^[0-9]{8}$/.test(form.telephone)) {
-      setGeneralError("Le numéro de téléphone doit contenir exactement 8 chiffres.");
+    if (!phoneIsValid) {
+      setPhoneTouched(true);
+      setGeneralError("Le numéro de téléphone doit être un numéro togolais valide (commence par 9, 7 ou 2, suivi de 7 chiffres).");
+      return;
+    }
+    if (!pwdIsValid) {
+      setPwdTouched(true);
+      setGeneralError(
+        "Le mot de passe doit contenir exactement 8 caractères, avec au moins une lettre, un chiffre et un caractère spécial (ex: !@#$%)."
+      );
+      return;
+    }
+    if (form.mot_de_passe !== form.mot_de_passe_confirmation) {
+      setGeneralError("Les mots de passe ne correspondent pas.");
       return;
     }
     if (role === "talent" && !document) {
@@ -333,21 +367,73 @@ export default function Inscription() {
             {/* Téléphone */}
             <div className="form-field">
               <label className="form-label">Téléphone</label>
-              <div className="input-with-icon">
+              <div
+                className="input-with-icon"
+                style={{ display: "flex", alignItems: "center", gap: "6px" }}
+              >
                 <Phone className="input-icon" size={17} />
+                <span
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    padding: "5px 10px 5px 5px",
+                    marginRight: "4px",
+                    borderRight: "1px solid #e5e7eb",
+                    whiteSpace: "nowrap",
+                    color: "#374151",
+                    fontWeight: 600,
+                    fontSize: "14px",
+                  }}
+                >
+                  <span
+                    style={{
+                      width: "24px",
+                      height: "24px",
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      border: "1px solid #e5e7eb",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.06)",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <img
+                      src="https://flagcdn.com/w80/tg.png"
+                      srcSet="https://flagcdn.com/w160/tg.png 2x"
+                      alt="Togo"
+                      style={{
+                        width: "150%",
+                        height: "150%",
+                        objectFit: "cover",
+                        display: "block",
+                      }}
+                    />
+                  </span>
+                  +228
+                </span>
                 <input
                   type="tel"
                   className="input-field"
-                  placeholder="Ex: 90000000"
+                  placeholder="90000000"
                   maxLength={8}
                   value={form.telephone}
                   onChange={(e) =>
                     setForm({ ...form, telephone: e.target.value.replace(/\D/g, "").slice(0, 8) })
                   }
+                  onBlur={() => setPhoneTouched(true)}
                   required
+                  style={{ paddingLeft: 0, letterSpacing: "4px", textAlign: "center" }}
                 />
               </div>
               {errors.telephone && <span className="field-error">{errors.telephone[0]}</span>}
+              {phoneTouched && form.telephone.length > 0 && !phoneIsValid && (
+                <span className="field-error">
+                  Numéro togolais invalide : il doit commencer par 9, 7 ou 2, suivi de 7 chiffres.
+                </span>
+              )}
             </div>
 
             {/* Mot de passe */}
@@ -358,9 +444,11 @@ export default function Inscription() {
                 <input
                   type={showPassword ? "text" : "password"}
                   className="input-field"
-                  placeholder="8 caractères minimum"
+                  placeholder="Mot de passe"
+                  maxLength={8}
                   value={form.mot_de_passe}
-                  onChange={handleChange("mot_de_passe")}
+                  onChange={handlePasswordChange("mot_de_passe")}
+                  onBlur={() => setPwdTouched(true)}
                   required
                 />
                 <button
@@ -373,6 +461,11 @@ export default function Inscription() {
                 </button>
               </div>
               {errors.mot_de_passe && <span className="field-error">{errors.mot_de_passe[0]}</span>}
+              {pwdTouched && pwd.length > 0 && !pwdIsValid && (
+                <span className="field-error">
+                  Le mot de passe doit contenir exactement 8 caractères, avec au moins une lettre, un chiffre et un caractère spécial (ex: !@#$%).
+                </span>
+              )}
             </div>
 
             {/* Confirmer mot de passe */}
@@ -384,8 +477,9 @@ export default function Inscription() {
                   type={showPasswordConfirm ? "text" : "password"}
                   className="input-field"
                   placeholder="Retapez votre mot de passe"
+                  maxLength={8}
                   value={form.mot_de_passe_confirmation}
-                  onChange={handleChange("mot_de_passe_confirmation")}
+                  onChange={handlePasswordChange("mot_de_passe_confirmation")}
                   required
                 />
                 <button
