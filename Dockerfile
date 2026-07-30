@@ -56,6 +56,7 @@ RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 # --- Config Nginx, Supervisor, PHP-FPM ---
 COPY docker/nginx.conf /etc/nginx/sites-available/default
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY docker/www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY docker/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
