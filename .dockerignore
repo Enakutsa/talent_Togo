@@ -11,3 +11,4 @@ storage/framework/views/*
 docker-compose.yml
 .idea
 .vscode
+public/hot
