@@ -214,8 +214,13 @@ export default function Home() {
           </p>
         ) : (
           <>
+            {/* ✅ .slice(0, 8) : on limite volontairement l'affichage de
+                la home aux 8 premières catégories, même si l'API en
+                renvoie davantage. Le bouton "Voir tout" ci-dessous mène
+                vers /recherche où TOUTES les catégories restent
+                accessibles/filtrables normalement. */}
             <div className="categories-grid">
-              {categories.map(({ label, count }) => {
+              {categories.slice(0, 8).map(({ label, count }) => {
                 const Icon = CATEGORY_ICONS[label] || Star;
                 return (
                   <button
