@@ -5,6 +5,8 @@ import { login as loginApi, verifyLoginOtp, resendOtp } from "../../services/aut
 import { AuthContext } from "../../context/AuthContext";
 import "../../assets/styles/Login.css";
 
+const GOOGLE_AUTH_URL = "http://localhost:8000/auth/google/redirect";
+
 export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,6 +28,31 @@ export default function Login() {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
+
+  // ✅ Affiche un message venant d'une redirection externe (ex: après un
+  // échec ou blocage lors de la connexion Google) via ?message=... dans
+  // l'URL, sans casser le flow OTP normal si le paramètre est absent.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const message = params.get("message");
+    if (message) {
+      setGeneralError(message);
+    }
+  }, [location.search]);
+
+  // ✅ Retour de Google pour un email déjà lié à un compte classique (OTP) :
+  // le backend a déjà généré et envoyé le code, on saute directement à
+  // l'étape de saisie au lieu de faire retaper l'email à l'utilisateur.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const otpSent = params.get("otp_sent");
+    const uid = params.get("utilisateur_id");
+
+    if (otpSent === "1" && uid) {
+      setUtilisateurId(uid);
+      setStep("otp");
+    }
+  }, [location.search]);
 
   const blockedSeconds = blockDeadline
     ? Math.max(0, Math.ceil((blockDeadline - now) / 1000))
@@ -141,7 +168,10 @@ export default function Login() {
       const retryAfter = err.response?.data?.retry_after;
 
       if (status === 429 && retryAfter) {
-        setBlockedSeconds(retryAfter);
+        // ⚠️ Corrigé : setBlockedSeconds n'existait pas (le state réel est
+        // blockDeadline/setBlockDeadline). L'appel plantait silencieusement
+        // et le compte à rebours de blocage ne s'affichait jamais.
+        setBlockDeadline(Date.now() + retryAfter * 1000);
         setGeneralError("");
       } else if (status === 422) {
         setGeneralError(err.response.data.message || "Code invalide ou expiré.");
@@ -166,6 +196,14 @@ export default function Login() {
     } catch (err) {
       setGeneralError("Impossible de renvoyer le code.");
     }
+  };
+
+  // ✅ Connexion Google — pas de rôle à préciser ici : contrairement à
+  // l'inscription, on suppose que le compte existe déjà (ou sera créé côté
+  // backend avec un rôle par défaut si absent). Redirige simplement vers
+  // le endpoint Laravel qui lance le flow OAuth.
+  const handleGoogleLogin = () => {
+    window.location.href = GOOGLE_AUTH_URL;
   };
 
   return (
@@ -234,6 +272,24 @@ export default function Login() {
                 </button>
 
               </form>
+
+              <div className="login-divider">
+                <span>ou</span>
+              </div>
+
+              <button
+                type="button"
+                className="btn-google-login"
+                onClick={handleGoogleLogin}
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                  <path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84c-.21 1.13-.84 2.09-1.8 2.73v2.27h2.92c1.71-1.57 2.68-3.88 2.68-6.64z"/>
+                  <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.17l-2.92-2.27c-.81.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.71H.96v2.34C2.44 15.98 5.48 18 9 18z"/>
+                  <path fill="#FBBC05" d="M3.97 10.71a5.4 5.4 0 010-3.42V4.95H.96a9 9 0 000 8.1l3.01-2.34z"/>
+                  <path fill="#EA4335" d="M9 3.58c1.32 0 2.51.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0 5.48 0 2.44 2.02.96 4.95l3.01 2.34C4.68 5.16 6.66 3.58 9 3.58z"/>
+                </svg>
+                Continuer avec Google
+              </button>
 
               <p className="login-bottom-text">
                 Pas encore de compte ?{" "}

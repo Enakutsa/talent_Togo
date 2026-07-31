@@ -17,6 +17,7 @@ const Inscription = lazy(() => import("./pages/auth/Inscription"));
 const NotFound = lazy(() => import("./pages/commun/NotFound"));
 const Login = lazy(() => import("./pages/auth/Login"));
 const VerifyOtp = lazy(() => import("./pages/auth/VerifyOtp"));
+const AuthCallback = lazy(() => import("./pages/auth/AuthCallback"));
 const ProfilCreer = lazy(() => import("./pages/talent/ProfilCreer"));
 const TalentDashboard = lazy(() => import("./pages/talent/TalentDashboard"));
 const DemandesRecues = lazy(() => import("./pages/talent/DemandesRecues"));
@@ -85,6 +86,13 @@ export default function App() {
           {/* ── Page transitoire : PAS de RedirectIfTalent ici non plus,
                pour la même raison. ── */}
           <Route path="/verify-otp" element={<PublicLayout><VerifyOtp /></PublicLayout>} />
+
+          {/* ── Retour de la connexion Google : même raison que /login et
+               /verify-otp, PAS de RedirectIfTalent. Cette page met à jour
+               AuthContext puis navigue elle-même vers la bonne destination
+               (déjà calculée par le backend) — RedirectIfTalent risquerait
+               de l'écraser avant que la navigation se stabilise. ── */}
+          <Route path="/auth/callback" element={<AuthCallback />} />
 
           {/* ── Recherche/listing des talents : page publique (pas besoin
                d'être connecté pour parcourir ; contacter/favoriser restent
