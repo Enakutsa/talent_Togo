@@ -5,7 +5,10 @@ import { login as loginApi, verifyLoginOtp, resendOtp } from "../../services/aut
 import { AuthContext } from "../../context/AuthContext";
 import "../../assets/styles/Login.css";
 
-const GOOGLE_AUTH_URL = "http://localhost:8000/auth/google/redirect";
+// ✅ S'adapte automatiquement à l'environnement : localhost:8000 en dev,
+// talent-togo.onrender.com en prod — puisque le frontend est servi par
+// le même service Laravel que le backend (voir catch-all dans web.php).
+const GOOGLE_AUTH_URL = `${window.location.origin}/auth/google/redirect`;
 
 export default function Login() {
   const navigate = useNavigate();
