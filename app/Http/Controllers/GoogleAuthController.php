@@ -2,23 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\NouveauTalentMail;
 use App\Mail\OtpMail;
 use App\Models\Utilisateur;
-use App\Models\ProfilTalent;
 use App\Models\Otp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\DB;
 use Laravel\Socialite\Facades\Socialite;
 
 class GoogleAuthController extends Controller
 {
     /**
-     * ✅ Même logique que AuthController::genererEtEnvoyerOtp — dupliquée
-     * ici car privée dans AuthController. Si tu la rends publique/statique
-     * là-bas plus tard, remplace cet appel pour éviter la duplication.
+     * ✅ Même logique que AuthController::genererEtEnvoyerOtp (privée
+     * là-bas, donc dupliquée ici).
      */
     private function genererEtEnvoyerOtp(Utilisateur $utilisateur, string $type): void
     {
@@ -48,34 +44,19 @@ class GoogleAuthController extends Controller
         }
     }
 
-    private function notifierAdminsNouveauTalent(Utilisateur $talent): void
+    /**
+     * ✅ Redirige vers Google. Pas de rôle à passer : Google ne sert plus
+     * qu'à CONNECTER un compte déjà existant, pas à en créer.
+     */
+    public function redirect(Request $request)
     {
-        $admins = Utilisateur::where('role', 'admin')->get();
-
-        foreach ($admins as $admin) {
-            try {
-                Mail::to($admin->email)->queue(new NouveauTalentMail($talent));
-            } catch (\Exception $e) {
-                Log::error('Échec notification admin nouveau talent (Google)', [
-                    'admin_id'  => $admin->id,
-                    'talent_id' => $talent->id,
-                    'erreur'    => $e->getMessage(),
-                ]);
-            }
-        }
-    }
-
-    public function redirect(Request $request, string $role = 'client')
-    {
-        if (!in_array($role, ['client', 'talent'])) {
-            abort(404);
-        }
-
-        session(['oauth_role' => $role]);
-
         return Socialite::driver('google')->redirect();
     }
 
+    /**
+     * ✅ Retour de Google — connexion uniquement, jamais de création
+     * de compte automatique.
+     */
     public function callback(Request $request)
     {
         $frontendUrl = env('FRONTEND_URL');
@@ -89,15 +70,18 @@ class GoogleAuthController extends Controller
 
         $utilisateur = Utilisateur::where('email', $googleUser->getEmail())->first();
 
-        // ✅ Cas 1 : email déjà utilisé pour un compte classique (OTP) →
-        // au lieu de bloquer, on relance le flow OTP normal comme un login
-        // classique. L'utilisateur passe par la même vérification de
-        // sécurité, mais démarrée automatiquement via Google.
-        if ($utilisateur && is_null($utilisateur->provider)) {
+        // ✅ Email inconnu dans notre base → on ne crée RIEN, on invite à
+        // s'inscrire via le formulaire classique.
+        if (!$utilisateur) {
+            return redirect("{$frontendUrl}/login?error=email_not_found");
+        }
 
-            if ($utilisateur->isAdmin()) {
-                return redirect("{$frontendUrl}/login?error=google_failed");
-            }
+        if ($utilisateur->isAdmin()) {
+            return redirect("{$frontendUrl}/login?error=google_failed");
+        }
+
+        // Compte classique (OTP) → on relance le flow OTP normal
+        if (is_null($utilisateur->provider)) {
 
             if ($utilisateur->isTalent() && $utilisateur->statut !== 'valide') {
                 $errorMap = [
@@ -113,42 +97,7 @@ class GoogleAuthController extends Controller
             return redirect("{$frontendUrl}/login?otp_sent=1&utilisateur_id={$utilisateur->id}");
         }
 
-        // Cas 2 : nouveau compte Google
-        if (!$utilisateur) {
-            $role = session('oauth_role', 'client');
-            session()->forget('oauth_role');
-
-            $nomComplet = explode(' ', $googleUser->getName(), 2);
-            $prenom = $nomComplet[0] ?? $googleUser->getName();
-            $nom    = $nomComplet[1] ?? '';
-
-            $utilisateur = DB::transaction(function () use ($googleUser, $role, $nom, $prenom) {
-                $u = Utilisateur::create([
-                    'nom'         => $nom ?: $prenom,
-                    'prenom'      => $prenom,
-                    'email'       => $googleUser->getEmail(),
-                    'google_id'   => $googleUser->getId(),
-                    'provider'    => 'google',
-                    'photo'       => $googleUser->getAvatar(),
-                    'role'        => $role,
-                    'is_verified' => true,
-                    'statut'      => $role === 'talent' ? 'en_attente' : 'actif',
-                ]);
-
-                if ($role === 'talent') {
-                    ProfilTalent::create([
-                        'utilisateur_id' => $u->id,
-                        'disponibilite'  => false,
-                        'vues'           => 0,
-                    ]);
-                }
-
-                return $u;
-            });
-        }
-
-        // Cas 3 : compte Google existant → connexion directe (pas d'OTP,
-        // Google a déjà authentifié)
+        // Compte déjà lié à Google → connexion directe (Google a déjà authentifié)
         if ($utilisateur->isTalent() && !in_array($utilisateur->statut, ['valide', 'en_attente'])) {
             $errorMap = [
                 'rejete'    => 'talent_rejected',
@@ -163,8 +112,6 @@ class GoogleAuthController extends Controller
         if ($utilisateur->isTalent()) {
             $profil = $utilisateur->load('profilTalent')->profilTalent;
             $redirect = ($profil && $profil->estComplet()) ? 'talent/dashboard' : 'talent/profil/creer';
-        } elseif ($utilisateur->isAdmin()) {
-            $redirect = 'admin';
         } elseif ($utilisateur->isClient()) {
             $redirect = 'client/dashboard';
         }

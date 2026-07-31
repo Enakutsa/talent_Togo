@@ -40,6 +40,27 @@ export default function Login() {
     }
   }, [location.search]);
 
+  // ✅ Retour de Google avec une erreur directe (ex: email inconnu de la
+  // base -> ?error=email_not_found). Contrairement aux autres cas Google
+  // qui passent par /auth/callback puis redirigent ici avec ?message=,
+  // celui-ci arrive DIRECTEMENT sur /login avec ?error=, donc on le gère
+  // séparément ici.
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const error = params.get("error");
+    if (error) {
+      const messages = {
+        email_exists_otp: "Ce compte existe déjà. Connectez-vous par email/OTP.",
+        google_failed: "La connexion Google a échoué. Réessayez.",
+        talent_pending: "Votre compte est en attente de validation.",
+        talent_rejected: "Votre profil a été refusé.",
+        talent_disabled: "Votre compte a été désactivé.",
+        email_not_found: "Aucun compte associé à cet email. Créez un compte pour continuer.",
+      };
+      setGeneralError(messages[error] || "Erreur de connexion.");
+    }
+  }, [location.search]);
+
   // ✅ Retour de Google pour un email déjà lié à un compte classique (OTP) :
   // le backend a déjà généré et envoyé le code, on saute directement à
   // l'étape de saisie au lieu de faire retaper l'email à l'utilisateur.
@@ -198,10 +219,8 @@ export default function Login() {
     }
   };
 
-  // ✅ Connexion Google — pas de rôle à préciser ici : contrairement à
-  // l'inscription, on suppose que le compte existe déjà (ou sera créé côté
-  // backend avec un rôle par défaut si absent). Redirige simplement vers
-  // le endpoint Laravel qui lance le flow OAuth.
+  // ✅ Connexion Google — pas de rôle à préciser ici : Google ne sert plus
+  // qu'à connecter un compte déjà existant, jamais à en créer.
   const handleGoogleLogin = () => {
     window.location.href = GOOGLE_AUTH_URL;
   };

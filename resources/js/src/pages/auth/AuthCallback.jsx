@@ -20,6 +20,7 @@ export default function AuthCallback() {
         talent_pending: 'Votre compte est en attente de validation.',
         talent_rejected: 'Votre profil a été refusé.',
         talent_disabled: 'Votre compte a été désactivé.',
+        email_not_found: "Aucun compte associé à cet email. Créez un compte pour continuer.",
       };
       navigate(`/login?message=${encodeURIComponent(messages[error] || 'Erreur de connexion')}`);
       return;
