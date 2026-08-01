@@ -10,6 +10,7 @@ import {
   getNotificationPrefs, updateNotificationPrefs,
   changePassword, logoutAllDevices, deleteAccount,
 } from "../../services/parametres.service";
+import "../../assets/styles/ClientDashboard.css";
 import "../../assets/styles/Parametres.css";
 
 // ── Toggle réutilisable ────────────────────────────────────────────────────
