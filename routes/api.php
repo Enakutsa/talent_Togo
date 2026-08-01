@@ -34,7 +34,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/verify-login-otp', [AuthController::class, 'verifyLoginOtp'])
         ->middleware('throttle:5,1');
 
-    Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
+    Route::post('/resend-otp', [AuthController::class, 'resendOtp'])
+    ->middleware('throttle:5,1');
 });
 
 

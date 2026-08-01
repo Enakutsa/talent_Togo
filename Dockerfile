@@ -24,11 +24,15 @@ RUN apt-get update && apt-get install -y \
 RUN docker-php-ext-install pdo pdo_pgsql zip intl opcache
 
 # ✅ Limites PHP pour l'upload (portfolio, photos, documents)
+# ✅ expose_php = Off : masque la version PHP exacte dans les headers
+# HTTP (x-powered-by), pour ne pas donner d'indice facile à un
+# attaquant sur les failles connues d'une version précise.
 RUN { \
     echo 'upload_max_filesize = 25M'; \
     echo 'post_max_size = 30M'; \
     echo 'memory_limit = 256M'; \
     echo 'max_execution_time = 120'; \
+    echo 'expose_php = Off'; \
 } > /usr/local/etc/php/conf.d/uploads.ini
 
 # ✅ OPcache : évite de recompiler tout Laravel à chaque requête
