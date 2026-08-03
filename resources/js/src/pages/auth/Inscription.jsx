@@ -44,6 +44,38 @@ const VILLES_TOGO = [
 // Autorise lettres (avec accents), espaces, apostrophes et tirets
 const NAME_REGEX = /^[a-zA-ZÀ-ÿ\s'-]+$/;
 
+// ✅ Ordre d'affichage des champs dans le formulaire — utilisé pour
+// déterminer quel champ en erreur scroller en premier quand le serveur
+// renvoie plusieurs erreurs à la fois (on scrolle vers le PREMIER champ
+// du formulaire qui a une erreur, pas vers une clé arbitraire de l'objet
+// errors, dont l'ordre n'est pas garanti identique à l'ordre visuel).
+const FIELD_ORDER = [
+  "prenom",
+  "nom",
+  "email",
+  "telephone",
+  "mot_de_passe",
+  "mot_de_passe_confirmation",
+  "categorie_id",
+  "ville",
+  "document_justificatif",
+];
+
+function scrollToField(fieldName) {
+  // Petit délai pour laisser React insérer le message d'erreur dans le
+  // DOM avant de calculer la position de scroll — sans ça, le scroll
+  // peut se faire un instant trop tôt et manquer la cible.
+  setTimeout(() => {
+    const el = document.getElementById(`field-${fieldName}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (typeof el.focus === "function") {
+        el.focus({ preventScroll: true });
+      }
+    }
+  }, 50);
+}
+
 export default function Inscription() {
   const navigate = useNavigate();
 
@@ -121,6 +153,7 @@ export default function Inscription() {
         );
         e.target.value = "";
         setDocument(null);
+        scrollToField("document_justificatif");
         return;
       }
     }
@@ -134,6 +167,11 @@ export default function Inscription() {
     setErrors({});
     setGeneralError("");
 
+    // ⚠️ generalError reste réservé aux erreurs qui ne concernent AUCUN
+    // champ précis du formulaire (rôle non choisi, CGU non acceptées) —
+    // tout le reste s'affiche désormais directement sous le champ
+    // concerné via `errors`, pour que l'utilisateur voie immédiatement
+    // OÙ est le problème sans avoir à chercher dans tout le formulaire.
     if (!role) {
       setGeneralError("Veuillez choisir un profil : Talent ou Client.");
       return;
@@ -143,43 +181,48 @@ export default function Inscription() {
       return;
     }
     if (!form.prenom.trim() || !NAME_REGEX.test(form.prenom.trim())) {
-      setGeneralError("Le prénom ne doit contenir que des lettres.");
+      setErrors({ prenom: ["Le prénom ne doit contenir que des lettres."] });
+      scrollToField("prenom");
       return;
     }
     if (!form.nom.trim() || !NAME_REGEX.test(form.nom.trim())) {
-      setGeneralError("Le nom ne doit contenir que des lettres.");
+      setErrors({ nom: ["Le nom ne doit contenir que des lettres."] });
+      scrollToField("nom");
       return;
     }
     if (!form.email.toLowerCase().endsWith("@gmail.com")) {
-      setGeneralError("L'adresse e-mail doit être une adresse Gmail (@gmail.com).");
+      setErrors({ email: ["L'adresse e-mail doit être une adresse Gmail (@gmail.com)."] });
+      scrollToField("email");
       return;
     }
     if (!phoneIsValid) {
       setPhoneTouched(true);
-      setGeneralError("Le numéro de téléphone doit être un numéro togolais valide (commence par 9, 7 ou 2, suivi de 7 chiffres).");
+      scrollToField("telephone");
       return;
     }
     if (!pwdIsValid) {
       setPwdTouched(true);
-      setGeneralError(
-        "Le mot de passe doit contenir exactement 8 caractères, avec au moins une lettre, un chiffre et un caractère spécial (ex: !@#$%)."
-      );
+      scrollToField("mot_de_passe");
       return;
     }
     if (form.mot_de_passe !== form.mot_de_passe_confirmation) {
-      setGeneralError("Les mots de passe ne correspondent pas.");
+      setErrors({ mot_de_passe_confirmation: ["Les mots de passe ne correspondent pas."] });
+      scrollToField("mot_de_passe_confirmation");
       return;
     }
     if (role === "talent" && !document) {
-      setGeneralError("Veuillez joindre un document justificatif.");
+      setErrors({ document_justificatif: ["Veuillez joindre un document justificatif."] });
+      scrollToField("document_justificatif");
       return;
     }
     if (role === "talent" && !form.categorie_id) {
-      setGeneralError("Veuillez choisir votre catégorie de service.");
+      setErrors({ categorie_id: ["Veuillez choisir votre catégorie de service."] });
+      scrollToField("categorie_id");
       return;
     }
     if (role === "talent" && !form.ville.trim()) {
-      setGeneralError("Veuillez indiquer votre ville.");
+      setErrors({ ville: ["Veuillez indiquer votre ville."] });
+      scrollToField("ville");
       return;
     }
 
@@ -211,6 +254,7 @@ export default function Inscription() {
           setGeneralError("Échec de l'envoi du document justificatif. Réessayez.");
           setLoading(false);
           setLoadingStep(null);
+          scrollToField("document_justificatif");
           return;
         }
 
@@ -233,7 +277,19 @@ export default function Inscription() {
     } catch (err) {
       console.error("Erreur inscription:", err.response?.data || err.message);
       if (err.response?.status === 422) {
-        setErrors(err.response.data.errors || {});
+        const serverErrors = err.response.data.errors || {};
+        setErrors(serverErrors);
+
+        // ✅ Pointe l'utilisateur vers le PREMIER champ en erreur (dans
+        // l'ordre visuel du formulaire, via FIELD_ORDER) au lieu de le
+        // laisser en haut de page à devoir chercher lui-même ce qui
+        // cloche — ex: un email déjà pris affichait l'erreur tout en bas
+        // sous le champ email, invisible si le formulaire est long et
+        // que l'utilisateur est resté scrollé en haut.
+        const firstErrorField = FIELD_ORDER.find((f) => serverErrors[f]);
+        if (firstErrorField) {
+          scrollToField(firstErrorField);
+        }
       } else {
         setGeneralError("Une erreur est survenue. Veuillez réessayer.");
       }
@@ -319,6 +375,7 @@ export default function Inscription() {
                 <div className="input-with-icon">
                   <User className="input-icon" size={17} />
                   <input
+                    id="field-prenom"
                     type="text"
                     className="input-field"
                     placeholder="Koffi"
@@ -335,6 +392,7 @@ export default function Inscription() {
                 <div className="input-with-icon">
                   <User className="input-icon" size={17} />
                   <input
+                    id="field-nom"
                     type="text"
                     className="input-field"
                     placeholder="Mensah"
@@ -353,6 +411,7 @@ export default function Inscription() {
               <div className="input-with-icon">
                 <Mail className="input-icon" size={17} />
                 <input
+                  id="field-email"
                   type="email"
                   className="input-field"
                   placeholder="koffi@gmail.com"
@@ -415,6 +474,7 @@ export default function Inscription() {
                   +228
                 </span>
                 <input
+                  id="field-telephone"
                   type="tel"
                   className="input-field"
                   placeholder="90000000"
@@ -442,6 +502,7 @@ export default function Inscription() {
               <div className="input-with-icon">
                 <Lock className="input-icon" size={17} />
                 <input
+                  id="field-mot_de_passe"
                   type={showPassword ? "text" : "password"}
                   className="input-field"
                   placeholder="Mot de passe"
@@ -474,6 +535,7 @@ export default function Inscription() {
               <div className="input-with-icon">
                 <Lock className="input-icon" size={17} />
                 <input
+                  id="field-mot_de_passe_confirmation"
                   type={showPasswordConfirm ? "text" : "password"}
                   className="input-field"
                   placeholder="Retapez votre mot de passe"
@@ -491,6 +553,9 @@ export default function Inscription() {
                   {showPasswordConfirm ? <EyeOff size={17} /> : <Eye size={17} />}
                 </button>
               </div>
+              {errors.mot_de_passe_confirmation && (
+                <span className="field-error">{errors.mot_de_passe_confirmation[0]}</span>
+              )}
             </div>
 
             {/* Catégorie + Ville (Talent uniquement) */}
@@ -501,6 +566,7 @@ export default function Inscription() {
                   <div className="input-with-icon">
                     <Tag className="input-icon" size={17} />
                     <select
+                      id="field-categorie_id"
                       className="input-field"
                       value={form.categorie_id}
                       onChange={handleChange("categorie_id")}
@@ -524,6 +590,7 @@ export default function Inscription() {
                   <div className="input-with-icon">
                     <MapPin className="input-icon" size={17} />
                     <select
+                      id="field-ville"
                       className="input-field"
                       value={form.ville}
                       onChange={handleChange("ville")}
@@ -546,7 +613,7 @@ export default function Inscription() {
             {role === "talent" && (
               <div className="form-field">
                 <label className="form-label">Pièce justificative</label>
-                <label className="dropzone-wrap">
+                <label id="field-document_justificatif" className="dropzone-wrap" tabIndex={-1}>
                   <input
                     type="file"
                     accept=".pdf"

@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
 import TalentCard from "../../components/talent/TalentCard";
-import { getFeaturedTalents, getStats, getCategories, getFeaturedClients } from "../../services/talent.service";
+import { getFeaturedTalents, getStats, getCategories } from "../../services/talent.service";
 import { AuthContext } from "../../context/AuthContext";
 import {
   Search, Camera, Palette, Scissors, Music2, Film, Package2, Brush, Star,
@@ -23,15 +23,40 @@ const CATEGORY_ICONS = {
   "Autre": Star,
 };
 
-// ✅ Texte des témoignages rédigé par la plateforme, mais associé
-// uniquement à de VRAIS clients inscrits en base (nom/ville/photo via
-// getFeaturedClients). Cette section ne s'affiche que s'il existe au
-// moins un vrai client à présenter (voir plus bas) — jamais de profil
-// entièrement inventé.
+// ✅ Profils ENTIÈREMENT fictifs (nom complet, ville, photo) — plus aucun
+// lien avec de vrais clients inscrits en base. Un vrai client tombant sur
+// son propre nom à côté d'un avis qu'il n'a jamais écrit serait à juste
+// titre choqué ; ces témoignages sont donc clairement des exemples
+// inventés, jamais rattachés à des données réelles (getFeaturedClients
+// n'est plus utilisé pour cette section).
+//
+// Photos via Unsplash (images.unsplash.com) — licence Unsplash : usage
+// commercial libre, aucune attribution requise, photos mises à
+// disposition par les photographes précisément pour ce type de réemploi
+// (contrairement à une photo prise au hasard sur le web, qui poserait un
+// problème de droit à l'image).
 const STATIC_TESTIMONIALS = [
-  { note: 5, commentaire: "J'ai trouvé un photographe professionnel en 10 minutes. Service exceptionnel !" },
-  { note: 5, commentaire: "TalentTogo m'a permis d'atteindre des clients que je n'aurais jamais pu contacter autrement." },
-  { note: 5, commentaire: "La qualité des talents sur cette plateforme est remarquable. Je recommande vivement." },
+  {
+    nom: "Ama Koffi",
+    ville: "Lomé",
+    note: 5,
+    commentaire: "J'ai trouvé un photographe professionnel en 10 minutes. Service exceptionnel !",
+    avatar: "https://images.unsplash.com/photo-1611432579402-7037e3e2c1e4?w=200&h=200&fit=crop&auto=format",
+  },
+  {
+    nom: "Kodjo Mensah",
+    ville: "Kara",
+    note: 5,
+    commentaire: "TalentTogo m'a permis d'atteindre des clients que je n'aurais jamais pu contacter autrement.",
+    avatar: "https://images.unsplash.com/photo-1495603889488-42d1d66e5523?w=200&h=200&fit=crop&auto=format",
+  },
+  {
+    nom: "Sena Adjovi",
+    ville: "Sokodé",
+    note: 5,
+    commentaire: "La qualité des talents sur cette plateforme est remarquable. Je recommande vivement.",
+    avatar: "https://images.unsplash.com/photo-1508002366005-75a695ee2d17?w=200&h=200&fit=crop&auto=format",
+  },
 ];
 
 const steps = [
@@ -49,14 +74,16 @@ export default function Home() {
   const [categories, setCategories] = useState(null);
   const [talents, setTalents] = useState(null);
   const [stats, setStats] = useState(null);
-  const [clients, setClients] = useState(null);
 
-  // ✅ Plus de données fictives en cas d'échec ou de liste vide : on
-  // affiche exactement ce que l'API renvoie. Un site en production ne
-  // doit jamais montrer de faux talents/faux clients à un visiteur, que
-  // ce soit parce que l'appel a échoué ou parce que la base est encore
-  // vide (nouveau déploiement, environnement de dev...). Chaque section
-  // gère elle-même son propre état vide honnête plus bas dans le JSX.
+  // ✅ Plus de données fictives en cas d'échec ou de liste vide pour les
+  // catégories/talents/stats : on affiche exactement ce que l'API
+  // renvoie. Un site en production ne doit jamais montrer de faux
+  // talents à un visiteur, que ce soit parce que l'appel a échoué ou
+  // parce que la base est encore vide (nouveau déploiement, dev...).
+  // Chaque section gère elle-même son propre état vide honnête plus bas.
+  // (Les témoignages, eux, sont volontairement 100% statiques/fictifs —
+  // voir STATIC_TESTIMONIALS ci-dessus — donc plus besoin d'appeler
+  // getFeaturedClients ici.)
   useEffect(() => {
     getCategories()
       .then((data) => {
@@ -83,13 +110,6 @@ export default function Home() {
         ]);
       })
       .catch(() => setStats([]));
-
-    getFeaturedClients()
-      .then((data) => {
-        const list = Array.isArray(data) ? data : data?.data;
-        setClients(Array.isArray(list) ? list : []);
-      })
-      .catch(() => setClients([]));
   }, []);
 
   // ✅ Scroll automatique vers "Comment ça marche" si on arrive avec
@@ -313,53 +333,40 @@ export default function Home() {
         </div>
       </section>
 
-      {/* TÉMOIGNAGES CLIENTS — n'apparaît que s'il existe au moins un
-          vrai client à présenter. Rien à afficher -> section masquée
-          entièrement, jamais de profil inventé pour combler le vide. */}
-      {clients !== null && clients.length > 0 && (
-        <section className="section testimonials-section">
-          <div className="section-center">
-            <h2 className="section-title">Ce que disent nos clients</h2>
-            <p className="section-subtitle">Des milliers d'utilisateurs satisfaits à travers le Togo</p>
-          </div>
+      {/* TÉMOIGNAGES CLIENTS — désormais 100% statiques et fictifs (voir
+          STATIC_TESTIMONIALS), affichés systématiquement puisqu'ils ne
+          dépendent plus d'aucune donnée réelle de la base. */}
+      <section className="section testimonials-section">
+        <div className="section-center">
+          <h2 className="section-title">Ce que disent nos clients</h2>
+          <p className="section-subtitle">Des milliers d'utilisateurs satisfaits à travers le Togo</p>
+        </div>
 
-          <div className="testimonials-grid">
-            {clients.slice(0, 3).map((c, i) => {
-              const testimonial = STATIC_TESTIMONIALS[i];
-              if (!testimonial) return null;
-
-              return (
-                <div key={c.id} className="testimonial-card">
-                  <Quote size={28} className="testimonial-quote-icon" />
-                  <div className="testimonial-stars">
-                    {Array.from({ length: 5 }).map((_, si) => (
-                      <Star
-                        key={si}
-                        size={14}
-                        className={si < testimonial.note ? "testimonial-star-filled" : "testimonial-star-empty"}
-                      />
-                    ))}
-                  </div>
-                  <p className="testimonial-text">"{testimonial.commentaire}"</p>
-                  <div className="testimonial-author">
-                    {c.avatar ? (
-                      <img src={c.avatar} alt={c.nom} className="testimonial-avatar" />
-                    ) : (
-                      <div className="testimonial-avatar testimonial-avatar-placeholder">
-                        {(c.nom ?? "?")[0]}
-                      </div>
-                    )}
-                    <div>
-                      <p className="testimonial-name">{c.nom}</p>
-                      {c.ville && <p className="testimonial-city">{c.ville}</p>}
-                    </div>
-                  </div>
+        <div className="testimonials-grid">
+          {STATIC_TESTIMONIALS.map((t, i) => (
+            <div key={i} className="testimonial-card">
+              <Quote size={28} className="testimonial-quote-icon" />
+              <div className="testimonial-stars">
+                {Array.from({ length: 5 }).map((_, si) => (
+                  <Star
+                    key={si}
+                    size={14}
+                    className={si < t.note ? "testimonial-star-filled" : "testimonial-star-empty"}
+                  />
+                ))}
+              </div>
+              <p className="testimonial-text">"{t.commentaire}"</p>
+              <div className="testimonial-author">
+                <img src={t.avatar} alt={t.nom} className="testimonial-avatar" />
+                <div>
+                  <p className="testimonial-name">{t.nom}</p>
+                  <p className="testimonial-city">{t.ville}</p>
                 </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
       {/* CTA */}
       <section className="cta-section-v2">
