@@ -25,6 +25,18 @@ function Stars({ note, size = 14 }) {
   );
 }
 
+// ✅ Détection robuste photo/vidéo : vérifie le champ "type" (insensible
+// à la casse), l'extension du fichier, ET les URLs Cloudinary de type
+// vidéo (qui contiennent "/video/upload/") — pour ne pas dépendre d'une
+// seule convention exacte de valeur stockée en base.
+function detecterVideo(type, src) {
+  return (
+    type?.toLowerCase() === "video" ||
+    /\.(mp4|webm|ogg|mov)(\?|$)/i.test(src || "") ||
+    (src || "").includes("/video/upload/")
+  );
+}
+
 // ✅ Nombre maximum d'avis affichés sur la page de détail, pour ne pas
 // surcharger la page quand un talent a beaucoup d'avis.
 const MAX_AVIS_AFFICHES = 5;
@@ -288,10 +300,6 @@ export default function DetailTalent() {
                   <div className="dt-meta-row">
                     <div className="dt-meta-item">
                       <Stars note={note} />
-                      {/* ✅ Si le talent n'a aucun avis, on affiche "Nouveau"
-                          au lieu de "0", pour rester cohérent avec le "—"
-                          affiché pour "Projets réalisés" quand il n'y a pas
-                          de donnée. */}
                       <span className="dt-note-val">{nbAvis > 0 ? note : "Nouveau"}</span>
                       <span className="dt-note-count">({nbAvis} avis)</span>
                     </div>
@@ -325,19 +333,34 @@ export default function DetailTalent() {
               <div className="dt-card">
                 <h2 className="dt-section-title">Portfolio</h2>
                 <div className="dt-portfolio-grid">
-                  {portfolio.map((p, i) => (
-                    <div
-                      key={i}
-                      className="dt-portfolio-item"
-                      onClick={() => setPreviewIdx(i)}
-                    >
-                      <img
-                        src={p.url ?? p.media_url}
-                        alt={p.titre ?? `Photo ${i + 1}`}
-                        className="dt-portfolio-img"
-                      />
-                    </div>
-                  ))}
+                  {portfolio.map((p, i) => {
+                    const src = p.url ?? p.media_url;
+                    const isVideo = detecterVideo(p.type, src);
+
+                    return (
+                      <div
+                        key={i}
+                        className="dt-portfolio-item"
+                        onClick={() => setPreviewIdx(i)}
+                      >
+                        {isVideo ? (
+                          <video
+                            src={src}
+                            className="dt-portfolio-img"
+                            muted
+                            playsInline
+                            preload="metadata"
+                          />
+                        ) : (
+                          <img
+                            src={src}
+                            alt={p.titre ?? `Média ${i + 1}`}
+                            className="dt-portfolio-img"
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -350,8 +373,6 @@ export default function DetailTalent() {
                 </h2>
                 <div className="dt-avis-global">
                   <Stars note={note} size={16} />
-                  {/* ✅ Même logique ici : "Nouveau" au lieu de "0/5" quand
-                      le talent n'a pas encore d'avis. */}
                   <span className="dt-note-val">{nbAvis > 0 ? `${note}/5` : "Nouveau"}</span>
                 </div>
               </div>
@@ -642,11 +663,23 @@ export default function DetailTalent() {
       {/* ── Preview portfolio ── */}
       {previewIdx !== null && (
         <div className="dt-preview-overlay" onClick={() => setPreviewIdx(null)}>
-          <img
-            src={portfolio[previewIdx]?.url ?? portfolio[previewIdx]?.media_url}
-            alt=""
-            className="dt-preview-img"
-          />
+          {(() => {
+            const pv = portfolio[previewIdx];
+            const pvSrc = pv?.url ?? pv?.media_url;
+            const pvIsVideo = detecterVideo(pv?.type, pvSrc);
+
+            return pvIsVideo ? (
+              <video
+                src={pvSrc}
+                className="dt-preview-img"
+                controls
+                autoPlay
+                onClick={(e) => e.stopPropagation()}
+              />
+            ) : (
+              <img src={pvSrc} alt="" className="dt-preview-img" />
+            );
+          })()}
         </div>
       )}
     </div>

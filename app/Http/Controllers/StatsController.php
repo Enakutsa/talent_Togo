@@ -42,15 +42,11 @@ class StatsController extends Controller
     }
 
     /**
-     * Formate un nombre en affichage compact avec un "+" si > 0
-     * (ex: 12 -> "12+", 1200 -> "1 200+").
+     * Formate un nombre avec séparateur de milliers (ex: 1200 -> "1 200"),
+     * sans "+", pour afficher le chiffre exact sur la page d'accueil.
      */
     private function formatCount(int $value): string
     {
-        if ($value === 0) {
-            return '0';
-        }
-
-        return number_format($value, 0, ',', ' ') . '+';
+        return number_format($value, 0, ',', ' ');
     }
 }
