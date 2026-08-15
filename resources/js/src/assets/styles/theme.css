@@ -7,13 +7,14 @@
 
 /* Polices : une police d'accroche distinctive pour les titres
    (pas la police système par défaut, trop "IA générique"),
-   + une police claire pour le texte courant. */
-   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+   + Sora pour le texte courant — sans-serif pro, très lisible,
+   avec un peu plus de caractère qu'une police purement générique. */
+   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Sora:wght@400;500;600;700;800&display=swap');
 
    :root {
      /* ── Typographie ── */
      --font-heading: 'Fraunces', Georgia, serif;
-     --font-body: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+     --font-body: 'Sora', ui-sans-serif, system-ui, sans-serif;
    
      /* ── Couleurs primaires (talent = vert) ── */
      --color-green-50:  #f0fdf5;
@@ -71,4 +72,27 @@
      --space-8: 32px;
      --space-12: 48px;
      --space-16: 64px;
+   }
+
+   /* ── Application globale des polices ──
+      Sans ces règles, les variables --font-heading / --font-body ne sont
+      que déclarées mais jamais utilisées par défaut : le navigateur
+      continue d'afficher sa police système générique tant qu'un fichier
+      CSS spécifique ne surcharge pas font-family lui-même. Cette règle
+      couvre TOUT le site d'un coup (corps de texte + titres), sans
+      toucher aux fichiers CSS existants par page.
+
+      ⚠️ Si un composant a déjà sa propre règle font-family en dur dans
+      un autre fichier CSS (ex: .login-input { font-family: ... }), cette
+      règle plus spécifique continuera de l'emporter localement — c'est
+      le fonctionnement normal de la cascade CSS. À corriger au cas par
+      cas si des incohérences apparaissent après ce changement global. */
+   body {
+     font-family: var(--font-body);
+     color: var(--color-text);
+     background: var(--color-bg);
+   }
+
+   h1, h2, h3, h4, h5, h6 {
+     font-family: var(--font-heading);
    }

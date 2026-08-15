@@ -65,6 +65,60 @@ const steps = [
   { step: "03", title: "Contactez directement", desc: "Envoyez une demande de prestation via notre messagerie intégrée sécurisée." },
 ];
 
+// ✅ Carrousel d'images du hero — photos Unsplash (licence libre, usage
+// commercial gratuit, aucune attribution requise) illustrant TOUTES les
+// catégories de talents de la plateforme (voir CATEGORY_ICONS ci-dessus).
+// Chaque slide porte sa propre légende (titre + sous-titre) affichée en
+// surimpression, avec un dégradé sombre en bas de l'image pour garder le
+// texte lisible quelle que soit l'image.
+const HERO_SLIDES = [
+  {
+    image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200&h=800&fit=crop&auto=format",
+    title: "Photographes professionnels",
+    subtitle: "Immortalisez vos moments importants avec les meilleurs talents du Togo",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200&h=800&fit=crop&auto=format",
+    title: "Musiciens & DJ",
+    subtitle: "Animez vos événements avec des artistes locaux passionnés",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1544441893-675973e31985?w=1200&h=800&fit=crop&auto=format",
+    title: "Couturiers & couturières",
+    subtitle: "Des créations sur-mesure, entre tradition et modernité",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=1200&h=800&fit=crop&auto=format",
+    title: "Graphistes créatifs",
+    subtitle: "Donnez une identité visuelle forte à votre projet",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1635360381874-edd74cbd57f3?w=1200&h=800&fit=crop&auto=format",
+    title: "Vidéastes",
+    subtitle: "Des vidéos professionnelles pour sublimer vos événements et projets",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1200&h=800&fit=crop&auto=format",
+    title: "Décorateurs événementiels",
+    subtitle: "Des ambiances soignées pour mariages, fêtes et cérémonies",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1200&h=800&fit=crop&auto=format",
+    title: "Maquilleurs & maquilleuses",
+    subtitle: "Sublimez votre look pour toutes vos occasions spéciales",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&h=800&fit=crop&auto=format",
+    title: "Coiffeurs & coiffeuses",
+    subtitle: "Des coiffures soignées, du quotidien aux grandes occasions",
+  },
+  {
+    image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&h=800&fit=crop&auto=format",
+    title: "Développeurs",
+    subtitle: "Des sites et applications sur-mesure pour votre activité",
+  },
+];
+
 export default function Home() {
   const navigate = useNavigate();
   const { isAuthenticated } = useContext(AuthContext);
@@ -74,6 +128,20 @@ export default function Home() {
   const [categories, setCategories] = useState(null);
   const [talents, setTalents] = useState(null);
   const [stats, setStats] = useState(null);
+
+  // ✅ Carrousel hero : avance automatiquement toutes les 5s, boucle à
+  // l'infini. setInterval recréé à chaque changement de currentSlide pour
+  // toujours repartir sur un délai plein de 5s après un clic manuel sur
+  // un point (sinon un clic juste avant l'avancement automatique aurait
+  // fait sauter deux slides d'un coup).
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+    }, 5000);
+    return () => clearInterval(id);
+  }, [currentSlide]);
 
   // ✅ Plus de données fictives en cas d'échec ou de liste vide pour les
   // catégories/talents/stats : on affiche exactement ce que l'API
@@ -176,17 +244,38 @@ export default function Home() {
               Rechercher <ArrowRight size={16} />
             </button>
           </form>
+        </div>
+      </section>
 
-          <div className="hero-quicklinks">
-            {["Photographe à Lomé", "Musicien mariage", "Graphiste logo", "Couture pagne"].map((q) => (
+      {/* CARROUSEL — images qui défilent avec légendes en surimpression.
+          Chaque slide a un dégradé sombre en bas pour garder le texte
+          lisible peu importe l'image. Défilement auto (5s) + points
+          cliquables pour naviguer manuellement. */}
+      <section className="hero-carousel-section">
+        <div className="hero-carousel">
+          {HERO_SLIDES.map((slide, i) => (
+            <div
+              key={i}
+              className={`hero-carousel-slide ${i === currentSlide ? "hero-carousel-slide-active" : ""}`}
+              style={{ backgroundImage: `url(${slide.image})` }}
+            >
+              <div className="hero-carousel-overlay" />
+              <div className="hero-carousel-caption">
+                <h3 className="hero-carousel-caption-title">{slide.title}</h3>
+                <p className="hero-carousel-caption-subtitle">{slide.subtitle}</p>
+              </div>
+            </div>
+          ))}
+
+          <div className="hero-carousel-dots">
+            {HERO_SLIDES.map((_, i) => (
               <button
-                key={q}
+                key={i}
                 type="button"
-                className="hero-quicklink"
-                onClick={() => navigate(`/recherche?q=${encodeURIComponent(q)}`)}
-              >
-                {q}
-              </button>
+                className={`hero-carousel-dot ${i === currentSlide ? "hero-carousel-dot-active" : ""}`}
+                onClick={() => setCurrentSlide(i)}
+                aria-label={`Voir le slide ${i + 1}`}
+              />
             ))}
           </div>
         </div>

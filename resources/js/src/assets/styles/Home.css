@@ -74,9 +74,9 @@ select:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--color-orange-50);
-  color: var(--color-orange-700);
-  border: 1px solid var(--color-orange-100);
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
   border-radius: var(--radius-full);
   padding: 8px 18px;
   margin-bottom: 28px;
@@ -1016,4 +1016,212 @@ select:focus-visible {
     flex-direction: column;
     align-items: stretch;
   }
+}
+
+
+/* ============================================
+   CARROUSEL HERO — à coller dans Home.css
+   ============================================ */
+
+   .hero-carousel-section {
+    padding: 0 24px;
+    margin: 32px auto 48px;
+    max-width: 1200px;
+  }
+  
+  .hero-carousel {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  }
+  
+  .hero-carousel-slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+  }
+  
+  .hero-carousel-slide-active {
+    opacity: 1;
+    z-index: 1;
+  }
+  
+  .hero-carousel-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.75) 0%,
+      rgba(0, 0, 0, 0.25) 45%,
+      rgba(0, 0, 0, 0) 70%
+    );
+  }
+  
+  .hero-carousel-caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 32px 40px;
+    color: #fff;
+    z-index: 2;
+  }
+  
+  .hero-carousel-caption-title {
+    font-family: Georgia, 'Fraunces', serif;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  }
+  
+  .hero-carousel-caption-subtitle {
+    font-size: 15px;
+    font-weight: 400;
+    max-width: 480px;
+    margin: 0;
+    opacity: 0.95;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  }
+  
+  .hero-carousel-dots {
+    position: absolute;
+    bottom: 20px;
+    right: 32px;
+    display: flex;
+    gap: 8px;
+    z-index: 3;
+  }
+  
+  .hero-carousel-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s, transform 0.2s;
+  }
+  
+  .hero-carousel-dot:hover {
+    background: rgba(255, 255, 255, 0.75);
+  }
+  
+  .hero-carousel-dot-active {
+    background: #fff;
+    transform: scale(1.3);
+  }
+  
+  @media (max-width: 640px) {
+    .hero-carousel {
+      height: 280px;
+      border-radius: 14px;
+    }
+    .hero-carousel-caption {
+      padding: 20px 22px;
+    }
+    .hero-carousel-caption-title {
+      font-size: 20px;
+    }
+    .hero-carousel-caption-subtitle {
+      font-size: 13px;
+    }
+    .hero-carousel-dots {
+      right: 20px;
+      bottom: 14px;
+    }
+  }
+
+
+  /* ============================================
+   ANIMATIONS PRO — Home
+   À coller dans Home.css ou importer séparément
+   ============================================ */
+
+/* ── Scroll reveal (fade-up) ── */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Respecte les préférences d'accessibilité : désactive l'animation
+   pour les personnes ayant demandé "reduced motion" dans leur OS. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── Cartes catégories / talents : léger soulèvement au survol ── */
+.category-card,
+.talent-card-skeleton,
+.testimonial-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.category-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.testimonial-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ── Boutons : micro-interaction au survol ── */
+.btn-primary,
+.cta-v2-btn-primary,
+.hero-search-btn {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover,
+.cta-v2-btn-primary:hover,
+.hero-search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* ── Blobs du hero : dérive lente en fond, discrète (pas de mouvement
+   brusque qui distrairait du texte). ── */
+.hero-blob {
+  animation: blob-float 12s ease-in-out infinite;
+}
+
+.hero-blob-green {
+  animation-delay: -6s;
+}
+
+@keyframes blob-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(16px, -20px) scale(1.05); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-blob {
+    animation: none;
+  }
+}
+
+/* ── Stat cards : légère mise en avant du chiffre ── */
+.stat-value {
+  font-variant-numeric: tabular-nums; /* évite que les chiffres "sautent"
+    en largeur pendant le compteur animé */
 }
