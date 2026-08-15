@@ -5,16 +5,15 @@
    tels quels tant qu'on ne les modifie pas un par un.
    ============================================ */
 
-/* Polices : une police d'accroche distinctive pour les titres
-   (pas la police système par défaut, trop "IA générique"),
-   + Sora pour le texte courant — sans-serif pro, très lisible,
-   avec un peu plus de caractère qu'une police purement générique. */
-   @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Sora:wght@400;500;600;700;800&display=swap');
+/* Polices : Space Grotesk pour les titres (géométrique, net, look
+   "produit tech" sérieux) + Inter pour le texte courant — la référence
+   du web professionnel moderne, ultra lisible à toutes tailles. */
+   @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
 
    :root {
      /* ── Typographie ── */
-     --font-heading: 'Fraunces', Georgia, serif;
-     --font-body: 'Sora', ui-sans-serif, system-ui, sans-serif;
+     --font-heading: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+     --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
    
      /* ── Couleurs primaires (talent = vert) ── */
      --color-green-50:  #f0fdf5;
@@ -73,7 +72,7 @@
      --space-12: 48px;
      --space-16: 64px;
    }
-
+   
    /* ── Application globale des polices ──
       Sans ces règles, les variables --font-heading / --font-body ne sont
       que déclarées mais jamais utilisées par défaut : le navigateur
@@ -81,7 +80,7 @@
       CSS spécifique ne surcharge pas font-family lui-même. Cette règle
       couvre TOUT le site d'un coup (corps de texte + titres), sans
       toucher aux fichiers CSS existants par page.
-
+   
       ⚠️ Si un composant a déjà sa propre règle font-family en dur dans
       un autre fichier CSS (ex: .login-input { font-family: ... }), cette
       règle plus spécifique continuera de l'emporter localement — c'est
@@ -92,7 +91,9 @@
      color: var(--color-text);
      background: var(--color-bg);
    }
-
+   
    h1, h2, h3, h4, h5, h6 {
      font-family: var(--font-heading);
+     letter-spacing: -0.02em; /* resserre légèrement les titres, look
+       "produit" plus affirmé que du texte flottant par défaut */
    }

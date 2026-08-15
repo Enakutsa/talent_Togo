@@ -1225,3 +1225,62 @@ select:focus-visible {
   font-variant-numeric: tabular-nums; /* évite que les chiffres "sautent"
     en largeur pendant le compteur animé */
 }
+
+
+/* ============================================
+   REVEAL SCROLL GÉNÉRIQUE — IntersectionObserver natif
+   Remplace complètement Framer Motion : plus fiable,
+   zéro dépendance JS externe.
+   ============================================ */
+
+   .fade-up {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .fade-up.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .zoom-in {
+    opacity: 0;
+    transform: scale(0.97);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  
+  .zoom-in.is-visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+  
+  /* Icône Sparkles du CTA : oscillation douce et continue */
+  .cta-v2-icon {
+    animation: icon-wiggle 4s ease-in-out infinite;
+  }
+  
+  @keyframes icon-wiggle {
+    0%, 100% { transform: rotate(0deg); }
+    25% { transform: rotate(8deg); }
+    75% { transform: rotate(-8deg); }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .fade-up,
+    .zoom-in {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+    .cta-v2-icon {
+      animation: none;
+    }
+  }
+
+  .hero-accent {
+    color: var(--color-green-700);
+    font-style: normal; /* au lieu de italic — Space Grotesk n'a pas
+      d'italique dédiée, le faux-italique du navigateur rendrait mal */
+  }
