@@ -30,36 +30,52 @@ select:focus-visible {
 }
 
 /* =================================================================
-   HERO
+   HERO — image en fond, défilement auto, texte clair sur voile sombre
    ================================================================= */
 .hero-section {
   position: relative;
   overflow: hidden;
   padding: 108px 24px 80px;
-  background: linear-gradient(180deg, var(--color-green-50) 0%, var(--color-cream-50) 100%);
 }
 
-.hero-blob {
+.hero-section-photo {
+  min-height: 560px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Conteneur des slides en fond, derrière tout le reste */
+.hero-bg-slides {
   position: absolute;
-  border-radius: 50%;
-  filter: blur(4px);
+  inset: 0;
   z-index: 0;
 }
 
-.hero-blob-amber {
-  top: -140px;
-  right: -140px;
-  width: 420px;
-  height: 420px;
-  background: radial-gradient(circle, rgba(234, 88, 12, 0.14) 0%, transparent 70%);
+.hero-bg-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1.4s ease-in-out;
 }
 
-.hero-blob-green {
-  bottom: -120px;
-  left: -120px;
-  width: 340px;
-  height: 340px;
-  background: radial-gradient(circle, rgba(22, 101, 52, 0.12) 0%, transparent 70%);
+.hero-bg-slide-active {
+  opacity: 1;
+}
+
+/* Voile sombre modéré et uniforme : combiné au texte clair ci-dessous,
+   garantit une lisibilité fiable peu importe la photo affichée. */
+.hero-bg-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(20, 24, 20, 0.55) 0%,
+    rgba(20, 24, 20, 0.45) 50%,
+    rgba(20, 24, 20, 0.6) 100%
+  );
 }
 
 .hero-inner {
@@ -83,25 +99,26 @@ select:focus-visible {
   font-size: 13px;
   font-weight: 600;
   font-family: var(--font-body);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
 }
 
 .hero-title {
   font-family: var(--font-heading);
   font-size: clamp(2.1rem, 5vw, 3.6rem);
   font-weight: 600;
-  color: var(--color-text);
+  color: #ffffff;
   line-height: 1.18;
   letter-spacing: -0.01em;
   margin-bottom: 20px;
 }
 
 .hero-accent {
-  color: var(--color-green-700);
-  font-style: italic;
+  color: #86efac; /* vert clair de marque, lisible sur fond sombre */
+  font-style: normal;
 }
 
 .hero-subtitle {
-  color: var(--color-text-muted);
+  color: rgba(255, 255, 255, 0.88);
   font-size: 18px;
   max-width: 620px;
   margin: 0 auto 36px;
@@ -116,14 +133,19 @@ select:focus-visible {
   background: #fff;
   border-radius: var(--radius-lg);
   padding: 8px;
-  box-shadow: var(--shadow-lg);
   border: 1px solid var(--color-border);
   max-width: 640px;
   margin: 0 auto;
+  filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.25));
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 @media (min-width: 640px) {
   .hero-search-bar { flex-direction: row; }
+}
+
+.hero-search-bar:hover {
+  transform: translateY(-2px);
 }
 
 .hero-search-field {
@@ -132,12 +154,6 @@ select:focus-visible {
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-}
-
-@media (min-width: 640px) {
-  .hero-search-field-city {
-    border-left: 1px solid var(--color-border);
-  }
 }
 
 .hero-search-icon {
@@ -181,30 +197,39 @@ select:focus-visible {
 .hero-search-btn:hover { background: var(--color-orange-700); }
 .hero-search-btn:active { transform: translateY(1px); }
 
-.hero-quicklinks {
+/* Points de navigation manuelle du carrousel de fond */
+.hero-bg-dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
   gap: 8px;
-  margin-top: 24px;
+  z-index: 3;
 }
 
-.hero-quicklink {
-  padding: 7px 14px;
-  border-radius: var(--radius-full);
-  font-size: 12px;
-  border: 1px solid var(--color-border);
-  background: #fff;
-  color: var(--color-text-muted);
+.hero-bg-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0.7;
   cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-  font-family: var(--font-body);
+  padding: 0;
+  transition: opacity 0.2s, transform 0.2s, background 0.2s;
 }
 
-.hero-quicklink:hover {
-  background: var(--color-green-50);
-  border-color: var(--color-green-600);
-  color: var(--color-green-700);
+.hero-bg-dot:hover { opacity: 1; }
+
+.hero-bg-dot-active {
+  opacity: 1;
+  background: var(--color-orange-600);
+  transform: scale(1.3);
+}
+
+@media (max-width: 640px) {
+  .hero-section-photo { min-height: 460px; }
 }
 
 /* =================================================================
@@ -253,6 +278,7 @@ select:focus-visible {
   font-weight: 600;
   color: var(--color-text);
   font-family: var(--font-heading);
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
@@ -274,6 +300,16 @@ select:focus-visible {
 .section-center {
   text-align: center;
   margin-bottom: 48px;
+}
+
+.section-eyebrow {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-orange-600);
+  margin-bottom: 10px;
 }
 
 .section-title {
@@ -333,72 +369,103 @@ select:focus-visible {
 
 .section-link:hover { color: var(--color-green-900); }
 
-/* ===== Categories ===== */
-.categories-grid {
+/* =================================================================
+   CATEGORIES — 8 cartes photo, toutes de MÊME taille
+   (⚠️ Nettoyage : les anciens systèmes .bento-category-* et
+   .category-card / .categories-grid génériques ont été retirés car
+   Home.jsx n'utilise plus que .categories-photo-grid / .photo-category-*.
+   Si un autre composant en dehors de Home.jsx s'appuyait encore sur ces
+   classes, il faudra les réintégrer dans un fichier CSS partagé.)
+   ================================================================= */
+.categories-photo-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 14px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto 24px;
 }
 
-@media (min-width: 640px) {
-  .categories-grid { grid-template-columns: repeat(4, 1fr); }
-}
-
-.category-card {
-  background: #fff;
+.photo-category-card {
+  position: relative;
+  height: 240px;
   border-radius: var(--radius-lg);
-  padding: 24px 16px;
-  text-align: center;
-  border: 1px solid var(--color-border);
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  border: none;
   cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.category-card:hover {
-  border-color: var(--color-green-600);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-3px);
+.photo-category-card:hover {
+  transform: translateY(-6px);
 }
 
-.category-icon-wrap {
-  width: 46px;
-  height: 46px;
-  border-radius: var(--radius-md);
-  background: var(--color-green-100);
-  color: var(--color-green-700);
+.photo-category-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(10, 10, 10, 0.85) 0%,
+    rgba(10, 10, 10, 0.15) 55%,
+    rgba(10, 10, 10, 0) 100%
+  );
+  transition: background 0.3s ease;
+}
+
+.photo-category-card:hover .photo-category-overlay {
+  background: linear-gradient(
+    to top,
+    rgba(10, 10, 10, 0.92) 0%,
+    rgba(10, 10, 10, 0.25) 55%,
+    rgba(10, 10, 10, 0) 100%
+  );
+}
+
+.photo-category-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 18px;
+  text-align: left;
+  z-index: 1;
+}
+
+.photo-category-label {
+  color: #fff;
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+.photo-category-count {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: 0 auto 14px;
-  transition: background 0.2s, color 0.2s;
-}
-
-.category-card:hover .category-icon-wrap {
-  background: var(--color-green-700);
-  color: #fff;
-}
-
-.category-label {
-  font-family: var(--font-body);
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--color-text);
+  gap: 4px;
   margin: 0;
 }
 
-.category-count {
-  color: var(--color-stone-400);
-  font-size: 12px;
-  margin: 4px 0 0;
-  font-family: var(--font-body);
+@media (max-width: 900px) {
+  .categories-photo-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+@media (max-width: 480px) {
+  .photo-category-card { height: 200px; }
+}
+
+/* (fusion : ancien doublon supprimé — une seule déclaration désormais) */
 .categories-cta-wrap {
   text-align: center;
   margin-top: 36px;
 }
 
-/* ===== Featured talents ===== */
+/* =================================================================
+   FEATURED TALENTS
+   ================================================================= */
 .featured-section {
   background: var(--color-bg-alt);
   padding: 76px 0;
@@ -441,14 +508,18 @@ select:focus-visible {
   border: none;
   cursor: pointer;
   font-family: var(--font-body);
-  transition: background 0.2s, transform 0.1s;
+  transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
 }
 
-.btn-primary:hover { background: var(--color-green-900); }
+.btn-primary:hover {
+  background: var(--color-green-900);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
 .btn-primary:active { transform: translateY(1px); }
 
 /* =================================================================
-   TALENT CARD (talent-card-*)
+   TALENT CARD
    ================================================================= */
 .talent-card {
   background: #fff;
@@ -650,61 +721,78 @@ select:focus-visible {
 .talent-card-cta:hover { background: var(--color-green-900); }
 
 /* =================================================================
-   HOW IT WORKS
+   HOW IT WORKS — layout asymétrique : photo + étapes avec connecteur
    ================================================================= */
-.steps-grid {
+.how-it-works-section {
+  padding: 80px 24px;
+  background: var(--color-bg-alt);
+}
+
+.how-it-works-inner {
+  max-width: 1200px;
+  margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.how-it-works-visual {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.how-it-works-image {
+  width: 100%;
+  height: 520px;
+  object-fit: cover;
+  display: block;
+}
+
+.how-it-works-steps {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.how-it-works-step {
+  display: flex;
   gap: 20px;
+  padding-bottom: 32px;
+}
+
+.how-it-works-step-marker {
   position: relative;
-}
-
-@media (min-width: 768px) {
-  .steps-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 28px;
-  }
-}
-
-.step-item {
-  text-align: left;
-  background: #fff;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  padding: 32px 24px;
-  position: relative;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.step-item:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-}
-
-.step-num-badge {
-  width: 52px;
-  height: 52px;
-  border-radius: var(--radius-md);
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-green-50);
+  color: var(--color-green-700);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 0 20px;
-  color: #fff;
-  font-weight: 600;
-  font-size: 18px;
-  font-family: var(--font-heading);
+  border: 1px solid var(--color-green-100);
 }
 
-.step-color-0 .step-num-badge { background: var(--color-green-700); }
-.step-color-1 .step-num-badge { background: var(--color-orange-600); }
-.step-color-2 .step-num-badge { background: var(--color-green-900); }
+.how-it-works-connector {
+  position: absolute;
+  top: 44px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 32px;
+  background: var(--color-green-100);
+}
 
 .step-title {
   font-family: var(--font-heading);
   font-weight: 600;
   font-size: 17px;
   color: var(--color-text);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   letter-spacing: -0.01em;
 }
 
@@ -716,90 +804,17 @@ select:focus-visible {
   margin: 0;
 }
 
-/* =================================================================
-   CTA (ancienne variante, conservée si utilisée ailleurs)
-   ================================================================= */
-.cta-section {
-  position: relative;
-  overflow: hidden;
-  padding: 88px 24px;
-  background: var(--color-green-900);
-  text-align: center;
+@media (max-width: 900px) {
+  .how-it-works-inner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .how-it-works-image { height: 300px; }
 }
-
-.cta-pattern {
-  position: absolute;
-  inset: 0;
-  opacity: 0.06;
-  background-image: radial-gradient(circle at 25% 25%, #fff 1.5px, transparent 1.5px);
-  background-size: 24px 24px;
-}
-
-.cta-inner {
-  position: relative;
-  z-index: 2;
-  max-width: 680px;
-  margin: 0 auto;
-}
-
-.cta-title {
-  font-family: var(--font-heading);
-  font-size: clamp(1.6rem, 4vw, 2.1rem);
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 14px;
-}
-
-.cta-text {
-  color: rgba(255, 255, 255, 0.82);
-  font-size: 15px;
-  line-height: 1.6;
-  margin-bottom: 30px;
-  font-family: var(--font-body);
-}
-
-.cta-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  justify-content: center;
-}
-
-@media (min-width: 560px) {
-  .cta-actions { flex-direction: row; }
-}
-
-.btn-outline-white {
-  padding: 14px 28px;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  color: #fff;
-  font-weight: 600;
-  border-radius: var(--radius-md);
-  background: transparent;
-  cursor: pointer;
-  font-family: var(--font-body);
-  transition: background 0.2s;
-}
-
-.btn-outline-white:hover { background: rgba(255, 255, 255, 0.12); }
-
-.btn-amber-cta {
-  padding: 14px 28px;
-  background: var(--color-orange-600);
-  color: #fff;
-  font-weight: 600;
-  border-radius: var(--radius-md);
-  border: none;
-  cursor: pointer;
-  font-family: var(--font-body);
-  transition: background 0.2s, transform 0.1s;
-}
-
-.btn-amber-cta:hover { background: var(--color-orange-700); }
-.btn-amber-cta:active { transform: translateY(1px); }
 
 /* =================================================================
-   TESTIMONIALS
+   TESTIMONIALS — version affinée (accent visuel sur le badge de
+   citation, halo sur l'avatar, hover plus marqué)
    ================================================================= */
 .testimonials-section {
   background: var(--color-bg-alt);
@@ -814,30 +829,36 @@ select:focus-visible {
 }
 
 @media (min-width: 768px) {
-  .testimonials-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  .testimonials-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 .testimonial-card {
   background: #fff;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 26px;
+  padding: 28px 26px;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.3s ease;
 }
 
 .testimonial-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-green-200, #bbf7d0);
 }
 
 .testimonial-quote-icon {
   color: var(--color-green-600);
-  opacity: 0.35;
-  margin-bottom: 10px;
+  background: var(--color-green-50);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  padding: 8px;
+  margin-bottom: 16px;
 }
 
 .testimonial-stars {
@@ -851,9 +872,7 @@ select:focus-visible {
   color: var(--color-orange-500);
 }
 
-.testimonial-star-empty {
-  color: var(--color-border);
-}
+.testimonial-star-empty { color: var(--color-border); }
 
 .testimonial-text {
   font-size: 14.5px;
@@ -867,26 +886,17 @@ select:focus-visible {
 .testimonial-author {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding-top: 16px;
+  gap: 12px;
+  padding-top: 18px;
   border-top: 1px solid var(--color-bg-alt);
 }
 
 .testimonial-avatar {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   object-fit: cover;
-}
-
-.testimonial-avatar-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-green-100);
-  color: var(--color-green-700);
-  font-weight: 600;
-  font-family: var(--font-heading);
+  border: 2px solid var(--color-green-100);
 }
 
 .testimonial-name {
@@ -901,6 +911,146 @@ select:focus-visible {
   font-size: 12px;
   color: var(--color-text-muted);
   margin: 0;
+}
+
+/* =================================================================
+   CTA FINAL — même principe que "Comment ça marche" : image encadrée
+   + contenu côte à côte, mais inversé (image à droite) et sur un fond
+   de marque plein (dégradé vert foncé) au lieu d'une photo en fond de
+   toute la section. Le visage du sujet reste toujours entier et net
+   dans sa propre carte, jamais recouvert par le texte.
+   ================================================================= */
+.cta-split-section {
+  padding: 80px 24px;
+  background: linear-gradient(135deg, var(--color-green-900) 0%, #0f2417 100%);
+}
+
+.cta-split-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 64px;
+  align-items: center;
+}
+
+.cta-split-content {
+  text-align: left;
+}
+
+.cta-split-visual {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.cta-split-image {
+  width: 100%;
+  height: 480px;
+  object-fit: cover;
+  display: block;
+}
+
+.cta-v2-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+  color: var(--color-orange-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 24px;
+  animation: icon-wiggle 4s ease-in-out infinite;
+}
+
+@keyframes icon-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(8deg); }
+  75% { transform: rotate(-8deg); }
+}
+
+.cta-split-title {
+  font-size: 32px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 14px;
+  font-family: var(--font-heading);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.cta-split-text {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.7;
+  margin: 0 0 32px;
+  max-width: 440px;
+  font-family: var(--font-body);
+}
+
+.cta-v2-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.cta-v2-btn-primary {
+  padding: 13px 28px;
+  background: var(--color-orange-600);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: background 0.15s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cta-v2-btn-primary:hover {
+  background: var(--color-orange-700);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.cta-v2-btn-secondary {
+  padding: 13px 28px;
+  background: transparent;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-family: var(--font-body);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.cta-v2-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+@media (max-width: 900px) {
+  .cta-split-inner {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .cta-split-content { text-align: center; }
+  .cta-v2-icon { margin: 0 auto 24px; }
+  .cta-split-text { margin-left: auto; margin-right: auto; }
+  .cta-v2-actions { justify-content: center; }
+  .cta-split-visual { order: -1; }
+  .cta-split-image { height: 300px; }
+}
+
+@media (max-width: 480px) {
+  .cta-v2-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 /* =================================================================
@@ -927,360 +1077,44 @@ select:focus-visible {
 }
 
 /* =================================================================
-   CTA v2 (celle réellement utilisée en bas de la Home)
+   UTILITAIRES D'ANIMATION AU SCROLL (optionnels — à appliquer via
+   className="reveal" ou "fade-up" / "zoom-in" sur un élément si besoin
+   d'une apparition progressive ailleurs sur le site)
    ================================================================= */
-.cta-section-v2 {
-  background: var(--color-green-50);
-  padding: 80px 24px;
-  border-top: 1px solid var(--color-green-100);
-}
-
-.cta-v2-inner {
-  max-width: 640px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.cta-v2-icon {
-  width: 54px;
-  height: 54px;
-  border-radius: var(--radius-md);
-  background: var(--color-orange-600);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 22px;
-}
-
-.cta-v2-title {
-  font-size: 30px;
-  font-weight: 600;
-  color: var(--color-text);
-  margin: 0 0 12px;
-  font-family: var(--font-heading);
-  letter-spacing: -0.01em;
-}
-
-.cta-v2-text {
-  font-size: 14.5px;
-  color: var(--color-text-muted);
-  line-height: 1.65;
-  margin: 0 0 32px;
-  font-family: var(--font-body);
-}
-
-.cta-v2-actions {
-  display: flex;
-  gap: 14px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.cta-v2-btn-primary {
-  padding: 13px 28px;
-  background: var(--color-orange-600);
-  color: #fff;
-  font-weight: 600;
-  font-size: 14px;
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-family: var(--font-body);
-  transition: background 0.15s ease;
-}
-
-.cta-v2-btn-primary:hover {
-  background: var(--color-orange-700);
-}
-
-.cta-v2-btn-secondary {
-  padding: 13px 28px;
-  background: transparent;
-  color: var(--color-green-700);
-  font-weight: 600;
-  font-size: 14px;
-  border: 1.5px solid var(--color-green-600);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-family: var(--font-body);
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.cta-v2-btn-secondary:hover {
-  background: var(--color-green-100);
-}
-
-@media (max-width: 480px) {
-  .cta-v2-actions {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
-
-/* ============================================
-   CARROUSEL HERO — à coller dans Home.css
-   ============================================ */
-
-   .hero-carousel-section {
-    padding: 0 24px;
-    margin: 32px auto 48px;
-    max-width: 1200px;
-  }
-  
-  .hero-carousel {
-    position: relative;
-    width: 100%;
-    height: 420px;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
-  }
-  
-  .hero-carousel-slide {
-    position: absolute;
-    inset: 0;
-    background-size: cover;
-    background-position: center;
-    opacity: 0;
-    transition: opacity 1s ease-in-out;
-  }
-  
-  .hero-carousel-slide-active {
-    opacity: 1;
-    z-index: 1;
-  }
-  
-  .hero-carousel-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      to top,
-      rgba(0, 0, 0, 0.75) 0%,
-      rgba(0, 0, 0, 0.25) 45%,
-      rgba(0, 0, 0, 0) 70%
-    );
-  }
-  
-  .hero-carousel-caption {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 32px 40px;
-    color: #fff;
-    z-index: 2;
-  }
-  
-  .hero-carousel-caption-title {
-    font-family: Georgia, 'Fraunces', serif;
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0 0 8px;
-    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  }
-  
-  .hero-carousel-caption-subtitle {
-    font-size: 15px;
-    font-weight: 400;
-    max-width: 480px;
-    margin: 0;
-    opacity: 0.95;
-    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-  }
-  
-  .hero-carousel-dots {
-    position: absolute;
-    bottom: 20px;
-    right: 32px;
-    display: flex;
-    gap: 8px;
-    z-index: 3;
-  }
-  
-  .hero-carousel-dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    border: none;
-    background: rgba(255, 255, 255, 0.5);
-    cursor: pointer;
-    padding: 0;
-    transition: background 0.2s, transform 0.2s;
-  }
-  
-  .hero-carousel-dot:hover {
-    background: rgba(255, 255, 255, 0.75);
-  }
-  
-  .hero-carousel-dot-active {
-    background: #fff;
-    transform: scale(1.3);
-  }
-  
-  @media (max-width: 640px) {
-    .hero-carousel {
-      height: 280px;
-      border-radius: 14px;
-    }
-    .hero-carousel-caption {
-      padding: 20px 22px;
-    }
-    .hero-carousel-caption-title {
-      font-size: 20px;
-    }
-    .hero-carousel-caption-subtitle {
-      font-size: 13px;
-    }
-    .hero-carousel-dots {
-      right: 20px;
-      bottom: 14px;
-    }
-  }
-
-
-  /* ============================================
-   ANIMATIONS PRO — Home
-   À coller dans Home.css ou importer séparément
-   ============================================ */
-
-/* ── Scroll reveal (fade-up) ── */
-.reveal {
+.reveal,
+.fade-up {
   opacity: 0;
   transform: translateY(24px);
   transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
               transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.reveal-visible {
+.reveal-visible,
+.fade-up.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* Respecte les préférences d'accessibilité : désactive l'animation
-   pour les personnes ayant demandé "reduced motion" dans leur OS. */
+.zoom-in {
+  opacity: 0;
+  transform: scale(0.97);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.zoom-in.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .reveal {
+  .reveal,
+  .fade-up,
+  .zoom-in {
     transition: none;
     opacity: 1;
     transform: none;
   }
-}
-
-/* ── Cartes catégories / talents : léger soulèvement au survol ── */
-.category-card,
-.talent-card-skeleton,
-.testimonial-card {
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.category-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-}
-
-.testimonial-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
-}
-
-/* ── Boutons : micro-interaction au survol ── */
-.btn-primary,
-.cta-v2-btn-primary,
-.hero-search-btn {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.btn-primary:hover,
-.cta-v2-btn-primary:hover,
-.hero-search-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-/* ── Blobs du hero : dérive lente en fond, discrète (pas de mouvement
-   brusque qui distrairait du texte). ── */
-.hero-blob {
-  animation: blob-float 12s ease-in-out infinite;
-}
-
-.hero-blob-green {
-  animation-delay: -6s;
-}
-
-@keyframes blob-float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(16px, -20px) scale(1.05); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-blob {
+  .cta-v2-icon {
     animation: none;
   }
 }
-
-/* ── Stat cards : légère mise en avant du chiffre ── */
-.stat-value {
-  font-variant-numeric: tabular-nums; /* évite que les chiffres "sautent"
-    en largeur pendant le compteur animé */
-}
-
-
-/* ============================================
-   REVEAL SCROLL GÉNÉRIQUE — IntersectionObserver natif
-   Remplace complètement Framer Motion : plus fiable,
-   zéro dépendance JS externe.
-   ============================================ */
-
-   .fade-up {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
-                transform 0.55s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  
-  .fade-up.is-visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  
-  .zoom-in {
-    opacity: 0;
-    transform: scale(0.97);
-    transition: opacity 0.6s ease, transform 0.6s ease;
-  }
-  
-  .zoom-in.is-visible {
-    opacity: 1;
-    transform: scale(1);
-  }
-  
-  /* Icône Sparkles du CTA : oscillation douce et continue */
-  .cta-v2-icon {
-    animation: icon-wiggle 4s ease-in-out infinite;
-  }
-  
-  @keyframes icon-wiggle {
-    0%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(8deg); }
-    75% { transform: rotate(-8deg); }
-  }
-  
-  @media (prefers-reduced-motion: reduce) {
-    .fade-up,
-    .zoom-in {
-      opacity: 1;
-      transform: none;
-      transition: none;
-    }
-    .cta-v2-icon {
-      animation: none;
-    }
-  }
-
-  .hero-accent {
-    color: var(--color-green-700);
-    font-style: normal; /* au lieu de italic — Space Grotesk n'a pas
-      d'italique dédiée, le faux-italique du navigateur rendrait mal */
-  }

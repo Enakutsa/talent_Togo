@@ -5,36 +5,49 @@ import TalentCard from "../../components/talent/TalentCard";
 import { getFeaturedTalents, getStats, getCategories } from "../../services/talent.service";
 import { AuthContext } from "../../context/AuthContext";
 import {
-  Search, Camera, Palette, Scissors, Music2, Film, Package2, Brush, Star,
-  ArrowRight, Users, Briefcase, Globe, ChevronRight, Quote, Sparkles
+  Search, ArrowRight, Users, Briefcase, Globe, ChevronRight, Quote, Sparkles,
+  Compass, FileCheck2, MessageCircle, Star
 } from "lucide-react";
 import "../../assets/styles/Home.css";
 
-const CATEGORY_ICONS = {
-  "Photographe": Camera,
-  "Graphiste": Palette,
-  "Couturier / Couturière": Scissors,
-  "Musicien / DJ": Music2,
-  "Vidéaste": Film,
-  "Décorateur événementiel": Package2,
-  "Maquilleur / Maquilleuse": Brush,
-  "Coiffeur / Coiffeuse": Star,
-  "Développeur": Star,
-  "Autre": Star,
+// ✅ Une vraie photo pour CHAQUE catégorie (8/8), toutes en licence libre
+// Unsplash (usage commercial gratuit). Objets/outils en gros plan pour
+// les 4 nouvelles catégories (pas de visages) afin de rester cohérent
+// avec le style déjà en place (Photographe, Graphiste...).
+const CATEGORY_IMAGES = {
+  "Photographe": "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=800&h=900&fit=crop&auto=format",
+  "Musicien / DJ": "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=800&h=900&fit=crop&auto=format",
+  "Couturier / Couturière": "https://images.unsplash.com/photo-1544441893-675973e31985?w=800&h=900&fit=crop&auto=format",
+  "Graphiste": "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=800&h=900&fit=crop&auto=format",
+  "Coiffeur / Coiffeuse": "https://images.unsplash.com/photo-1596362601603-b74f6ef166e4?w=800&h=900&fit=crop&auto=format",
+  "Décorateur événementiel": "https://images.unsplash.com/photo-1560128411-79892dd93bf8?w=800&h=900&fit=crop&auto=format",
+  "Développeur": "https://images.unsplash.com/photo-1699885960867-56d5f5262d38?w=800&h=900&fit=crop&auto=format",
+  "Autre": "https://images.unsplash.com/photo-1568205612837-017257d2310a?w=800&h=900&fit=crop&auto=format",
 };
 
-// ✅ Profils ENTIÈREMENT fictifs (nom complet, ville, photo) — plus aucun
-// lien avec de vrais clients inscrits en base. Un vrai client tombant sur
-// son propre nom à côté d'un avis qu'il n'a jamais écrit serait à juste
-// titre choqué ; ces témoignages sont donc clairement des exemples
-// inventés, jamais rattachés à des données réelles (getFeaturedClients
-// n'est plus utilisé pour cette section).
-//
-// Photos via Unsplash (images.unsplash.com) — licence Unsplash : usage
-// commercial libre, aucune attribution requise, photos mises à
-// disposition par les photographes précisément pour ce type de réemploi
-// (contrairement à une photo prise au hasard sur le web, qui poserait un
-// problème de droit à l'image).
+// Filet de sécurité si une catégorie sans photo dédiée apparaît un jour côté backend.
+const DEFAULT_CATEGORY_IMAGE = CATEGORY_IMAGES["Autre"];
+
+// ✅ Images de fond du hero — défilent en arrière-plan derrière le texte.
+const HERO_BG_SLIDES = [
+  "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1600&h=1000&fit=crop&auto=format",
+  "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1600&h=1000&fit=crop&auto=format",
+  "https://images.unsplash.com/photo-1544441893-675973e31985?w=1600&h=1000&fit=crop&auto=format",
+  "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=1600&h=1000&fit=crop&auto=format",
+  "https://images.unsplash.com/photo-1635360381874-edd74cbd57f3?w=1600&h=1000&fit=crop&auto=format",
+  "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&h=1000&fit=crop&auto=format",
+  "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1600&h=1000&fit=crop&auto=format",
+  "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1600&h=1000&fit=crop&auto=format",
+  "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1600&h=1000&fit=crop&auto=format",
+];
+
+// ✅ Photo de la section CTA finale — créatif africain au travail
+// (Amos Kamau, Unsplash, licence libre, usage commercial autorisé).
+const CTA_BG_IMAGE =
+  "https://images.unsplash.com/photo-1563132337-f159f484226c?w=900&h=1100&fit=crop&auto=format";
+
+// ✅ Profils ENTIÈREMENT fictifs — voir justification dans les commits
+// précédents. Photos Unsplash, licence libre.
 const STATIC_TESTIMONIALS = [
   {
     nom: "Ama Koffi",
@@ -60,62 +73,20 @@ const STATIC_TESTIMONIALS = [
 ];
 
 const steps = [
-  { step: "01", title: "Recherchez un talent", desc: "Utilisez notre moteur de recherche pour trouver un talent par compétence, ville ou budget." },
-  { step: "02", title: "Consultez le portfolio", desc: "Parcourez les travaux réalisés, lisez les avis et comparez les profils." },
-  { step: "03", title: "Contactez directement", desc: "Envoyez une demande de prestation via notre messagerie intégrée sécurisée." },
-];
-
-// ✅ Carrousel d'images du hero — photos Unsplash (licence libre, usage
-// commercial gratuit, aucune attribution requise) illustrant TOUTES les
-// catégories de talents de la plateforme (voir CATEGORY_ICONS ci-dessus).
-// Chaque slide porte sa propre légende (titre + sous-titre) affichée en
-// surimpression, avec un dégradé sombre en bas de l'image pour garder le
-// texte lisible quelle que soit l'image.
-const HERO_SLIDES = [
   {
-    image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200&h=800&fit=crop&auto=format",
-    title: "Photographes professionnels",
-    subtitle: "Immortalisez vos moments importants avec les meilleurs talents du Togo",
+    icon: Compass,
+    title: "Recherchez un talent",
+    desc: "Utilisez notre moteur de recherche pour trouver un talent par compétence, ville ou budget.",
   },
   {
-    image: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1200&h=800&fit=crop&auto=format",
-    title: "Musiciens & DJ",
-    subtitle: "Animez vos événements avec des artistes locaux passionnés",
+    icon: FileCheck2,
+    title: "Consultez le portfolio",
+    desc: "Parcourez les travaux réalisés, lisez les avis et comparez les profils.",
   },
   {
-    image: "https://images.unsplash.com/photo-1544441893-675973e31985?w=1200&h=800&fit=crop&auto=format",
-    title: "Couturiers & couturières",
-    subtitle: "Des créations sur-mesure, entre tradition et modernité",
-  },
-  {
-    image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=1200&h=800&fit=crop&auto=format",
-    title: "Graphistes créatifs",
-    subtitle: "Donnez une identité visuelle forte à votre projet",
-  },
-  {
-    image: "https://images.unsplash.com/photo-1635360381874-edd74cbd57f3?w=1200&h=800&fit=crop&auto=format",
-    title: "Vidéastes",
-    subtitle: "Des vidéos professionnelles pour sublimer vos événements et projets",
-  },
-  {
-    image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1200&h=800&fit=crop&auto=format",
-    title: "Décorateurs événementiels",
-    subtitle: "Des ambiances soignées pour mariages, fêtes et cérémonies",
-  },
-  {
-    image: "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=1200&h=800&fit=crop&auto=format",
-    title: "Maquilleurs & maquilleuses",
-    subtitle: "Sublimez votre look pour toutes vos occasions spéciales",
-  },
-  {
-    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&h=800&fit=crop&auto=format",
-    title: "Coiffeurs & coiffeuses",
-    subtitle: "Des coiffures soignées, du quotidien aux grandes occasions",
-  },
-  {
-    image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&h=800&fit=crop&auto=format",
-    title: "Développeurs",
-    subtitle: "Des sites et applications sur-mesure pour votre activité",
+    icon: MessageCircle,
+    title: "Contactez directement",
+    desc: "Envoyez une demande de prestation via notre messagerie intégrée sécurisée.",
   },
 ];
 
@@ -129,29 +100,17 @@ export default function Home() {
   const [talents, setTalents] = useState(null);
   const [stats, setStats] = useState(null);
 
-  // ✅ Carrousel hero : avance automatiquement toutes les 5s, boucle à
-  // l'infini. setInterval recréé à chaque changement de currentSlide pour
-  // toujours repartir sur un délai plein de 5s après un clic manuel sur
-  // un point (sinon un clic juste avant l'avancement automatique aurait
-  // fait sauter deux slides d'un coup).
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  // ✅ FIX : dépendances vides -> un seul setInterval créé au montage
+  // (avant : `[currentSlide]` recréait l'intervalle toutes les 5s).
   useEffect(() => {
     const id = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
+      setCurrentSlide((prev) => (prev + 1) % HERO_BG_SLIDES.length);
     }, 5000);
     return () => clearInterval(id);
-  }, [currentSlide]);
+  }, []);
 
-  // ✅ Plus de données fictives en cas d'échec ou de liste vide pour les
-  // catégories/talents/stats : on affiche exactement ce que l'API
-  // renvoie. Un site en production ne doit jamais montrer de faux
-  // talents à un visiteur, que ce soit parce que l'appel a échoué ou
-  // parce que la base est encore vide (nouveau déploiement, dev...).
-  // Chaque section gère elle-même son propre état vide honnête plus bas.
-  // (Les témoignages, eux, sont volontairement 100% statiques/fictifs —
-  // voir STATIC_TESTIMONIALS ci-dessus — donc plus besoin d'appeler
-  // getFeaturedClients ici.)
   useEffect(() => {
     getCategories()
       .then((data) => {
@@ -163,7 +122,18 @@ export default function Home() {
     getFeaturedTalents()
       .then((data) => {
         const list = Array.isArray(data) ? data : data?.data;
-        setTalents(Array.isArray(list) ? list : []);
+        const arr = Array.isArray(list) ? list : [];
+        // ✅ On affiche les 3 DERNIERS talents inscrits (pas les mieux
+        // notés). On trie côté front par date de création si dispo,
+        // sinon par id décroissant, pour garantir l'ordre même si
+        // l'API renvoie autre chose.
+        const sorted = [...arr].sort((a, b) => {
+          if (a.created_at && b.created_at) {
+            return new Date(b.created_at) - new Date(a.created_at);
+          }
+          return (b.id ?? 0) - (a.id ?? 0);
+        });
+        setTalents(sorted.slice(0, 3));
       })
       .catch(() => setTalents([]));
 
@@ -180,14 +150,19 @@ export default function Home() {
       .catch(() => setStats([]));
   }, []);
 
-  // ✅ Scroll automatique vers "Comment ça marche" si on arrive avec
-  // l'ancre depuis le footer (ex: /#comment-ca-marche depuis une autre page).
+  // ✅ FIX : réagit aussi si le hash change sans rechargement complet
+  // (avant : seulement vérifié au montage, ignorait les clics internes).
   useEffect(() => {
-    if (window.location.hash === "#comment-ca-marche") {
-      setTimeout(() => {
-        document.getElementById("comment-ca-marche")?.scrollIntoView({ behavior: "smooth" });
-      }, 100);
-    }
+    const scrollToHash = () => {
+      if (window.location.hash === "#comment-ca-marche") {
+        setTimeout(() => {
+          document.getElementById("comment-ca-marche")?.scrollIntoView({ behavior: "smooth" });
+        }, 100);
+      }
+    };
+    scrollToHash();
+    window.addEventListener("hashchange", scrollToHash);
+    return () => window.removeEventListener("hashchange", scrollToHash);
   }, []);
 
   const handleSearch = (e) => {
@@ -205,12 +180,25 @@ export default function Home() {
     navigate("/recherche");
   };
 
+  // ✅ Toutes les catégories (jusqu'à 8) passent maintenant en grandes
+  // cartes photo, de MÊME taille — plus de distinction bento/compact.
+  const categoryCards = categories ? categories.slice(0, 8) : [];
+
   return (
     <div className="home">
-      {/* HERO */}
-      <section className="hero-section">
-        <div className="hero-blob hero-blob-amber" />
-        <div className="hero-blob hero-blob-green" />
+      {/* HERO — photo en fond, défilement auto, texte en clair sur voile
+          sombre pour une lisibilité fiable peu importe l'image. */}
+      <section className="hero-section hero-section-photo">
+        <div className="hero-bg-slides">
+          {HERO_BG_SLIDES.map((src, i) => (
+            <div
+              key={i}
+              className={`hero-bg-slide ${i === currentSlide ? "hero-bg-slide-active" : ""}`}
+              style={{ backgroundImage: `url(${src})` }}
+            />
+          ))}
+          <div className="hero-bg-overlay" />
+        </div>
 
         <div className="hero-inner">
           <div className="hero-badge">
@@ -226,18 +214,18 @@ export default function Home() {
             pour votre projet en quelques clics.
           </p>
 
+          {/* ✅ FIX : champ réellement saisissable (avant : readOnly sans
+              onChange, donc `search` restait toujours vide). La saisie
+              met à jour le state, le submit redirige avec le paramètre
+              `q`. Un clic sans taper redirige directement vers /recherche. */}
           <form onSubmit={handleSearch} className="hero-search-bar">
-            <div
-              className="hero-search-field"
-              onClick={() => navigate("/recherche")}
-              style={{ cursor: "pointer" }}
-            >
+            <div className="hero-search-field">
               <Search size={18} className="hero-search-icon" />
               <input
                 type="text"
-                placeholder="Cliquez sur Rechercher pour trouver un talent"
-                readOnly
-                style={{ cursor: "pointer" }}
+                placeholder="Rechercher un talent (photographe, DJ, couturier...)"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
               />
             </div>
             <button type="submit" className="hero-search-btn">
@@ -245,45 +233,22 @@ export default function Home() {
             </button>
           </form>
         </div>
-      </section>
 
-      {/* CARROUSEL — images qui défilent avec légendes en surimpression.
-          Chaque slide a un dégradé sombre en bas pour garder le texte
-          lisible peu importe l'image. Défilement auto (5s) + points
-          cliquables pour naviguer manuellement. */}
-      <section className="hero-carousel-section">
-        <div className="hero-carousel">
-          {HERO_SLIDES.map((slide, i) => (
-            <div
+        <div className="hero-bg-dots">
+          {HERO_BG_SLIDES.map((_, i) => (
+            <button
               key={i}
-              className={`hero-carousel-slide ${i === currentSlide ? "hero-carousel-slide-active" : ""}`}
-              style={{ backgroundImage: `url(${slide.image})` }}
-            >
-              <div className="hero-carousel-overlay" />
-              <div className="hero-carousel-caption">
-                <h3 className="hero-carousel-caption-title">{slide.title}</h3>
-                <p className="hero-carousel-caption-subtitle">{slide.subtitle}</p>
-              </div>
-            </div>
+              type="button"
+              className={`hero-bg-dot ${i === currentSlide ? "hero-bg-dot-active" : ""}`}
+              onClick={() => setCurrentSlide(i)}
+              aria-label={`Voir l'image ${i + 1}`}
+              aria-current={i === currentSlide ? "true" : undefined}
+            />
           ))}
-
-          <div className="hero-carousel-dots">
-            {HERO_SLIDES.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                className={`hero-carousel-dot ${i === currentSlide ? "hero-carousel-dot-active" : ""}`}
-                onClick={() => setCurrentSlide(i)}
-                aria-label={`Voir le slide ${i + 1}`}
-              />
-            ))}
-          </div>
         </div>
       </section>
 
-      {/* STATS — masqué entièrement si l'API n'a rien renvoyé (échec ou
-          statistiques toutes nulles), plutôt que d'afficher des zéros
-          vides qui ne veulent rien dire visuellement. */}
+      {/* STATS */}
       {(stats === null || stats.length > 0) && (
         <section className="stats-section">
           <div className="stats-grid">
@@ -304,15 +269,16 @@ export default function Home() {
         </section>
       )}
 
-      {/* CATEGORIES */}
+      {/* CATEGORIES — 8 grandes cartes photo, toutes de même taille. */}
       <section className="section">
         <div className="section-center">
+          <span className="section-eyebrow">Ce que vous cherchez</span>
           <h2 className="section-title">Explorez par catégorie</h2>
           <p className="section-subtitle">Toutes les compétences créatives du Togo</p>
         </div>
 
         {categories === null ? (
-          <div className="categories-grid">
+          <div className="categories-photo-grid">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="category-card-skeleton" />
             ))}
@@ -323,46 +289,40 @@ export default function Home() {
           </p>
         ) : (
           <>
-            {/* ✅ .slice(0, 8) : on limite volontairement l'affichage de
-                la home aux 8 premières catégories, même si l'API en
-                renvoie davantage. Le bouton "Voir tout" ci-dessous mène
-                vers /recherche où TOUTES les catégories restent
-                accessibles/filtrables normalement. */}
-            <div className="categories-grid">
-              {categories.slice(0, 8).map(({ label, count }) => {
-                const Icon = CATEGORY_ICONS[label] || Star;
-                return (
-                  <button
-                    key={label}
-                    onClick={() => navigate(`/recherche?categorie=${encodeURIComponent(label)}`)}
-                    className="category-card"
-                  >
-                    <div className="category-icon-wrap">
-                      <Icon size={22} />
-                    </div>
-                    <h3 className="category-label">{label}</h3>
-                    <p className="category-count">{count} talents</p>
-                  </button>
-                );
-              })}
+            <div className="categories-photo-grid">
+              {categoryCards.map(({ label, count }) => (
+                <button
+                  key={label}
+                  onClick={() => navigate(`/recherche?categorie=${encodeURIComponent(label)}`)}
+                  className="photo-category-card"
+                  style={{ backgroundImage: `url(${CATEGORY_IMAGES[label] || DEFAULT_CATEGORY_IMAGE})` }}
+                >
+                  <div className="photo-category-overlay" />
+                  <div className="photo-category-content">
+                    <h3 className="photo-category-label">{label}</h3>
+                    <p className="photo-category-count">{count} talents <ArrowRight size={14} /></p>
+                  </div>
+                </button>
+              ))}
             </div>
 
             <div className="categories-cta-wrap">
               <button onClick={() => navigate("/recherche")} className="section-link">
-                Voir tout <ChevronRight size={16} />
+                Voir toutes les catégories <ChevronRight size={16} />
               </button>
             </div>
           </>
         )}
       </section>
 
-      {/* FEATURED TALENTS */}
+      {/* DERNIERS TALENTS INSCRITS */}
       <section className="featured-section">
         <div className="featured-inner">
           <div className="section-header-row">
             <div>
-              <h2 className="section-title-left">Talents en vedette</h2>
-              <p className="section-subtitle-left">Les profils les mieux notés cette semaine</p>
+              <span className="section-eyebrow">Nouveaux talents</span>
+              <h2 className="section-title-left">Derniers talents inscrits</h2>
+              <p className="section-subtitle-left">Les 3 derniers profils à avoir rejoint TalentTogo</p>
             </div>
             <button onClick={handleVoirTousLesTalents} className="section-link">
               Voir tous les talents <ChevronRight size={16} />
@@ -382,7 +342,7 @@ export default function Home() {
           ) : (
             <>
               <div className="talents-grid">
-                {talents.slice(0, 3).map((t) => (
+                {talents.map((t) => (
                   <TalentCard
                     key={t.id}
                     {...t}
@@ -404,29 +364,47 @@ export default function Home() {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section id="comment-ca-marche" className="section">
-        <div className="section-center">
-          <h2 className="section-title">Comment ça marche ?</h2>
-          <p className="section-subtitle">Simple, rapide et sécurisé</p>
-        </div>
+      {/* HOW IT WORKS — layout asymétrique : photo à gauche, étapes
+          numérotées avec ligne de connexion à droite. Photo Iwaria Inc.
+          (collectif de photographes nigérians sur Unsplash), licence
+          libre — cohérent avec l'identité africaine de la plateforme. */}
+      <section id="comment-ca-marche" className="how-it-works-section">
+        <div className="how-it-works-inner">
+          <div className="how-it-works-visual">
+            <img
+              src="https://images.unsplash.com/photo-1655720357872-ce227e4164ba?w=900&h=1100&fit=crop&auto=format"
+              alt="Client togolais parcourant des profils de talents sur TalentTogo"
+              className="how-it-works-image"
+              loading="lazy"
+            />
+          </div>
 
-        <div className="steps-grid">
-          {steps.map(({ step, title, desc }, i) => (
-            <div key={step} className={`step-item step-color-${i}`}>
-              <div className="step-num-badge">{step}</div>
-              <h3 className="step-title">{title}</h3>
-              <p className="step-desc">{desc}</p>
+          <div className="how-it-works-content">
+            <span className="section-eyebrow">Simple, rapide, sécurisé</span>
+            <h2 className="section-title-left">Comment ça marche ?</h2>
+
+            <div className="how-it-works-steps">
+              {steps.map(({ icon: Icon, title, desc }, i) => (
+                <div key={title} className="how-it-works-step">
+                  <div className="how-it-works-step-marker">
+                    <Icon size={18} />
+                    {i < steps.length - 1 && <span className="how-it-works-connector" />}
+                  </div>
+                  <div>
+                    <h3 className="step-title">{title}</h3>
+                    <p className="step-desc">{desc}</p>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
       </section>
 
-      {/* TÉMOIGNAGES CLIENTS — désormais 100% statiques et fictifs (voir
-          STATIC_TESTIMONIALS), affichés systématiquement puisqu'ils ne
-          dépendent plus d'aucune donnée réelle de la base. */}
+      {/* TÉMOIGNAGES CLIENTS — 100% statiques et fictifs. */}
       <section className="section testimonials-section">
         <div className="section-center">
+          <span className="section-eyebrow">Témoignages</span>
           <h2 className="section-title">Ce que disent nos clients</h2>
           <p className="section-subtitle">Des milliers d'utilisateurs satisfaits à travers le Togo</p>
         </div>
@@ -434,7 +412,7 @@ export default function Home() {
         <div className="testimonials-grid">
           {STATIC_TESTIMONIALS.map((t, i) => (
             <div key={i} className="testimonial-card">
-              <Quote size={28} className="testimonial-quote-icon" />
+              <Quote size={20} className="testimonial-quote-icon" />
               <div className="testimonial-stars">
                 {Array.from({ length: 5 }).map((_, si) => (
                   <Star
@@ -446,7 +424,7 @@ export default function Home() {
               </div>
               <p className="testimonial-text">"{t.commentaire}"</p>
               <div className="testimonial-author">
-                <img src={t.avatar} alt={t.nom} className="testimonial-avatar" />
+                <img src={t.avatar} alt={t.nom} className="testimonial-avatar" loading="lazy" />
                 <div>
                   <p className="testimonial-name">{t.nom}</p>
                   <p className="testimonial-city">{t.ville}</p>
@@ -457,24 +435,38 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="cta-section-v2">
-        <div className="cta-v2-inner">
-          <div className="cta-v2-icon">
-            <Sparkles size={22} />
+      {/* CTA FINAL — même système que "Comment ça marche" (image encadrée
+          + contenu côte à côte), mais inversé (image à droite) et sur un
+          fond de marque plein plutôt qu'une photo en arrière-plan de toute
+          la section — évite que le visage se retrouve derrière le texte. */}
+      <section className="cta-split-section">
+        <div className="cta-split-inner">
+          <div className="cta-split-content">
+            <div className="cta-v2-icon">
+              <Sparkles size={22} />
+            </div>
+            <h2 className="cta-split-title">Vous êtes un talent ? Rejoignez-nous !</h2>
+            <p className="cta-split-text">
+              Créez votre profil professionnel gratuit, publiez votre portfolio et connectez-vous
+              avec des milliers de clients potentiels au Togo et en Afrique.
+            </p>
+            <div className="cta-v2-actions">
+              <button onClick={() => navigate("/register")} className="cta-v2-btn-primary">
+                Créer mon profil gratuitement
+              </button>
+              <button onClick={() => navigate("/recherche")} className="cta-v2-btn-secondary">
+                Découvrir les talents
+              </button>
+            </div>
           </div>
-          <h2 className="cta-v2-title">Vous êtes un talent ? Rejoignez-nous !</h2>
-          <p className="cta-v2-text">
-            Créez votre profil professionnel gratuit, publiez votre portfolio et connectez-vous
-            avec des milliers de clients potentiels au Togo et en Afrique.
-          </p>
-          <div className="cta-v2-actions">
-            <button onClick={() => navigate("/register")} className="cta-v2-btn-primary">
-              Créer mon profil gratuitement
-            </button>
-            <button onClick={() => navigate("/recherche")} className="cta-v2-btn-secondary">
-              Découvrir les talents
-            </button>
+
+          <div className="cta-split-visual">
+            <img
+              src={CTA_BG_IMAGE}
+              alt="Entrepreneure togolaise, exemple de talent inscrit sur TalentTogo"
+              className="cta-split-image"
+              loading="lazy"
+            />
           </div>
         </div>
       </section>
