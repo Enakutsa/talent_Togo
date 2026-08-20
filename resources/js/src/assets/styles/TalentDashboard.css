@@ -1014,3 +1014,574 @@
     height: 32px;
     flex-shrink: 0;
   }
+  
+
+
+
+
+
+
+
+
+
+
+
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+  /* ══════════════════════════════════════════════════════════════
+     TalentDashboard — design tokens
+     ══════════════════════════════════════════════════════════════ */
+  
+  :root {
+    --tt-green: #14532d;
+    --tt-green-light: #1c7a3e;
+    --tt-orange: #ea580c;
+    --tt-orange-soft: #fff3e9;
+    --tt-cream: #faf7f1;
+    --tt-ink: #1c2321;
+    --tt-ink-soft: #5b645f;
+    --tt-gold: #d9a441;
+    --tt-border: #e9e4da;
+    --tt-radius: 18px;
+    --tt-shadow: 0 8px 24px -14px rgba(28, 35, 33, 0.18);
+    --tt-shadow-lg: 0 20px 44px -20px rgba(20, 83, 45, 0.28);
+  }
+  
+  .td-root {
+    background: var(--tt-cream);
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--tt-ink);
+  }
+  
+  .td-main {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+  }
+  
+  .td-page-title {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  
+  .td-page-sub {
+    color: var(--tt-ink-soft);
+  }
+  
+  /* ══════════════════════════════════════════════════════════════
+     HERO — vraie photo en fond, overlay dégradé vert/nuit
+     ══════════════════════════════════════════════════════════════ */
+  
+  .td-hero {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--tt-radius);
+    margin-bottom: 22px;
+    min-height: 190px;
+    box-shadow: var(--tt-shadow-lg);
+  }
+  
+  /*
+    🖼️ REMPLACE cette image : dépose un fichier dans ton projet, par ex.
+       src/assets/images/dashboard-hero.jpg
+    puis change l'URL ci-dessous en :
+       background-image: url('../images/dashboard-hero.jpg');
+    Suggestion de recherche pour la photo : un artisan/créateur togolais
+    au travail (couturier, photographe, graphiste) — plan large, lumière
+    chaude, en cohérence avec les catégories de la plateforme.
+    En attendant, un dégradé signature tient lieu de fond.
+  */
+  .td-hero-photo {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(120deg, rgba(20,83,45,0.92) 0%, rgba(20,83,45,0.55) 55%, rgba(234,88,12,0.35) 130%),
+      url('../images/dashboard-hero.jpg');
+    background-size: cover;
+    background-position: center;
+    background-color: var(--tt-green);
+  }
+  
+  .td-hero-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(20,83,45,0.15) 0%, rgba(15,25,20,0.35) 100%);
+  }
+  
+  .td-hero-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 32px 34px;
+  }
+  
+  .td-hero-eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--tt-gold);
+    margin: 0 0 8px;
+  }
+  
+  .td-hero .td-page-title {
+    color: #fff;
+    font-size: 28px;
+    margin: 0 0 6px;
+  }
+  
+  .td-hero .td-page-sub {
+    color: rgba(255, 255, 255, 0.82);
+    margin: 0;
+    font-size: 14px;
+  }
+  
+  /* ── Avatar + anneau de progression ─────────────────────────── */
+  
+  .td-hero-avatar-wrap {
+    position: relative;
+    width: 92px;
+    height: 92px;
+    flex-shrink: 0;
+  }
+  
+  .td-hero-ring {
+    position: absolute;
+    inset: 0;
+    width: 92px;
+    height: 92px;
+    transform: rotate(-90deg);
+  }
+  
+  .td-hero-ring-track {
+    fill: none;
+    stroke: rgba(255, 255, 255, 0.22);
+    stroke-width: 4.5;
+  }
+  
+  .td-hero-ring-progress {
+    fill: none;
+    stroke: var(--tt-gold);
+    stroke-width: 4.5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 900ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  
+  .td-hero-avatar {
+    position: absolute;
+    inset: 9px;
+    width: 74px;
+    height: 74px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.95);
+  }
+  
+  .td-hero-avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+  }
+  
+  .td-hero-completion-badge {
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    background: #fff;
+    color: var(--tt-green);
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 999px;
+    box-shadow: 0 4px 10px -3px rgba(0, 0, 0, 0.25);
+  }
+  
+  /* ══════════════════════════════════════════════════════════════
+     Cartes statistiques
+     ══════════════════════════════════════════════════════════════ */
+  
+  .td-stats-grid-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  
+  .td-stat-card-v2 {
+    background: #fff;
+    border: 1px solid var(--tt-border);
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: var(--tt-shadow);
+    transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+  }
+  
+  .td-stat-card-v2:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 30px -16px rgba(28, 35, 33, 0.28);
+    border-color: rgba(20, 83, 45, 0.18);
+  }
+  
+  .td-stat-icon-v2 {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+  }
+  
+  .td-stat-icon-blue   { background: #eaf1ff; color: #2563eb; }
+  .td-stat-icon-purple { background: #f2ecff; color: #7c3aed; }
+  .td-stat-icon-yellow { background: #fef6e0; color: var(--tt-gold); }
+  .td-stat-icon-green  { background: #e7f6ec; color: var(--tt-green-light); }
+  
+  .td-stat-value-v2 {
+    font-family: 'Fraunces', serif;
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0 0 2px;
+    color: var(--tt-ink);
+  }
+  
+  .td-stat-label-v2 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--tt-ink);
+    margin: 0 0 2px;
+  }
+  
+  .td-stat-sub-v2 {
+    font-size: 12px;
+    margin: 0;
+  }
+  
+  .td-stat-sub-muted { color: #93938c; }
+  .td-stat-sub-ok    { color: var(--tt-green-light); font-weight: 600; }
+  
+  /* ══════════════════════════════════════════════════════════════
+     Bannière "Découvrez les autres talents" — photo + overlay
+     ══════════════════════════════════════════════════════════════ */
+  
+  .td-explore-banner {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 22px 26px;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    text-align: left;
+    margin-bottom: 22px;
+    min-height: 92px;
+    box-shadow: var(--tt-shadow);
+    transition: transform 220ms ease, box-shadow 220ms ease;
+  }
+  
+  .td-explore-banner:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--tt-shadow-lg);
+  }
+  
+  /*
+    🖼️ Même principe que le hero : remplace par une photo (ex. un client
+    et un talent en échange, ou un portfolio en gros plan).
+    src/assets/images/explore-banner.jpg
+  */
+  .td-explore-banner-photo {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(100deg, rgba(20,83,45,0.94) 0%, rgba(20,83,45,0.75) 60%, rgba(234,88,12,0.5) 130%),
+      url('../images/explore-banner.jpg');
+    background-size: cover;
+    background-position: center;
+    background-color: var(--tt-green);
+  }
+  
+  .td-explore-banner-scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(0,0,0,0.1), transparent 60%);
+  }
+  
+  .td-explore-banner-icon {
+    position: relative;
+    z-index: 1;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.18);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  
+  .td-explore-banner-text {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+  }
+  
+  .td-explore-banner-title {
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    margin: 0 0 3px;
+  }
+  
+  .td-explore-banner-sub {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 13px;
+    margin: 0;
+  }
+  
+  .td-explore-banner-arrow {
+    position: relative;
+    z-index: 1;
+    color: #fff;
+    flex-shrink: 0;
+    transition: transform 220ms ease;
+  }
+  
+  .td-explore-banner:hover .td-explore-banner-arrow {
+    transform: translate(3px, -3px);
+  }
+  
+  /* ══════════════════════════════════════════════════════════════
+     Carte "Demandes récentes"
+     ══════════════════════════════════════════════════════════════ */
+  
+  .td-card {
+    background: #fff;
+    border: 1px solid var(--tt-border);
+    border-radius: 16px;
+    box-shadow: var(--tt-shadow);
+    overflow: hidden;
+  }
+  
+  .td-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--tt-border);
+  }
+  
+  .td-card-title {
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .td-card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    color: var(--tt-green-light);
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  
+  .td-card-body {
+    padding: 6px 12px;
+  }
+  
+  .td-demande-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 10px;
+    border-radius: 10px;
+    transition: background-color 180ms ease;
+  }
+  
+  .td-demande-row:hover {
+    background-color: var(--tt-orange-soft);
+  }
+  
+  .td-demande-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--tt-green);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  
+  .td-demande-info { flex: 1; min-width: 0; }
+  
+  .td-demande-client {
+    font-weight: 600;
+    font-size: 13.5px;
+    margin: 0 0 2px;
+  }
+  
+  .td-demande-service {
+    font-size: 12.5px;
+    color: var(--tt-ink-soft);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .td-demande-right {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  
+  .td-statut {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 999px;
+    margin-bottom: 4px;
+  }
+  
+  .td-statut-orange { background: #fef3e2; color: #b45309; }
+  .td-statut-green  { background: #e7f6ec; color: var(--tt-green-light); }
+  .td-statut-red    { background: #fde8e8; color: #b91c1c; }
+  .td-statut-blue   { background: #e5edff; color: #1d4ed8; }
+  
+  .td-demande-date {
+    font-size: 11.5px;
+    color: #9a9a92;
+    margin: 0;
+  }
+  
+  .td-empty-text {
+    padding: 30px 20px;
+    text-align: center;
+    color: var(--tt-ink-soft);
+    font-size: 13.5px;
+  }
+  
+  .td-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 36px 20px;
+    gap: 6px;
+  }
+  
+  .td-empty-state-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--tt-orange-soft);
+    color: var(--tt-orange);
+    margin-bottom: 6px;
+  }
+  
+  .td-empty-state-title {
+    font-weight: 700;
+    color: var(--tt-ink);
+    margin: 0;
+    font-size: 14px;
+  }
+  
+  .td-empty-state-sub {
+    font-size: 12.5px;
+    color: var(--tt-ink-soft);
+    max-width: 320px;
+    margin: 0;
+  }
+  
+  /* ══════════════════════════════════════════════════════════════
+     Placeholder générique (sections en construction)
+     ══════════════════════════════════════════════════════════════ */
+  
+  .td-placeholder-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--tt-ink-soft);
+  }
+  
+  .td-placeholder-inner h2 {
+    font-family: 'Fraunces', serif;
+    color: var(--tt-ink);
+    margin: 14px 0 6px;
+  }
+  
+  /* ══════════════════════════════════════════════════════════════
+     Animations d'entrée (respecte prefers-reduced-motion)
+     ══════════════════════════════════════════════════════════════ */
+  
+  @media (prefers-reduced-motion: no-preference) {
+    .td-anim-in {
+      animation: td-fade-up 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .td-anim-delay-1 { animation-delay: 70ms; }
+    .td-anim-delay-2 { animation-delay: 140ms; }
+    .td-anim-delay-3 { animation-delay: 210ms; }
+    .td-anim-delay-4 { animation-delay: 280ms; }
+  }
+  
+  @keyframes td-fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* ══════════════════════════════════════════════════════════════
+     Responsive
+     ══════════════════════════════════════════════════════════════ */
+  
+  @media (max-width: 900px) {
+    .td-stats-grid-4 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 640px) {
+    .td-main { padding: 18px 16px 40px; }
+  
+    .td-hero-content {
+      flex-direction: column-reverse;
+      align-items: flex-start;
+      padding: 24px 20px;
+      gap: 16px;
+    }
+  
+    .td-hero .td-page-title { font-size: 22px; }
+  
+    .td-stats-grid-4 {
+      grid-template-columns: 1fr;
+    }
+  
+    .td-explore-banner {
+      flex-wrap: wrap;
+    }
+  }

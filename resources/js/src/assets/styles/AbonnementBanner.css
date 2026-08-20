@@ -1,0 +1,62 @@
+.abonnement-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    border-radius: var(--radius-lg);
+    margin-bottom: 24px;
+  }
+  
+  .abonnement-banner-warning {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+  }
+  
+  .abonnement-banner-expire {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+  }
+  .abonnement-banner-actif {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #166534;
+  }
+  
+  .abonnement-banner-icon {
+    flex-shrink: 0;
+  }
+  
+  .abonnement-banner-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+    font-family: var(--font-body);
+  }
+  
+  .abonnement-banner-btn {
+    flex-shrink: 0;
+    padding: 10px 20px;
+    background: var(--color-orange-600);
+    color: #fff;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  
+  .abonnement-banner-btn:hover {
+    background: var(--color-orange-700);
+  }
+  
+  @media (max-width: 640px) {
+    .abonnement-banner {
+      flex-direction: column;
+      align-items: stretch;
+      text-align: center;
+    }
+  }

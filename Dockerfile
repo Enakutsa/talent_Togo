@@ -16,12 +16,26 @@ FROM php:8.2-fpm
 # uniquement dans le stage "frontend-build" ci-dessus (image officielle
 # node:20-slim, propre et rapide), puis on ne récupère que le résultat
 # compilé (public/build) dans cette image finale.
+#
+# ✅ libcurl4-openssl-dev + libonig-dev ajoutés : nécessaires pour
+# compiler les extensions PHP curl et mbstring ci-dessous (elles ne
+# s'installent pas sans leurs bibliothèques système correspondantes).
 RUN apt-get update && apt-get install -y \
     git curl libpq-dev libzip-dev zip unzip libicu-dev \
+    libcurl4-openssl-dev libonig-dev \
     nginx supervisor \
     && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install pdo pdo_pgsql zip intl opcache
+# ✅ curl : REQUIS par Guzzle (utilisé par Laravel Socialite pour Google
+# OAuth) ET par fedapay-php, qui appelle directement les fonctions
+# curl_*() sans fallback possible. Sans cette extension, tout appel à
+# l'API FedaPay ou à Google échoue, voire composer install refuse
+# d'installer ces deux packages (ils déclarent "ext-curl" en dépendance).
+# ✅ mbstring : requis par Laravel lui-même (manipulation de chaînes
+# multi-octets, ex: noms/emails avec accents comme "Kokou", "Ébénézer").
+# ✅ bcmath : calculs précis sur les montants (abonnement FedaPay, prix)
+# sans les erreurs d'arrondi des flottants PHP classiques.
+RUN docker-php-ext-install pdo pdo_pgsql zip intl opcache curl mbstring bcmath
 
 # ✅ Limites PHP pour l'upload (portfolio, photos, documents)
 # ✅ expose_php = Off : masque la version PHP exacte dans les headers

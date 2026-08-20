@@ -9,6 +9,7 @@
         "php": "^8.2",
         "cloudinary-labs/cloudinary-laravel": "^3.0",
         "doctrine/dbal": "^4.4",
+        "fedapay/fedapay-php": "^0.4.8",
         "filament/filament": "^4.0",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.3",

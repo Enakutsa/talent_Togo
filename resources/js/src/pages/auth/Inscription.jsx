@@ -44,11 +44,6 @@ const VILLES_TOGO = [
 // Autorise lettres (avec accents), espaces, apostrophes et tirets
 const NAME_REGEX = /^[a-zA-ZÀ-ÿ\s'-]+$/;
 
-// ✅ Ordre d'affichage des champs dans le formulaire — utilisé pour
-// déterminer quel champ en erreur scroller en premier quand le serveur
-// renvoie plusieurs erreurs à la fois (on scrolle vers le PREMIER champ
-// du formulaire qui a une erreur, pas vers une clé arbitraire de l'objet
-// errors, dont l'ordre n'est pas garanti identique à l'ordre visuel).
 const FIELD_ORDER = [
   "prenom",
   "nom",
@@ -62,9 +57,6 @@ const FIELD_ORDER = [
 ];
 
 function scrollToField(fieldName) {
-  // Petit délai pour laisser React insérer le message d'erreur dans le
-  // DOM avant de calculer la position de scroll — sans ça, le scroll
-  // peut se faire un instant trop tôt et manquer la cible.
   setTimeout(() => {
     const el = document.getElementById(`field-${fieldName}`);
     if (el) {
@@ -80,9 +72,10 @@ export default function Inscription() {
   const navigate = useNavigate();
 
   const [role, setRole] = useState(null);
+  const [plan, setPlan] = useState("gratuit"); // "gratuit" | "payant" — talent uniquement
   const [agree, setAgree] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [loadingStep, setLoadingStep] = useState(null); // "upload" | "creation" | null
+  const [loadingStep, setLoadingStep] = useState(null);
   const [errors, setErrors] = useState({});
   const [generalError, setGeneralError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -105,11 +98,9 @@ export default function Inscription() {
   const [pwdTouched, setPwdTouched] = useState(false);
   const [phoneTouched, setPhoneTouched] = useState(false);
 
-  // Numéro togolais valide : commence par 9, 7 ou 2, suivi de 7 chiffres
   const PHONE_REGEX = /^[972]\d{7}$/;
   const phoneIsValid = PHONE_REGEX.test(form.telephone);
 
-  // Critères de validation du mot de passe
   const pwd = form.mot_de_passe;
   const pwdChecks = {
     length: pwd.length === 8,
@@ -134,7 +125,6 @@ export default function Inscription() {
     setForm({ ...form, [field]: value });
   };
 
-  // Mot de passe limité à 8 caractères max
   const handlePasswordChange = (field) => (e) => {
     const value = e.target.value.slice(0, 8);
     setForm({ ...form, [field]: value });
@@ -167,11 +157,6 @@ export default function Inscription() {
     setErrors({});
     setGeneralError("");
 
-    // ⚠️ generalError reste réservé aux erreurs qui ne concernent AUCUN
-    // champ précis du formulaire (rôle non choisi, CGU non acceptées) —
-    // tout le reste s'affiche désormais directement sous le champ
-    // concerné via `errors`, pour que l'utilisateur voie immédiatement
-    // OÙ est le problème sans avoir à chercher dans tout le formulaire.
     if (!role) {
       setGeneralError("Veuillez choisir un profil : Talent ou Client.");
       return;
@@ -237,15 +222,10 @@ export default function Inscription() {
         mot_de_passe: form.mot_de_passe,
         mot_de_passe_confirmation: form.mot_de_passe_confirmation,
         role,
+        ...(role === "talent" ? { plan } : {}),
       };
 
       if (role === "talent") {
-        // ✅ Upload direct navigateur → Cloudinary (voir
-        // cloudinaryDirect.service.js) — se fait AVANT l'appel à
-        // /auth/register, qui ne reçoit que l'URL résultante et non plus
-        // le fichier brut. Élimine le second trajet réseau
-        // (navigateur → Laravel → Cloudinary) qui doublait le temps
-        // d'upload ressenti par le talent lors de l'inscription.
         setLoadingStep("upload");
         let documentUpload;
         try {
@@ -266,6 +246,11 @@ export default function Inscription() {
         };
       }
 
+      // 🔎 LOG TEMPORAIRE DE DIAGNOSTIC — à retirer une fois le bug confirmé/résolu.
+      // Regarde l'onglet Console juste avant l'envoi de la requête.
+      console.log("🔎 [DEBUG] role =", role, "| plan (state) =", plan);
+      console.log("🔎 [DEBUG] payload envoyé à /auth/register :", payload);
+
       setLoadingStep("creation");
       const res = await register(payload);
 
@@ -280,12 +265,6 @@ export default function Inscription() {
         const serverErrors = err.response.data.errors || {};
         setErrors(serverErrors);
 
-        // ✅ Pointe l'utilisateur vers le PREMIER champ en erreur (dans
-        // l'ordre visuel du formulaire, via FIELD_ORDER) au lieu de le
-        // laisser en haut de page à devoir chercher lui-même ce qui
-        // cloche — ex: un email déjà pris affichait l'erreur tout en bas
-        // sous le champ email, invisible si le formulaire est long et
-        // que l'utilisateur est resté scrollé en haut.
         const firstErrorField = FIELD_ORDER.find((f) => serverErrors[f]);
         if (firstErrorField) {
           scrollToField(firstErrorField);
@@ -363,6 +342,44 @@ export default function Inscription() {
           {role === "talent" && (
             <div className="talent-info-banner">
               ℹ️ Votre compte sera examiné et validé par un administrateur dans un délai de 48h.
+            </div>
+          )}
+
+          {role === "talent" && (
+            <div className="plan-cards-grid">
+              <div
+                className={`plan-card ${plan === "gratuit" ? "selected" : ""}`}
+                onClick={() => setPlan("gratuit")}
+              >
+                <div className="plan-card-header">
+                  <h3 className="plan-card-title">1 mois gratuit</h3>
+                  {plan === "gratuit" && (
+                    <div className="role-check-badge role-check-talent">
+                      <Check size={11} />
+                    </div>
+                  )}
+                </div>
+                <p className="plan-card-desc">
+                  Essayez la plateforme gratuitement pendant 30 jours, sans engagement.
+                </p>
+              </div>
+
+              <div
+                className={`plan-card ${plan === "payant" ? "selected" : ""}`}
+                onClick={() => setPlan("payant")}
+              >
+                <div className="plan-card-header">
+                  <h3 className="plan-card-title">S'abonner maintenant</h3>
+                  {plan === "payant" && (
+                    <div className="role-check-badge role-check-talent">
+                      <Check size={11} />
+                    </div>
+                  )}
+                </div>
+                <p className="plan-card-desc">
+                  Activez votre visibilité immédiatement. Paiement demandé juste après l'inscription.
+                </p>
+              </div>
             </div>
           )}
 

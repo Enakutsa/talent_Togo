@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Models\Abonnement;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -45,9 +47,6 @@ class AuthController extends Controller
         try {
             Mail::to($utilisateur->email)->queue(new OtpMail($code));
         } catch (\Exception $e) {
-            // ⚠️ Sans ce log, un échec d'envoi (Brevo en panne, quota
-            // dépassé, etc.) passait totalement inaperçu — impossible de
-            // savoir pourquoi un utilisateur ne recevait jamais son code.
             Log::error('Échec envoi OTP', [
                 'utilisateur_id' => $utilisateur->id,
                 'email'          => $utilisateur->email,
@@ -92,117 +91,124 @@ class AuthController extends Controller
         return asset('storage/' . $photo);
     }
 
-   /**
- * ✅ INSCRIPTION
- */
-public function register(Request $request)
-{
-    $rules = [
-        'nom'          => 'required|string|max:100',
-        'prenom'       => 'required|string|max:100',
-        'email'        => 'required|email|unique:utilisateurs,email|regex:/^[\w.+-]+@gmail\.com$/i',
-        // ✅ Le premier chiffre doit être 7, 9 (mobile) ou 2 (fixe /
-        // entreprise), suivi de 7 chiffres quelconques — au lieu
-        // d'accepter n'importe quelle suite de 8 chiffres, ce qui
-        // laissait passer des numéros invalides comme ceux commençant
-        // par 6.
-        'telephone'    => 'required|string|regex:/^[792][0-9]{7}$/',
-        'mot_de_passe' => [
-            'required',
-            'string',
-            'size:8',
-            'regex:/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8}$/',
-            'confirmed',
-        ],
-        'role'         => 'required|in:talent,client',
-    ];
-
-    if ($request->role === 'talent') {
-        // ✅ Le navigateur a déjà uploadé le PDF directement vers
-        // Cloudinary (voir CloudinarySignatureController) — on reçoit
-        // ici l'URL résultante, plus le fichier brut. Ça élimine le
-        // second trajet réseau (navigateur -> Laravel -> Cloudinary)
-        // qui doublait le temps d'upload ressenti.
-        $rules['document_justificatif_url'] = ['required', 'url', 'starts_with:https://res.cloudinary.com/'];
-        $rules['categorie_id']              = 'required|exists:categories,id';
-        $rules['ville']                     = 'required|string|max:100';
-    }
-
-    $validator = Validator::make($request->all(), $rules, [
-        'email.regex'                        => 'L\'adresse e-mail doit être une adresse Gmail (@gmail.com).',
-        'telephone.regex'                    => 'Le numéro doit être un numéro togolais valide (8 chiffres, commençant par 7, 9 ou 2).',
-        'mot_de_passe.size'                  => 'Le mot de passe doit contenir exactement 8 caractères.',
-        'mot_de_passe.regex'                 => 'Le mot de passe doit contenir au moins une lettre, un chiffre et un caractère spécial.',
-        'mot_de_passe.confirmed'             => 'Les mots de passe ne correspondent pas.',
-        'document_justificatif_url.required' => 'Le document justificatif est obligatoire pour les talents.',
-        'document_justificatif_url.url'      => 'Document justificatif invalide.',
-        'categorie_id.required'              => 'Veuillez choisir une catégorie.',
-        'categorie_id.exists'                => 'Catégorie invalide.',
-        'ville.required'                     => 'Veuillez indiquer votre ville.',
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json(['errors' => $validator->errors()], 422);
-    }
-
-    // ✅ Plus d'upload à faire ici : le document est déjà sur
-    // Cloudinary, uploadé directement par le navigateur.
-    $documentUrl = $request->role === 'talent'
-        ? $request->input('document_justificatif_url')
-        : null;
-
-    $utilisateur = DB::transaction(function () use ($request, $documentUrl) {
-
-        $utilisateur = Utilisateur::create([
-            'nom'                   => $request->nom,
-            'prenom'                => $request->prenom,
-            'email'                 => $request->email,
-            'telephone'             => $request->telephone,
-            'mot_de_passe'          => Hash::make($request->mot_de_passe),
-            'role'                  => $request->role,
-            'is_verified'           => true,
-            'document_justificatif' => $documentUrl,
-            'statut'                => $request->role === 'talent' ? 'en_attente' : 'actif',
-            'categorie_id'          => $request->role === 'talent' ? $request->categorie_id : null,
-            'ville'                 => $request->role === 'talent' ? $request->ville : null,
-        ]);
+    /**
+     * ✅ INSCRIPTION
+     */
+    public function register(Request $request)
+    {
+        $rules = [
+            'nom'          => 'required|string|max:100',
+            'prenom'       => 'required|string|max:100',
+            'email'        => 'required|email|unique:utilisateurs,email|regex:/^[\w.+-]+@gmail\.com$/i',
+            'telephone'    => 'required|string|regex:/^[792][0-9]{7}$/',
+            'mot_de_passe' => [
+                'required',
+                'string',
+                'size:8',
+                'regex:/^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).{8}$/',
+                'confirmed',
+            ],
+            'role'         => 'required|in:talent,client',
+        ];
 
         if ($request->role === 'talent') {
-            ProfilTalent::create([
-                'utilisateur_id' => $utilisateur->id,
-                'disponibilite'  => false,
-                'vues'           => 0,
-            ]);
+            $rules['document_justificatif_url'] = ['required', 'url', 'starts_with:https://res.cloudinary.com/'];
+            $rules['categorie_id']              = 'required|exists:categories,id';
+            $rules['ville']                     = 'required|string|max:100';
+            $rules['plan']                      = 'required|in:gratuit,payant';
         }
 
-        return $utilisateur;
-    });
+        $validator = Validator::make($request->all(), $rules, [
+            'email.regex'                        => 'L\'adresse e-mail doit être une adresse Gmail (@gmail.com).',
+            'telephone.regex'                    => 'Le numéro doit être un numéro togolais valide (8 chiffres, commençant par 7, 9 ou 2).',
+            'mot_de_passe.size'                  => 'Le mot de passe doit contenir exactement 8 caractères.',
+            'mot_de_passe.regex'                 => 'Le mot de passe doit contenir au moins une lettre, un chiffre et un caractère spécial.',
+            'mot_de_passe.confirmed'             => 'Les mots de passe ne correspondent pas.',
+            'document_justificatif_url.required' => 'Le document justificatif est obligatoire pour les talents.',
+            'document_justificatif_url.url'      => 'Document justificatif invalide.',
+            'categorie_id.required'              => 'Veuillez choisir une catégorie.',
+            'categorie_id.exists'                => 'Catégorie invalide.',
+            'ville.required'                     => 'Veuillez indiquer votre ville.',
+            'plan.required'                      => 'Veuillez choisir un plan d\'abonnement.',
+            'plan.in'                            => 'Plan d\'abonnement invalide.',
+        ]);
 
-    if ($utilisateur->role === 'talent') {
-        // ✅ dispatch(...)->afterResponse() : exécute l'envoi des
-        // notifications APRÈS que la réponse HTTP soit déjà partie
-        // vers le frontend, sans attendre le queue worker.
-        dispatch(function () use ($utilisateur) {
-            $this->notifierAdminsNouveauTalent($utilisateur);
-        })->afterResponse();
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $documentUrl = $request->role === 'talent'
+            ? $request->input('document_justificatif_url')
+            : null;
+
+        $utilisateur = DB::transaction(function () use ($request, $documentUrl) {
+
+            $estTalent  = $request->role === 'talent';
+            $planChoisi = $estTalent ? $request->input('plan') : null;
+
+            $finEssaiGratuit = ($estTalent && $planChoisi === 'gratuit')
+                ? Carbon::now()->addMonth()
+                : null;
+
+            $utilisateur = Utilisateur::create([
+                'nom'                   => $request->nom,
+                'prenom'                => $request->prenom,
+                'email'                 => $request->email,
+                'telephone'             => $request->telephone,
+                'mot_de_passe'          => Hash::make($request->mot_de_passe),
+                'role'                  => $request->role,
+                'is_verified'           => true,
+                'document_justificatif' => $documentUrl,
+                'statut'                => $estTalent ? 'en_attente' : 'actif',
+                'categorie_id'          => $estTalent ? $request->categorie_id : null,
+                'ville'                 => $estTalent ? $request->ville : null,
+                'abonnement_expire_le'  => $finEssaiGratuit,
+                'plan_choisi'           => $estTalent ? $planChoisi : null,
+            ]);
+
+            if ($estTalent) {
+                ProfilTalent::create([
+                    'utilisateur_id' => $utilisateur->id,
+                    'disponibilite'  => false,
+                    'vues'           => 0,
+                ]);
+
+                if ($planChoisi === 'gratuit') {
+                    Abonnement::create([
+                        'utilisateur_id' => $utilisateur->id,
+                        'statut'         => 'essai_gratuit',
+                        'date_debut'     => now(),
+                        'date_fin'       => $finEssaiGratuit,
+                    ]);
+                } else {
+                    Abonnement::create([
+                        'utilisateur_id' => $utilisateur->id,
+                        'statut'         => 'en_attente_paiement',
+                        'date_debut'     => now(),
+                        'date_fin'       => null,
+                    ]);
+                }
+            }
+
+            return $utilisateur;
+        });
+
+        if ($utilisateur->role === 'talent') {
+            dispatch(function () use ($utilisateur) {
+                $this->notifierAdminsNouveauTalent($utilisateur);
+            })->afterResponse();
+        }
+
+        return response()->json([
+            'success' => true,
+            'data'    => [
+                'utilisateur' => $utilisateur,
+                'redirect'    => 'login',
+            ]
+        ], 201);
     }
 
-    // ⚠️ Retiré : createToken() ici délivrait un token Sanctum valide
-    // immédiatement après inscription, sans passer par la vérification
-    // OTP — alors que le flow de connexion normal (login()) l'exige
-    // toujours. Comme la redirection est de toute façon vers /login
-    // (voir 'redirect' ci-dessous), ce token n'était jamais utilisé
-    // côté frontend. Le retirer évite de délivrer un accès valide à un
-    // compte non vérifié.
-    return response()->json([
-        'success' => true,
-        'data'    => [
-            'utilisateur' => $utilisateur,
-            'redirect'    => 'login',
-        ]
-    ], 201);
-}
-     /**
+    /**
      * ✅ LOGIN → OTP par email
      */
     public function login(Request $request)
@@ -271,7 +277,6 @@ public function register(Request $request)
             return response()->json(['message' => 'Code invalide'], 422);
         }
 
-        // ⛔ Bloqué après 2 tentatives incorrectes
         if ($otp->estBloque()) {
             $secondes = $otp->secondesRestantes();
             return response()->json([
@@ -280,7 +285,6 @@ public function register(Request $request)
             ], 429);
         }
 
-        // Code incorrect
         if ($otp->code !== $request->code) {
             $otp->tentatives++;
 
@@ -293,17 +297,14 @@ public function register(Request $request)
             return response()->json(['message' => 'Code invalide'], 422);
         }
 
-        // Code expiré
         if ($otp->estExpire()) {
             return response()->json(['message' => 'Code expiré'], 422);
         }
 
-        // ✅ Code correct — nettoyage
         Otp::where('utilisateur_id', $utilisateur->id)->delete();
 
         $token = $utilisateur->createToken('auth_token')->plainTextToken;
 
-        // Redirection selon rôle et état du profil
         $redirect = '/';
         if ($utilisateur->isTalent()) {
             $profil = $utilisateur->profilTalent;
@@ -312,8 +313,6 @@ public function register(Request $request)
             $redirect = 'admin';
         }
 
-        // ✅ Résoudre la photo (compte + profil talent) pour que la nav
-        // affiche la bonne image immédiatement, sans attendre un refresh.
         $utilisateurData = $utilisateur->toArray();
         $utilisateurData['photo'] = $this->resolvePhotoUrl($utilisateur->photo);
 
@@ -322,6 +321,22 @@ public function register(Request $request)
                 $utilisateur->profilTalent->toArray(),
                 ['photo' => $this->resolvePhotoUrl($utilisateur->profilTalent->photo)]
             );
+        }
+
+        if ($utilisateur->isTalent()) {
+            // ✅ On cherche l'abonnement RÉELLEMENT en cours de validité
+            // (actif ou essai_gratuit, avec une date de fin encore dans le
+            // futur), pas simplement le plus récent créé — sinon une tentative
+            // de paiement ratée/abandonnée après un abonnement déjà payé
+            // masquerait à tort le vrai statut "actif".
+            $abonnementValide = $utilisateur->abonnements()
+                ->where('date_fin', '>', now())
+                ->whereIn('statut', ['actif', 'essai_gratuit'])
+                ->orderByDesc('date_fin')
+                ->first();
+
+            $utilisateurData['abonnement_statut'] = $abonnementValide?->statut
+                ?? $utilisateur->abonnements()->latest()->first()?->statut;
         }
 
         return response()->json([
@@ -379,19 +394,27 @@ public function register(Request $request)
             ? array_merge($profil->toArray(), ['photo' => $this->resolvePhotoUrl($profil->photo)])
             : null;
 
+        if ($utilisateur->isTalent()) {
+            // ✅ On cherche l'abonnement RÉELLEMENT en cours de validité
+            // (actif ou essai_gratuit, avec une date de fin encore dans le
+            // futur), pas simplement le plus récent créé — sinon une tentative
+            // de paiement ratée/abandonnée après un abonnement déjà payé
+            // masquerait à tort le vrai statut "actif".
+            $abonnementValide = $utilisateur->abonnements()
+                ->where('date_fin', '>', now())
+                ->whereIn('statut', ['actif', 'essai_gratuit'])
+                ->orderByDesc('date_fin')
+                ->first();
+
+            $utilisateurData['abonnement_statut'] = $abonnementValide?->statut
+                ?? $utilisateur->abonnements()->latest()->first()?->statut;
+        }
+
         return response()->json($utilisateurData);
     }
 
     /**
      * ✅ MISE À JOUR DU PROFIL (infos de base + photo de compte + mot de passe)
-     *
-     * La photo ici est celle du COMPTE (utilisateurs.photo) — pertinente pour
-     * un client ou un admin. Le talent a sa propre photo "professionnelle"
-     * sur profils_talents.photo, gérée par ProfilTalentController, pas ici.
-     *
-     * ⚠️ C'est aussi CE endpoint qui gère le changement de mot de passe
-     * (page Paramètres) : envoyer mot_de_passe_actuel + nouveau_mot_de_passe
-     * + nouveau_mot_de_passe_confirmation, sans toucher aux autres champs.
      */
     public function update(Request $request)
     {
@@ -401,7 +424,7 @@ public function register(Request $request)
             'nom'       => 'sometimes|required|string|max:100',
             'prenom'    => 'sometimes|required|string|max:100',
             'telephone' => 'sometimes|required|string|regex:/^[0-9]{8}$/',
-            'photo'     => 'nullable|file|image|mimes:jpeg,jpg,png|max:10240', // 10 Mo
+            'photo'     => 'nullable|file|image|mimes:jpeg,jpg,png|max:10240',
         ];
 
         $changePassword = $request->filled('nouveau_mot_de_passe');
@@ -429,9 +452,6 @@ public function register(Request $request)
         $utilisateur->fill($request->only(['nom', 'prenom', 'telephone']));
 
         if ($request->hasFile('photo')) {
-            // ✅ Cloudinary plutôt que le disque local : le stockage local
-            // de Render est éphémère (effacé à chaque déploiement), donc
-            // toute photo uploadée y disparaîtrait au prochain déploiement.
             if ($utilisateur->photo_public_id) {
                 $this->cloudinary()->delete($utilisateur->photo_public_id, 'image');
             }
@@ -529,9 +549,6 @@ public function register(Request $request)
 
     /**
      * ✅ PRÉFÉRENCES DE NOTIFICATION (page Paramètres)
-     * Stockées en JSON sur utilisateurs.preferences_notifications.
-     * Si l'utilisateur n'en a jamais défini, on renvoie des valeurs par
-     * défaut (tout activé) sans forcer d'écriture en base.
      */
     public function getNotificationPrefs(Request $request)
     {
@@ -581,8 +598,6 @@ public function register(Request $request)
 
     /**
      * ✅ DÉCONNEXION DE TOUS LES AUTRES APPAREILS
-     * Révoque tous les tokens Sanctum SAUF celui utilisé pour cette requête,
-     * afin de ne pas déconnecter la session en cours.
      */
     public function logoutAllDevices(Request $request)
     {

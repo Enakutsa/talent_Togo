@@ -1,0 +1,113 @@
+.paiement-abo-bg {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-bg, #fdfcfa);
+    padding: 24px;
+  }
+  
+  .paiement-abo-card {
+    max-width: 440px;
+    width: 100%;
+    background: #fff;
+    border-radius: var(--radius-xl, 24px);
+    padding: 40px 32px;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
+  }
+  
+  .paiement-abo-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    background: var(--color-orange-50);
+    color: var(--color-orange-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+  
+  .paiement-abo-title {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--color-text);
+    margin: 0 0 12px;
+  }
+  
+  .paiement-abo-text {
+    font-size: 14px;
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    margin: 0 0 28px;
+  }
+  
+  .paiement-abo-error {
+    background: #fee2e2;
+    color: var(--color-danger);
+    font-size: 13px;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    margin-bottom: 16px;
+  }
+  
+  .paiement-abo-btn {
+    width: 100%;
+    padding: 14px;
+    background: var(--color-orange-600);
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .paiement-abo-btn:hover:not(:disabled) {
+    background: var(--color-orange-700);
+  }
+  
+  .paiement-abo-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  .paiement-abo-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: paiement-abo-spin 0.7s linear infinite;
+  }
+  
+  @keyframes paiement-abo-spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  .paiement-abo-secure {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--color-text-muted);
+    margin: 16px 0 0;
+  }
+  
+  .paiement-abo-logout {
+    margin-top: 20px;
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    font-size: 13px;
+    text-decoration: underline;
+    cursor: pointer;
+  }

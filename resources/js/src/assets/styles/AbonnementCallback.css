@@ -1,0 +1,32 @@
+.abonnement-callback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+    gap: 12px;
+    padding: 24px;
+  }
+  
+  .abonnement-callback h2 {
+    font-family: var(--font-heading);
+    font-size: 22px;
+    color: var(--color-text);
+    margin: 8px 0 4px;
+  }
+  
+  .abonnement-callback p {
+    color: var(--color-text-muted);
+    font-size: 14px;
+  }
+  
+  .abonnement-callback-spin {
+    animation: spin 1s linear infinite;
+    color: var(--color-orange-600);
+  }
+  
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }

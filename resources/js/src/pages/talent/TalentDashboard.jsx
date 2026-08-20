@@ -1,15 +1,17 @@
-import { useState, useContext, useRef, useEffect, useCallback } from "react";
+import { useState, useContext, useRef, useEffect, useCallback, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import {
   ClipboardList, TrendingUp, ChevronRight, Eye, Star, Search,
-  User, Camera, Mail, Phone, MapPin, Tag,
+  User, Camera, Mail, Phone, MapPin, Tag, ArrowUpRight,
 } from "lucide-react";
 import { getProfilTalent, updateProfilTalent } from "../../services/profilTalent.service";
 import { getCategories } from "../../services/categorie.service";
 import { getDemandesRecues } from "../../services/demande.service";
 import { useAutoRefresh } from "../../hooks/useAutoRefresh";
 import TalentTopNav, { NAV_ITEMS } from "../../components/TalentTopNav";
+// ✅ Bannière d'avertissement d'abonnement (essai gratuit / expiration)
+import AbonnementBanner from "../../components/talent/AbonnementBanner";
 import "../../assets/styles/TalentDashboard.css";
 import "../../assets/styles/ProfilCreer.css";
 
@@ -50,6 +52,42 @@ export default function TalentDashboard() {
 const statutColor = { en_attente: "orange", acceptee: "green", refusee: "red", terminee: "blue" };
 const statutLabel = { en_attente: "En attente", acceptee: "Acceptée", refusee: "Refusée", terminee: "Terminée" };
 
+// ✅ Petit compteur animé (0 → valeur finale), déclenché dès que les
+// vraies données sont chargées.
+function useCountUp(target, { duration = 900, enabled = true } = {}) {
+  const [value, setValue] = useState(0);
+  const startRef = useRef(null);
+  const frameRef = useRef(null);
+
+  useEffect(() => {
+    if (!enabled) return;
+    const numericTarget = Number(target) || 0;
+
+    if (numericTarget === 0) {
+      setValue(0);
+      return;
+    }
+
+    startRef.current = null;
+
+    const step = (timestamp) => {
+      if (startRef.current === null) startRef.current = timestamp;
+      const progress = Math.min((timestamp - startRef.current) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(Math.round(eased * numericTarget));
+      if (progress < 1) {
+        frameRef.current = requestAnimationFrame(step);
+      }
+    };
+
+    frameRef.current = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frameRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target, enabled]);
+
+  return value;
+}
+
 function DashboardSection({ user }) {
   const navigate = useNavigate();
   const [demandes, setDemandes] = useState([]);
@@ -88,35 +126,94 @@ function DashboardSection({ user }) {
 
   const revenusEstimes = profil?.revenus_estimes ?? 0;
 
+  const vuesAnim = useCountUp(profil?.vues ?? 0, { enabled: !profilLoading });
+  const demandesAnim = useCountUp(total, { enabled: !loading });
+  const revenusAnim = useCountUp(revenusEstimes, { enabled: !profilLoading, duration: 1100 });
+
+  const completion = useMemo(() => {
+    if (!profil) return 0;
+    const checks = [
+      Boolean(profil.photo),
+      Boolean(profil.biographie && profil.biographie.trim().length > 10),
+      Boolean(profil.tarif_min),
+      profil.categorie_id != null,
+      profil.ville != null,
+    ];
+    const done = checks.filter(Boolean).length;
+    return Math.round((done / checks.length) * 100);
+  }, [profil]);
+
+  const heureDuJour = new Date().getHours();
+  const salutation =
+    heureDuJour < 12 ? "Bonjour" : heureDuJour < 18 ? "Bon après-midi" : "Bonsoir";
+
   return (
     <div className="td-page">
-      <div className="td-page-header">
-        <div>
-          <h1 className="td-page-title">Bonjour, {user?.prenom || "Talent"} 👋</h1>
-          <p className="td-page-sub">Voici un résumé de votre activité aujourd'hui.</p>
+      {/* ── HERO avec photo de fond ─────────────────────────────── */}
+      <div className="td-hero td-anim-in">
+        <div className="td-hero-photo" aria-hidden="true" />
+        <div className="td-hero-scrim" aria-hidden="true" />
+        <div className="td-hero-content">
+          <div className="td-hero-left">
+            <p className="td-hero-eyebrow">Espace talent</p>
+            <h1 className="td-page-title">
+              {salutation}, {user?.prenom || "Talent"}
+            </h1>
+            <p className="td-page-sub">Voici un résumé de votre activité aujourd'hui.</p>
+          </div>
+
+          <div className="td-hero-avatar-wrap">
+            <svg className="td-hero-ring" viewBox="0 0 108 108" aria-hidden="true">
+              <circle cx="54" cy="54" r="50" className="td-hero-ring-track" />
+              <circle
+                cx="54" cy="54" r="50"
+                className="td-hero-ring-progress"
+                style={{
+                  strokeDasharray: 2 * Math.PI * 50,
+                  strokeDashoffset: 2 * Math.PI * 50 * (1 - completion / 100),
+                }}
+              />
+            </svg>
+            {profil?.photo ? (
+              <img src={profil.photo} alt="" className="td-hero-avatar" />
+            ) : (
+              <div className="td-hero-avatar td-hero-avatar-placeholder">
+                <User size={28} />
+              </div>
+            )}
+            {!profilLoading && (
+              <span className="td-hero-completion-badge">
+                Profil {completion}%
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
+      <div className="td-anim-in td-anim-delay-1">
+        <AbonnementBanner />
+      </div>
+
       <div className="td-stats-grid-4">
-        <div className="td-stat-card-v2">
+        <div className="td-stat-card-v2 td-anim-in td-anim-delay-1">
           <div className="td-stat-icon-v2 td-stat-icon-blue">
             <Eye size={18} />
           </div>
-          <p className="td-stat-value-v2">{profilLoading ? "…" : (profil?.vues ?? 0)}</p>
+          <p className="td-stat-value-v2">{profilLoading ? "…" : vuesAnim}</p>
           <p className="td-stat-label-v2">Vues du profil</p>
           <p className="td-stat-sub-v2 td-stat-sub-muted">Depuis la création du profil</p>
         </div>
 
-        <div className="td-stat-card-v2">
+        <div className="td-stat-card-v2 td-anim-in td-anim-delay-2">
           <div className="td-stat-icon-v2 td-stat-icon-purple">
             <ClipboardList size={18} />
           </div>
-          <p className="td-stat-value-v2">{loading ? "…" : total}</p>
+          <p className="td-stat-value-v2">{loading ? "…" : demandesAnim}</p>
           <p className="td-stat-label-v2">Demandes reçues</p>
           <p className="td-stat-sub-v2 td-stat-sub-ok">{loading ? "" : `${enAttente} en attente`}</p>
         </div>
 
-        <div className="td-stat-card-v2">
+        <div className="td-stat-card-v2 td-anim-in td-anim-delay-3">
           <div className="td-stat-icon-v2 td-stat-icon-yellow">
             <Star size={18} />
           </div>
@@ -127,19 +224,21 @@ function DashboardSection({ user }) {
           </p>
         </div>
 
-        <div className="td-stat-card-v2">
+        <div className="td-stat-card-v2 td-anim-in td-anim-delay-4">
           <div className="td-stat-icon-v2 td-stat-icon-green">
             <TrendingUp size={18} />
           </div>
           <p className="td-stat-value-v2">
-            {profilLoading ? "…" : `${revenusEstimes.toLocaleString("fr-FR")} FCFA`}
+            {profilLoading ? "…" : `${revenusAnim.toLocaleString("fr-FR")} FCFA`}
           </p>
           <p className="td-stat-label-v2">Revenus estimés</p>
           <p className="td-stat-sub-v2 td-stat-sub-muted">Demandes terminées</p>
         </div>
       </div>
 
-      <button className="td-explore-banner" onClick={() => navigate("/recherche")}>
+      <button className="td-explore-banner td-anim-in td-anim-delay-2" onClick={() => navigate("/recherche")}>
+        <div className="td-explore-banner-photo" aria-hidden="true" />
+        <div className="td-explore-banner-scrim" aria-hidden="true" />
         <div className="td-explore-banner-icon">
           <Search size={20} />
         </div>
@@ -147,10 +246,10 @@ function DashboardSection({ user }) {
           <p className="td-explore-banner-title">Découvrez les autres talents de la plateforme</p>
           <p className="td-explore-banner-sub">Explorez les profils, inspirez-vous et suivez la concurrence.</p>
         </div>
-        <ChevronRight size={18} className="td-explore-banner-arrow" />
+        <ArrowUpRight size={20} className="td-explore-banner-arrow" />
       </button>
 
-      <div className="td-card">
+      <div className="td-card td-anim-in td-anim-delay-3">
         <div className="td-card-header">
           <h2 className="td-card-title">Demandes récentes</h2>
           <button className="td-card-link" onClick={() => navigate("/talent/demandes")}>
@@ -161,10 +260,22 @@ function DashboardSection({ user }) {
           {loading ? (
             <p className="td-empty-text">Chargement...</p>
           ) : demandesRecentes.length === 0 ? (
-            <p className="td-empty-text">Aucune demande pour le moment.</p>
+            <div className="td-empty-state">
+              <div className="td-empty-state-icon">
+                <ClipboardList size={22} />
+              </div>
+              <p className="td-empty-state-title">Aucune demande pour le moment</p>
+              <p className="td-empty-state-sub">
+                Complétez votre profil et restez disponible pour être plus visible auprès des clients.
+              </p>
+            </div>
           ) : (
-            demandesRecentes.map((d) => (
-              <div key={d.id} className="td-demande-row">
+            demandesRecentes.map((d, i) => (
+              <div
+                key={d.id}
+                className="td-demande-row td-anim-in"
+                style={{ animationDelay: `${80 * i}ms` }}
+              >
                 <div className="td-demande-avatar">{d.client_nom?.[0] ?? "?"}</div>
                 <div className="td-demande-info">
                   <p className="td-demande-client">{d.client_nom}</p>
@@ -275,18 +386,12 @@ function ProfilSection() {
     try {
       const res = await updateProfilTalent(payload);
 
-      // ✅ Met à jour l'avatar dans le formulaire immédiatement avec la
-      // nouvelle URL renvoyée par le backend (pas juste l'aperçu local).
       if (res?.data?.photo) {
         setPhotoUrl(res.data.photo);
       }
       setPhotoFile(null);
       setPhotoPreview(null);
 
-      // ✅ Rafraîchit AuthContext.user (donc user.profilTalent.photo) pour
-      // que TalentTopNav affiche la nouvelle photo immédiatement, sans
-      // attendre un rechargement de page — même bug que côté client
-      // (ClientProfil.jsx), corrigé ici de la même façon.
       await refreshUser();
 
       setSuccess("Profil mis à jour avec succès.");
@@ -322,7 +427,7 @@ function ProfilSection() {
         </div>
       </div>
 
-      <div className="profil-creer-card profil-creer-card-embedded">
+      <div className="profil-creer-card profil-creer-card-embedded td-anim-in">
         <div className="profil-creer-card-top">
           <p className="profil-creer-subtitle">
             Cliquez sur "Modifier" pour mettre à jour vos informations.

@@ -15,6 +15,7 @@ use App\Http\Controllers\SignalementController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\CloudinarySignatureController;
+use App\Http\Controllers\AbonnementController;
 
 
 /*
@@ -198,3 +199,11 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::post('/cloudinary/signature', [CloudinarySignatureController::class, 'sign'])
     ->middleware('throttle:10,1');
+
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('/abonnement/initier', [AbonnementController::class, 'initierPaiement']);
+    });
+    
+    // Webhook public (FedaPay appelle depuis leurs serveurs, pas de sanctum)
+    Route::post('/webhooks/fedapay', [AbonnementController::class, 'webhook']);

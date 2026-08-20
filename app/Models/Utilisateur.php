@@ -32,6 +32,15 @@ class Utilisateur extends Authenticatable implements FilamentUser, HasName
         'categorie_id',
         'photo',
         'preferences_notifications',
+        // ✅ Nécessaire pour que register() et le webhook FedaPay
+        // puissent faire ->update(['abonnement_expire_le' => ...])
+        // sans être bloqués par la protection mass-assignment.
+        'abonnement_expire_le',
+        // ✅ Sans ce champ dans $fillable, Utilisateur::create() ignorait
+        // silencieusement la valeur envoyée par register() — la colonne
+        // retombait toujours sur son défaut 'gratuit' peu importe le
+        // choix réel du talent à l'inscription.
+        'plan_choisi',
     ];
 
     protected $hidden = [
@@ -46,6 +55,12 @@ class Utilisateur extends Authenticatable implements FilamentUser, HasName
             'mot_de_passe'      => 'hashed',
             'is_verified'       => 'boolean',
             'preferences_notifications' => 'array',
+            // ✅ Sans ce cast, abonnement_expire_le reste une string
+            // brute côté PHP : ->isFuture() (utilisé dans
+            // TalentController@show) planterait, et le JSON envoyé au
+            // frontend ne serait pas dans un format fiable pour
+            // `new Date(user.abonnement_expire_le)` côté React.
+            'abonnement_expire_le' => 'datetime',
         ];
     }
 
@@ -104,6 +119,14 @@ class Utilisateur extends Authenticatable implements FilamentUser, HasName
     public function signalements()
     {
         return $this->hasMany(Signalement::class, 'client_id');
+    }
+
+    // ✅ Historique des abonnements de ce talent (essai gratuit +
+    // paiements successifs). Utile pour l'admin (Filament) ou pour
+    // afficher l'historique côté talent plus tard.
+    public function abonnements()
+    {
+        return $this->hasMany(Abonnement::class, 'utilisateur_id');
     }
 
     // ===== HELPERS =====

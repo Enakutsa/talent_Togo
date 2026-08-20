@@ -19,6 +19,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // ❌ $middleware->statefulApi();
 
         $middleware->trustProxies(at: '*');
+
+        // ✅ Middleware pour bloquer les talents dont l'abonnement
+        // (essai gratuit ou payé) est expiré, sur les routes sensibles
+        // (ex: accepter une demande de prestation).
+        $middleware->alias([
+            'abonnement.actif' => \App\Http\Middleware\CheckAbonnementActif::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // ✅ Sur les routes API, ne jamais tenter de rediriger vers une

@@ -35,6 +35,13 @@ const MessagesTalent = lazy(() => import("./pages/talent/MessagesTalent"));
 const ConditionsUtilisation = lazy(() => import("./pages/commun/ConditionsUtilisation"));
 const Confidentialite = lazy(() => import("./pages/commun/Confidentialite"));
 const MentionsLegales = lazy(() => import("./pages/commun/MentionsLegales"));
+// ✅ Page affichée après le retour de paiement FedaPay (callback_url
+// configurée côté AbonnementController@initierPaiement).
+const AbonnementCallback = lazy(() => import("./pages/talent/AbonnementCallback"));
+// ✅ Page où un talent ayant choisi le plan "payant" à l'inscription est
+// redirigé (à chaque connexion) tant qu'il n'a pas encore réglé son
+// abonnement — voir AuthController::talentDoitPayerMaintenant().
+const PaiementAbonnement = lazy(() => import("./pages/talent/PaiementAbonnement"));
 
 function PublicLayout({ children }) {
   return (
@@ -122,6 +129,13 @@ export default function App() {
           <Route path="/talent/messages" element={<ProtectedRoute><MessagesTalent /></ProtectedRoute>} />
           <Route path="/talent/portfolio" element={<ProtectedRoute><Portfolio /></ProtectedRoute>} />
           <Route path="/talent/avis" element={<ProtectedRoute><AvisRecus /></ProtectedRoute>} />
+          {/* ✅ Callback FedaPay — le talent y est redirigé automatiquement
+               après paiement, doit rester protégé (utilisateur connecté)
+               comme les autres pages talent. */}
+          <Route path="/abonnement/callback" element={<ProtectedRoute><AbonnementCallback /></ProtectedRoute>} />
+          {/* ✅ Page de paiement forcé pour un talent ayant choisi le plan
+               payant à l'inscription et pas encore réglé son abonnement. */}
+          <Route path="/talent/paiement-abonnement" element={<ProtectedRoute><PaiementAbonnement /></ProtectedRoute>} />
 
           {/* ── Espace client ── */}
           <Route path="/client/dashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />

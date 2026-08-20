@@ -93,7 +93,7 @@ export default function Portfolio() {
           </div>
         ) : (
           <div className="td-page">
-            <div className="td-page-header td-portfolio-header">
+            <div className="td-page-header td-portfolio-header td-anim-in">
               <div>
                 <h1 className="td-page-title">Mon portfolio</h1>
                 <p className="td-page-sub">
@@ -120,15 +120,21 @@ export default function Portfolio() {
             {error && <p className="profil-creer-error">{error}</p>}
 
             {items.length === 0 ? (
-              <div className="td-portfolio-empty" onClick={() => fileInputRef.current?.click()}>
-                <ImageIcon size={32} />
+              <div className="td-portfolio-empty td-anim-in td-anim-delay-1" onClick={() => fileInputRef.current?.click()}>
+                <div className="td-portfolio-empty-icon-wrap">
+                  <ImageIcon size={26} />
+                </div>
                 <p className="td-portfolio-empty-title">Aucune réalisation pour le moment</p>
                 <p className="td-portfolio-empty-sub">Cliquez ici pour ajouter votre première photo ou vidéo</p>
               </div>
             ) : (
               <div className="td-portfolio-grid">
-                {items.map((item) => (
-                  <div key={item.id} className="td-portfolio-item">
+                {items.map((item, i) => (
+                  <div
+                    key={item.id}
+                    className="td-portfolio-item td-anim-in"
+                    style={{ animationDelay: `${50 * i}ms` }}
+                  >
                     {item.type === "video" ? (
                       <video src={item.media_url} className="td-portfolio-media" muted />
                     ) : (

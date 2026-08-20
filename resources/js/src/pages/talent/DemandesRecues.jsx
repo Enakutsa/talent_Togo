@@ -124,7 +124,7 @@ export default function DemandesRecues() {
 
       <main className="td-main">
         <div className="td-page">
-          <div className="td-page-header">
+          <div className="td-page-header td-anim-in">
             <div>
               <h1 className="td-page-title">Demandes reçues</h1>
               <p className="td-page-sub">Acceptez ou refusez les demandes de prestation des clients.</p>
@@ -132,7 +132,7 @@ export default function DemandesRecues() {
           </div>
 
           {demandes !== null && demandes.length > 0 && (
-            <div className="dr-summary-grid">
+            <div className="dr-summary-grid td-anim-in td-anim-delay-1">
               {FILTERS.map((f) => (
                 <button
                   key={f.key}
@@ -154,10 +154,15 @@ export default function DemandesRecues() {
               <span>Chargement de vos demandes...</span>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="dr-empty">
-              <Clock size={32} />
+            <div className="dr-empty td-anim-in td-anim-delay-2">
+              <div className="dr-empty-icon-wrap">
+                <Clock size={26} />
+              </div>
               <p className="dr-empty-title">
                 {filter === "toutes" ? "Aucune demande reçue pour le moment" : "Aucune demande dans cette catégorie"}
+              </p>
+              <p className="dr-empty-sub">
+                Les nouvelles demandes de clients apparaîtront ici dès qu'elles arrivent.
               </p>
             </div>
           ) : (
@@ -169,16 +174,23 @@ export default function DemandesRecues() {
               )}
 
               <div className="dr-list">
-                {filtered.map((d) => {
+                {filtered.map((d, i) => {
                   const config = STATUT_CONFIG[d.statut] || STATUT_CONFIG.en_attente;
                   const StatusIcon = config.icon;
                   const enAttente = d.statut === "en_attente";
                   const acceptee = d.statut === "acceptee";
 
                   return (
-                    <div key={d.id} className="dr-card">
+                    <div
+                      key={d.id}
+                      className="dr-card td-anim-in"
+                      style={{ animationDelay: `${60 * i}ms` }}
+                    >
                       <div className="dr-card-top">
-                        <p className="dr-client-name">{d.client_nom}</p>
+                        <div className="dr-client-row">
+                          <div className="dr-client-avatar">{d.client_nom?.[0] ?? "?"}</div>
+                          <p className="dr-client-name">{d.client_nom}</p>
+                        </div>
                         <span className={`dr-badge ${config.cls}`}>
                           <StatusIcon size={12} /> {config.label}
                         </span>

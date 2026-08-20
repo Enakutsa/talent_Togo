@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProfilTalent;
+use App\Models\Abonnement;
 use Illuminate\Http\Request;
 
 class TalentController extends Controller
@@ -23,6 +24,64 @@ class TalentController extends Controller
     }
 
     /**
+     * ✅ Condition réutilisée dans index() et show() : la règle de
+     * visibilité dépend désormais du plan CHOISI à l'inscription
+     * (plan_choisi), pas uniquement de la date abonnement_expire_le :
+     *
+     * - Talent en plan "gratuit" -> visible tant que son essai n'a pas
+     *   expiré (abonnement_expire_le dans le futur, ou null).
+     * - Talent en plan "payant" -> visible UNIQUEMENT s'il a un
+     *   Abonnement avec statut='actif' ET date_fin dans le futur en
+     *   base — c'est-à-dire un paiement réellement confirmé par le
+     *   webhook FedaPay. La date abonnement_expire_le (souvent fixée à
+     *   +1 mois dès l'inscription, peu importe le plan) ne suffit PAS
+     *   à le rendre visible : il doit avoir payé.
+     *   Ça permet à un talent "payant" non encore payé de créer son
+     *   compte, compléter son profil, accéder au dashboard — mais de
+     *   rester invisible des clients tant qu'il n'a pas réglé.
+     */
+    private function scopeAbonnementActif($query)
+    {
+        return $query->where(function ($q) {
+            $q->where(function ($qGratuit) {
+                $qGratuit->where('plan_choisi', 'gratuit')
+                    ->where(function ($qDate) {
+                        $qDate->whereNull('abonnement_expire_le')
+                              ->orWhere('abonnement_expire_le', '>', now());
+                    });
+            })
+            ->orWhere(function ($qPayant) {
+                $qPayant->where('plan_choisi', 'payant')
+                    ->whereHas('abonnements', function ($qAbo) {
+                        $qAbo->where('statut', 'actif')
+                             ->where('date_fin', '>', now());
+                    });
+            });
+        });
+    }
+
+    /**
+     * ✅ Même règle que scopeAbonnementActif, mais appliquée à un
+     * utilisateur déjà chargé (utilisé dans show(), où on a l'objet en
+     * main plutôt qu'une query builder).
+     */
+    private function utilisateurEstVisible($utilisateur): bool
+    {
+        if (!$utilisateur) return false;
+
+        if ($utilisateur->plan_choisi === 'payant') {
+            return Abonnement::where('utilisateur_id', $utilisateur->id)
+                ->where('statut', 'actif')
+                ->where('date_fin', '>', now())
+                ->exists();
+        }
+
+        // plan_choisi === 'gratuit' (ou valeur historique absente)
+        return is_null($utilisateur->abonnement_expire_le)
+            || $utilisateur->abonnement_expire_le->isFuture();
+    }
+
+    /**
      * Liste des talents validés, avec filtres optionnels.
      * GET /api/talents
      * GET /api/talents?featured=1                → les 3 derniers inscrits validés
@@ -36,7 +95,13 @@ class TalentController extends Controller
     public function index(Request $request)
     {
         $query = ProfilTalent::query()
-            ->whereHas('utilisateur', fn ($q) => $q->where('statut', 'valide'))
+            ->whereHas('utilisateur', function ($q) {
+                $q->where('statut', 'valide');
+                // ✅ Masque les talents dont l'essai gratuit a expiré OU
+                // dont le plan payant n'a pas (encore) été réglé — voir
+                // scopeAbonnementActif() pour le détail de la règle.
+                $this->scopeAbonnementActif($q);
+            })
             // ✅ Un talent validé par l'admin mais qui n'a jamais complété
             // ProfilCreer (pas de photo, pas de tarif fixé) ne doit PAS
             // apparaître dans le listing public, même s'il a un compte
@@ -46,24 +111,8 @@ class TalentController extends Controller
             ->whereNotNull('tarif_min')
             ->with([
                 'utilisateur.categorie',
-                // ── Uniquement les colonnes nécessaires à l'affichage,
-                // au lieu de charger toutes les images/vidéos du
-                // portfolio de chaque talent (moins de données
-                // transférées depuis Postgres). La sélection de la
-                // couverture (dernière image) reste faite en PHP,
-                // comme avant, pour ne rien changer au comportement.
                 'portfolios:id,profil_talent_id,type,media_url,created_at',
             ])
-            // ── Note moyenne et nombre d'avis calculés directement en
-            // SQL (agrégation Postgres) au lieu de charger toutes les
-            // lignes "avis" de chaque talent et calculer la moyenne en
-            // PHP. C'est le changement qui a le plus d'impact ici.
-            //
-            // ⚠️ IMPORTANT : contrairement à withCount, withAvg N'AJOUTE
-            // AUCUN SUFFIXE automatique à l'alias donné après "as". Il
-            // faut donc écrire "avis_note_avg" en toutes lettres ici,
-            // sinon l'attribut lu dans formatTalentCard/formatTalentDetail
-            // ($profil->avis_note_avg) n'existe pas et retombe à 0.
             ->withCount(['avis as avis_count' => fn ($q) => $q->where('statut', 'visible')])
             ->withAvg(['avis as avis_note_avg' => fn ($q) => $q->where('statut', 'visible')], 'note');
 
@@ -117,8 +166,6 @@ class TalentController extends Controller
                 $query->orderBy('tarif_min', 'desc');
                 break;
             case 'note':
-                // ✅ Maintenant possible directement en SQL grâce à
-                // withAvg, plus besoin de trier en mémoire après coup.
                 $query->orderByDesc('avis_note_avg');
                 break;
             case 'recent':
@@ -128,7 +175,6 @@ class TalentController extends Controller
         }
 
         if ($request->boolean('featured')) {
-            // ✅ Les 3 derniers talents validés (les plus récents)
             $query->orderByDesc('created_at')->limit(3);
         }
 
@@ -148,16 +194,17 @@ class TalentController extends Controller
     {
         $talent->load(['utilisateur.categorie', 'portfolios', 'avis.client'])
             ->loadCount(['avis as avis_count' => fn ($q) => $q->where('statut', 'visible')])
-            // ⚠️ Même correction que dans index() : alias explicite
-            // "avis_note_avg" pour matcher $profil->avis_note_avg lu
-            // dans formatTalentDetail().
             ->loadAvg(['avis as avis_note_avg' => fn ($q) => $q->where('statut', 'visible')], 'note');
 
         // ✅ Même règle que le listing : un talent validé mais dont le
-        // profil n'est pas complet (pas de photo/tarif) ne doit pas être
-        // consultable, même en accédant directement à son URL.
+        // profil n'est pas complet (pas de photo/tarif), OU dont
+        // l'essai gratuit a expiré, OU dont le plan payant n'a pas
+        // (encore) été réglé, ne doit pas être consultable — même en
+        // accédant directement à son URL.
         abort_unless(
-            $talent->utilisateur?->statut === 'valide' && $talent->estComplet(),
+            $talent->utilisateur?->statut === 'valide'
+                && $talent->estComplet()
+                && $this->utilisateurEstVisible($talent->utilisateur),
             404
         );
 
@@ -176,7 +223,6 @@ class TalentController extends Controller
     {
         $photoUrl = $this->resolvePhotoUrl($profil->photo);
 
-        // Couverture = dernière image du portfolio, sinon la photo de profil
         $couverture = $profil->portfolios
             ->where('type', 'image')
             ->sortByDesc('created_at')
@@ -210,7 +256,6 @@ class TalentController extends Controller
     {
         $photoUrl = $this->resolvePhotoUrl($profil->photo);
 
-        // Portfolio complet
         $portfolios = $profil->portfolios->map(fn ($p) => [
             'id'    => $p->id,
             'url'   => $this->resolvePhotoUrl($p->media_url),
@@ -218,11 +263,6 @@ class TalentController extends Controller
             'type'  => $p->type ?? 'image',
         ])->values()->toArray();
 
-        // ✅ Avis — uniquement ceux visibles publiquement, TRIÉS DU PLUS
-        // RÉCENT AU PLUS ANCIEN (sortByDesc AVANT le map). Le frontend
-        // (DetailTalent.jsx) ne garde ensuite que les 5 premiers de cette
-        // liste — donc ce sont bien les 5 derniers avis, mis à jour à
-        // chaque nouvel avis.
         $avisListe = $profil->avis
             ->where('statut', 'visible')
             ->sortByDesc('created_at')
