@@ -18,6 +18,12 @@ const STATUT_CONFIG = {
   terminee: { label: "Terminée", cls: "cdh-badge-completed", icon: CheckCircle },
 };
 
+// ✅ Photo de fond de la bannière d'accueil — Unsplash, licence libre,
+// usage commercial gratuit. Choisie pour évoquer une rencontre
+// client/prestataire, cohérente avec le ton de la home.
+const HERO_BG =
+  "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1600&h=500&fit=crop&auto=format";
+
 export default function ClientDashboard() {
   const { user } = useContext(AuthContext);
 
@@ -69,16 +75,25 @@ export default function ClientDashboard() {
       <ClientTopNav activeKey="dashboard" />
 
       <main className="cd-main">
-        <div className="cd-page">
-          <div className="cd-page-header">
+        {/* ── Bannière d'accueil avec photo en fond ── */}
+        <section
+          className="cdh-hero"
+          style={{ backgroundImage: `url(${HERO_BG})` }}
+        >
+          <div className="cdh-hero-overlay" />
+          <div className="cdh-hero-inner">
             <div>
-              <h1 className="cd-page-title">Bonjour, {user?.prenom || "Client"} 👋</h1>
-              <p className="cd-page-sub">Retrouvez vos talents favoris et vos échanges ici.</p>
+              <p className="cdh-hero-eyebrow">Espace client</p>
+              <h1 className="cdh-hero-title">Bonjour, {user?.prenom || "Client"} 👋</h1>
+              <p className="cdh-hero-sub">Retrouvez vos talents favoris et vos échanges ici.</p>
             </div>
             <Link to="/recherche" className="cdh-search-btn">
               <Search size={16} /> Trouver un talent
             </Link>
           </div>
+        </section>
+
+        <div className="cd-page cd-page-no-header">
 
           {/* ── Stats ── */}
           <div className="cdh-stats-grid">

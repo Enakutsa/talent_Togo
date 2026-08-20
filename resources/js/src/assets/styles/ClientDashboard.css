@@ -899,3 +899,138 @@
     height: 32px;
     flex-shrink: 0;
   }
+
+
+  /* ============================================
+   BANNIÈRE D'ACCUEIL — à coller dans ClientDashboard.css
+   ============================================ */
+
+.cdh-hero {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  padding: 44px 36px;
+  overflow: hidden;
+}
+
+.cdh-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    rgba(20, 24, 20, 0.88) 0%,
+    rgba(20, 24, 20, 0.72) 55%,
+    rgba(234, 88, 12, 0.55) 100%
+  );
+}
+
+.cdh-hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.cdh-hero-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 8px;
+}
+
+.cdh-hero-title {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 6px;
+}
+
+.cdh-hero-sub {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+.cdh-hero .cdh-search-btn {
+  background: #fff;
+  color: var(--color-orange-700);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.cdh-hero .cdh-search-btn:hover {
+  background: var(--color-orange-50);
+  opacity: 1;
+}
+
+.cd-page-no-header {
+  padding-top: 28px;
+}
+
+@media (max-width: 640px) {
+  .cdh-hero {
+    padding: 32px 20px;
+  }
+  .cdh-hero-title {
+    font-size: 21px;
+  }
+  .cdh-hero-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cdh-hero .cdh-search-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================
+   AFFINEMENTS VISUELS — stats + listes
+   ============================================ */
+
+.cdh-stat-card {
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cdh-stat-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  border-radius: 4px;
+}
+
+.cdh-stat-violet::before { background: var(--color-orange-500); }
+.cdh-stat-blue::before   { background: #2563eb; }
+.cdh-stat-amber::before  { background: #d97706; }
+.cdh-stat-green::before  { background: var(--color-green-700); }
+
+.cdh-stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.cdh-favori-row,
+.cdh-demande-row {
+  border: 1px solid transparent;
+}
+
+.cdh-favori-row:hover,
+.cdh-demande-row:hover {
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.cdh-favori-avatar {
+  box-shadow: 0 0 0 2px #fff, 0 0 0 3px var(--color-cream-200);
+}
