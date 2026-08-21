@@ -19,7 +19,6 @@ import { getCategories } from "../../services/categorie.service";
 import { uploadDirectToCloudinary } from "../../services/cloudinaryDirect.service";
 import "../../assets/styles/Inscription.css";
 
-// Principales villes du Togo, du Sud au Nord
 const VILLES_TOGO = [
   "Lomé",
   "Aného",
@@ -41,7 +40,6 @@ const VILLES_TOGO = [
   "Dapaong",
 ];
 
-// Autorise lettres (avec accents), espaces, apostrophes et tirets
 const NAME_REGEX = /^[a-zA-ZÀ-ÿ\s'-]+$/;
 
 const FIELD_ORDER = [
@@ -72,7 +70,7 @@ export default function Inscription() {
   const navigate = useNavigate();
 
   const [role, setRole] = useState(null);
-  const [plan, setPlan] = useState("gratuit"); // "gratuit" | "payant" — talent uniquement
+  const [plan, setPlan] = useState("gratuit");
   const [agree, setAgree] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState(null);
@@ -246,11 +244,6 @@ export default function Inscription() {
         };
       }
 
-      // 🔎 LOG TEMPORAIRE DE DIAGNOSTIC — à retirer une fois le bug confirmé/résolu.
-      // Regarde l'onglet Console juste avant l'envoi de la requête.
-      console.log("🔎 [DEBUG] role =", role, "| plan (state) =", plan);
-      console.log("🔎 [DEBUG] payload envoyé à /auth/register :", payload);
-
       setLoadingStep("creation");
       const res = await register(payload);
 
@@ -304,7 +297,6 @@ export default function Inscription() {
 
           {generalError && <p className="form-error-banner">{generalError}</p>}
 
-          {/* Sélection du rôle */}
           <div className="role-cards-grid">
             <div
               className={`role-card role-card-talent ${role === "talent" ? "selected" : ""}`}
@@ -341,7 +333,7 @@ export default function Inscription() {
 
           {role === "talent" && (
             <div className="talent-info-banner">
-              ℹ️ Votre compte sera examiné et validé par un administrateur dans un délai de 48h.
+              Votre compte sera examiné et validé par un administrateur dans un délai de 48h.
             </div>
           )}
 
@@ -359,6 +351,7 @@ export default function Inscription() {
                     </div>
                   )}
                 </div>
+                <p className="plan-card-price">0 FCFA <span>/ 30 jours</span></p>
                 <p className="plan-card-desc">
                   Essayez la plateforme gratuitement pendant 30 jours, sans engagement.
                 </p>
@@ -376,6 +369,7 @@ export default function Inscription() {
                     </div>
                   )}
                 </div>
+                <p className="plan-card-price">12 000 FCFA <span>/ an</span></p>
                 <p className="plan-card-desc">
                   Activez votre visibilité immédiatement. Paiement demandé juste après l'inscription.
                 </p>
@@ -385,7 +379,6 @@ export default function Inscription() {
 
           <form onSubmit={handleSubmit} className="auth-form-2">
 
-            {/* Prénom + Nom */}
             <div className="form-row">
               <div className="form-field">
                 <label className="form-label">Prénom</label>
@@ -422,7 +415,6 @@ export default function Inscription() {
               </div>
             </div>
 
-            {/* Email */}
             <div className="form-field">
               <label className="form-label">Adresse e-mail</label>
               <div className="input-with-icon">
@@ -440,7 +432,6 @@ export default function Inscription() {
               {errors.email && <span className="field-error">{errors.email[0]}</span>}
             </div>
 
-            {/* Téléphone */}
             <div className="form-field">
               <label className="form-label">Téléphone</label>
               <div
@@ -513,7 +504,6 @@ export default function Inscription() {
               )}
             </div>
 
-            {/* Mot de passe */}
             <div className="form-field">
               <label className="form-label">Mot de passe</label>
               <div className="input-with-icon">
@@ -541,12 +531,11 @@ export default function Inscription() {
               {errors.mot_de_passe && <span className="field-error">{errors.mot_de_passe[0]}</span>}
               {pwdTouched && pwd.length > 0 && !pwdIsValid && (
                 <span className="field-error">
-                  Le mot de passe doit contenir exactement 8 caractères, avec au moins une lettre, un chiffre et un caractère spécial (ex: !@#$%).
+                  Le mot de passe doit contenir exactement 8 caractères, avec au moins une lettre, un chiffre et un caractère spécial.
                 </span>
               )}
             </div>
 
-            {/* Confirmer mot de passe */}
             <div className="form-field">
               <label className="form-label">Confirmer le mot de passe</label>
               <div className="input-with-icon">
@@ -575,7 +564,6 @@ export default function Inscription() {
               )}
             </div>
 
-            {/* Catégorie + Ville (Talent uniquement) */}
             {role === "talent" && (
               <div className="form-row">
                 <div className="form-field">
@@ -626,7 +614,6 @@ export default function Inscription() {
               </div>
             )}
 
-            {/* Document justificatif (Talent uniquement) */}
             {role === "talent" && (
               <div className="form-field">
                 <label className="form-label">Pièce justificative</label>
@@ -651,7 +638,6 @@ export default function Inscription() {
               </div>
             )}
 
-            {/* CGU */}
             <label className="auth-checkbox-row">
               <div
                 className={`auth-checkbox ${agree ? "auth-checkbox-checked" : ""}`}
@@ -660,22 +646,12 @@ export default function Inscription() {
                 {agree && <Check size={12} />}
               </div>
               <span className="auth-checkbox-text">
-                J&apos;accepte les{" "}
-                <a
-                  href="/cgu"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="auth-inline-link"
-                >
-                  Conditions d&apos;utilisation
+                J'accepte les{" "}
+                <a href="/cgu" target="_blank" rel="noopener noreferrer" className="auth-inline-link">
+                  Conditions d'utilisation
                 </a>{" "}
                 et la{" "}
-                <a
-                  href="/confidentialite"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="auth-inline-link"
-                >
+                <a href="/confidentialite" target="_blank" rel="noopener noreferrer" className="auth-inline-link">
                   Politique de confidentialité
                 </a>
               </span>

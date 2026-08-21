@@ -1585,3 +1585,233 @@
       flex-wrap: wrap;
     }
   }
+
+  /* ============================================
+   BANDEAU D'ACCUEIL — remplace les anciennes règles
+   .td-hero-photo / .td-hero-scrim / .td-hero-avatar* /
+   .td-hero-ring* / .td-anim-* dans TalentDashboard.css
+   ============================================ */
+
+.td-hero {
+  position: relative;
+  background-image: url("https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1600&h=500&fit=crop&auto=format");
+  background-size: cover;
+  background-position: center;
+  padding: 44px 36px;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+}
+
+.td-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    rgba(10, 46, 24, 0.9) 0%,
+    rgba(10, 46, 24, 0.72) 55%,
+    rgba(22, 101, 52, 0.55) 100%
+  );
+}
+
+.td-hero-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.td-hero-eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 8px;
+}
+
+.td-hero-title {
+  font-family: var(--font-heading);
+  font-size: 26px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 6px;
+}
+
+.td-hero-sub {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+.td-hero-completion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-md);
+  padding: 10px 20px;
+  flex-shrink: 0;
+}
+
+.td-hero-completion-value {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.td-hero-completion-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 2px;
+}
+
+@media (max-width: 640px) {
+  .td-hero {
+    padding: 32px 20px;
+  }
+  .td-hero-title {
+    font-size: 21px;
+  }
+  .td-hero-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .td-hero-completion {
+    align-self: flex-start;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ============================================
+   BANDEAU D'ACCUEIL — remplace les anciennes règles
+   .td-hero-photo / .td-hero-scrim / .td-hero-avatar* /
+   .td-hero-ring* / .td-anim-* dans TalentDashboard.css
+   ============================================ */
+
+   .td-hero {
+    position: relative;
+    background-image: url("https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=1600&h=500&fit=crop&auto=format");
+    background-size: cover;
+    background-position: center;
+    padding: 44px 36px;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    margin-bottom: 24px;
+  }
+  
+  .td-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      120deg,
+      rgba(10, 46, 24, 0.9) 0%,
+      rgba(10, 46, 24, 0.72) 55%,
+      rgba(22, 101, 52, 0.55) 100%
+    );
+  }
+  
+  .td-hero-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  
+  .td-hero-eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.75);
+    margin: 0 0 8px;
+  }
+  
+  .td-hero-title {
+    font-family: var(--font-heading);
+    font-size: 26px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 6px;
+  }
+  
+  .td-hero-sub {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0;
+  }
+  
+  .td-hero-completion {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: var(--radius-md);
+    padding: 10px 20px;
+    flex-shrink: 0;
+  }
+  
+  .td-hero-completion-value {
+    font-family: var(--font-heading);
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+  }
+  
+  .td-hero-completion-label {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.8);
+    margin-top: 2px;
+  }
+  
+  @media (max-width: 640px) {
+    .td-hero {
+      padding: 32px 20px;
+    }
+    .td-hero-title {
+      font-size: 21px;
+    }
+    .td-hero-inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .td-hero-completion {
+      align-self: flex-start;
+    }
+  }

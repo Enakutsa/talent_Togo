@@ -149,53 +149,29 @@ function DashboardSection({ user }) {
 
   return (
     <div className="td-page">
-      {/* ── HERO avec photo de fond ─────────────────────────────── */}
-      <div className="td-hero td-anim-in">
-        <div className="td-hero-photo" aria-hidden="true" />
-        <div className="td-hero-scrim" aria-hidden="true" />
-        <div className="td-hero-content">
-          <div className="td-hero-left">
+      {/* ── Bandeau d'accueil — photo en fond, sobre, même style que
+          l'espace client (ClientDashboard). ── */}
+      <section className="td-hero">
+        <div className="td-hero-overlay" />
+        <div className="td-hero-inner">
+          <div>
             <p className="td-hero-eyebrow">Espace talent</p>
-            <h1 className="td-page-title">
-              {salutation}, {user?.prenom || "Talent"}
-            </h1>
-            <p className="td-page-sub">Voici un résumé de votre activité aujourd'hui.</p>
+            <h1 className="td-hero-title">{salutation}, {user?.prenom || "Talent"} 👋</h1>
+            <p className="td-hero-sub">Voici un résumé de votre activité aujourd'hui.</p>
           </div>
-
-          <div className="td-hero-avatar-wrap">
-            <svg className="td-hero-ring" viewBox="0 0 108 108" aria-hidden="true">
-              <circle cx="54" cy="54" r="50" className="td-hero-ring-track" />
-              <circle
-                cx="54" cy="54" r="50"
-                className="td-hero-ring-progress"
-                style={{
-                  strokeDasharray: 2 * Math.PI * 50,
-                  strokeDashoffset: 2 * Math.PI * 50 * (1 - completion / 100),
-                }}
-              />
-            </svg>
-            {profil?.photo ? (
-              <img src={profil.photo} alt="" className="td-hero-avatar" />
-            ) : (
-              <div className="td-hero-avatar td-hero-avatar-placeholder">
-                <User size={28} />
-              </div>
-            )}
-            {!profilLoading && (
-              <span className="td-hero-completion-badge">
-                Profil {completion}%
-              </span>
-            )}
-          </div>
+          {!profilLoading && (
+            <div className="td-hero-completion">
+              <span className="td-hero-completion-value">{completion}%</span>
+              <span className="td-hero-completion-label">Profil complété</span>
+            </div>
+          )}
         </div>
-      </div>
+      </section>
 
-      <div className="td-anim-in td-anim-delay-1">
-        <AbonnementBanner />
-      </div>
+      <AbonnementBanner />
 
       <div className="td-stats-grid-4">
-        <div className="td-stat-card-v2 td-anim-in td-anim-delay-1">
+        <div className="td-stat-card-v2">
           <div className="td-stat-icon-v2 td-stat-icon-blue">
             <Eye size={18} />
           </div>
@@ -204,7 +180,7 @@ function DashboardSection({ user }) {
           <p className="td-stat-sub-v2 td-stat-sub-muted">Depuis la création du profil</p>
         </div>
 
-        <div className="td-stat-card-v2 td-anim-in td-anim-delay-2">
+        <div className="td-stat-card-v2">
           <div className="td-stat-icon-v2 td-stat-icon-purple">
             <ClipboardList size={18} />
           </div>
@@ -213,7 +189,7 @@ function DashboardSection({ user }) {
           <p className="td-stat-sub-v2 td-stat-sub-ok">{loading ? "" : `${enAttente} en attente`}</p>
         </div>
 
-        <div className="td-stat-card-v2 td-anim-in td-anim-delay-3">
+        <div className="td-stat-card-v2">
           <div className="td-stat-icon-v2 td-stat-icon-yellow">
             <Star size={18} />
           </div>
@@ -224,7 +200,7 @@ function DashboardSection({ user }) {
           </p>
         </div>
 
-        <div className="td-stat-card-v2 td-anim-in td-anim-delay-4">
+        <div className="td-stat-card-v2">
           <div className="td-stat-icon-v2 td-stat-icon-green">
             <TrendingUp size={18} />
           </div>
@@ -236,9 +212,7 @@ function DashboardSection({ user }) {
         </div>
       </div>
 
-      <button className="td-explore-banner td-anim-in td-anim-delay-2" onClick={() => navigate("/recherche")}>
-        <div className="td-explore-banner-photo" aria-hidden="true" />
-        <div className="td-explore-banner-scrim" aria-hidden="true" />
+      <button className="td-explore-banner" onClick={() => navigate("/recherche")}>
         <div className="td-explore-banner-icon">
           <Search size={20} />
         </div>
@@ -249,7 +223,7 @@ function DashboardSection({ user }) {
         <ArrowUpRight size={20} className="td-explore-banner-arrow" />
       </button>
 
-      <div className="td-card td-anim-in td-anim-delay-3">
+      <div className="td-card">
         <div className="td-card-header">
           <h2 className="td-card-title">Demandes récentes</h2>
           <button className="td-card-link" onClick={() => navigate("/talent/demandes")}>
@@ -270,12 +244,8 @@ function DashboardSection({ user }) {
               </p>
             </div>
           ) : (
-            demandesRecentes.map((d, i) => (
-              <div
-                key={d.id}
-                className="td-demande-row td-anim-in"
-                style={{ animationDelay: `${80 * i}ms` }}
-              >
+            demandesRecentes.map((d) => (
+              <div key={d.id} className="td-demande-row">
                 <div className="td-demande-avatar">{d.client_nom?.[0] ?? "?"}</div>
                 <div className="td-demande-info">
                   <p className="td-demande-client">{d.client_nom}</p>
@@ -427,7 +397,7 @@ function ProfilSection() {
         </div>
       </div>
 
-      <div className="profil-creer-card profil-creer-card-embedded td-anim-in">
+      <div className="profil-creer-card profil-creer-card-embedded">
         <div className="profil-creer-card-top">
           <p className="profil-creer-subtitle">
             Cliquez sur "Modifier" pour mettre à jour vos informations.

@@ -27,6 +27,16 @@ const SORT_OPTIONS = [
   { value: "prix_desc", label: "Prix décroissant" },
 ];
 
+// ✅ Photos de fond du hero — même banque Unsplash que la home (licence
+// libre, usage commercial gratuit), pour une identité visuelle cohérente
+// entre les pages.
+const HERO_BG_SLIDES = [
+  "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1600&h=700&fit=crop&auto=format",
+  "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1600&h=700&fit=crop&auto=format",
+  "https://images.unsplash.com/photo-1544441893-675973e31985?w=1600&h=700&fit=crop&auto=format",
+  "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=1600&h=700&fit=crop&auto=format",
+];
+
 // ── Carte talent ─────────────────────────────────────────────────────────────
 function TalentCard({ talent }) {
   return (
@@ -92,6 +102,16 @@ export default function RechercheTalents() {
   });
 
   const [pendingCategorieName] = useState(() => searchParams.get("categorie"));
+
+  // ✅ Défilement auto du fond photo du hero — même logique que celui de
+  // la home (5s par slide, boucle infinie).
+  const [currentSlide, setCurrentSlide] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % HERO_BG_SLIDES.length);
+    }, 5000);
+    return () => clearInterval(id);
+  }, [currentSlide]);
 
   useEffect(() => {
     getCategories()
@@ -192,8 +212,19 @@ export default function RechercheTalents() {
   return (
     <div className="rc-page">
 
-      {/* ── Hero ── */}
+      {/* ── Hero — photo en fond défilante, cohérent avec la home ── */}
       <div className="rc-hero">
+        <div className="rc-hero-bg-slides">
+          {HERO_BG_SLIDES.map((src, i) => (
+            <div
+              key={i}
+              className={`rc-hero-bg-slide ${i === currentSlide ? "rc-hero-bg-slide-active" : ""}`}
+              style={{ backgroundImage: `url(${src})` }}
+            />
+          ))}
+          <div className="rc-hero-bg-overlay" />
+        </div>
+
         <div className="rc-hero-inner">
           <h1 className="rc-hero-title">Trouver un talent</h1>
           <p className="rc-hero-sub">

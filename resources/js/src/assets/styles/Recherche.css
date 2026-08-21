@@ -714,3 +714,93 @@
   .rc-hero-search { flex-direction: column; }
   .rc-hero-title { font-size: 26px; }
 }
+
+
+/* ============================================
+   HERO PHOTO — à coller à la fin de Recherche.css
+   ============================================ */
+
+   .rc-hero {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .rc-hero-bg-slides {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  
+  .rc-hero-bg-slide {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1.4s ease-in-out;
+  }
+  
+  .rc-hero-bg-slide-active {
+    opacity: 1;
+  }
+  
+  .rc-hero-bg-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to bottom,
+      rgba(20, 24, 20, 0.6) 0%,
+      rgba(20, 24, 20, 0.5) 60%,
+      rgba(20, 24, 20, 0.68) 100%
+    );
+  }
+  
+  .rc-hero-inner {
+    position: relative;
+    z-index: 1;
+  }
+  
+  .rc-hero-title {
+    color: #fff;
+  }
+  
+  .rc-hero-sub {
+    color: rgba(255, 255, 255, 0.85);
+  }
+  
+  /* ============================================
+     CARTES TALENTS — hover plus soigné
+     ============================================ */
+  
+  .rc-card {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .rc-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+  
+  .rc-card-image-wrap {
+    overflow: hidden;
+  }
+  
+  .rc-card-image {
+    transition: transform 0.5s ease;
+  }
+  
+  .rc-card:hover .rc-card-image {
+    transform: scale(1.06);
+  }
+  
+  @media (max-width: 640px) {
+    .rc-hero-bg-overlay {
+      background: linear-gradient(
+        to bottom,
+        rgba(20, 24, 20, 0.72) 0%,
+        rgba(20, 24, 20, 0.62) 60%,
+        rgba(20, 24, 20, 0.78) 100%
+      );
+    }
+  }

@@ -721,3 +721,18 @@
       grid-template-columns: 1fr;
     }
   }
+
+  .plan-card-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--color-green-700);
+    margin: 4px 0 8px;
+    font-family: var(--font-heading);
+  }
+  
+  .plan-card-price span {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-text-muted);
+    font-family: var(--font-body);
+  }
