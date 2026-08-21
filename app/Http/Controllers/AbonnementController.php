@@ -56,27 +56,48 @@ class AbonnementController extends Controller
     }
 
     public function webhook(Request $request)
-    {
-        $payload = $request->all();
+{
+    // ✅ Log explicite pour diagnostiquer si FedaPay atteint bien cette
+    // route en production — les logs d'accès Render ne distinguent pas
+    // les routes (tout apparaît comme "POST /index.php").
+    \Illuminate\Support\Facades\Log::info('Webhook FedaPay reçu', [
+        'payload' => $request->all(),
+    ]);
 
-        if (($payload['name'] ?? null) === 'transaction.approved') {
-            $transactionId = $payload['entity']['id'];
+    $payload = $request->all();
 
-            $abonnement = Abonnement::where('fedapay_transaction_id', $transactionId)->first();
+    if (($payload['name'] ?? null) === 'transaction.approved') {
+        $transactionId = $payload['entity']['id'];
 
-            if ($abonnement) {
-                $dateFin = now()->addYear();
+        $abonnement = Abonnement::where('fedapay_transaction_id', $transactionId)->first();
 
-                $abonnement->update([
-                    'statut'         => 'actif',
-                    'date_fin'       => $dateFin,
-                    'fedapay_statut' => 'approved',
-                ]);
+        \Illuminate\Support\Facades\Log::info('Recherche abonnement pour transaction', [
+            'transaction_id' => $transactionId,
+            'abonnement_trouve' => $abonnement ? $abonnement->id : 'AUCUN',
+        ]);
 
-                $abonnement->utilisateur->update(['abonnement_expire_le' => $dateFin]);
-            }
+        if ($abonnement) {
+            $dateFin = now()->addYear();
+
+            $abonnement->update([
+                'statut'         => 'actif',
+                'date_fin'       => $dateFin,
+                'fedapay_statut' => 'approved',
+            ]);
+
+            $abonnement->utilisateur->update(['abonnement_expire_le' => $dateFin]);
+
+            \Illuminate\Support\Facades\Log::info('Abonnement mis à jour avec succès', [
+                'abonnement_id' => $abonnement->id,
+                'date_fin' => $dateFin,
+            ]);
         }
-
-        return response()->json(['received' => true]);
+    } else {
+        \Illuminate\Support\Facades\Log::info('Webhook reçu mais événement ignoré', [
+            'name' => $payload['name'] ?? 'ABSENT',
+        ]);
     }
+
+    return response()->json(['received' => true]);
+}
 }
