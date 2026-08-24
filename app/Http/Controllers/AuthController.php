@@ -163,7 +163,7 @@ class AuthController extends Controller
                 'categorie_id'          => $estTalent ? $request->categorie_id : null,
                 'ville'                 => $estTalent ? $request->ville : null,
                 'abonnement_expire_le'  => $finEssaiGratuit,
-                'plan_choisi'           => $estTalent ? $planChoisi : null,
+                'plan_choisi'           => $estTalent ? $planChoisi : 'gratuit',
             ]);
 
             if ($estTalent) {
