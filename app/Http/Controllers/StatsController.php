@@ -9,11 +9,12 @@ class StatsController extends Controller
 {
     public function index()
     {
-        // Mis en cache 15 minutes : ce sont des statistiques "vitrine"
-        // affichées sur la home, elles n'ont pas besoin d'être calculées
-        // à chaque visite. Ça évite de retaper la base à chaque chargement
-        // de page, ce qui était la principale cause de lenteur ici.
-        $data = Cache::remember('stats.home', now()->addMinutes(15), function () {
+        // ✅ Cache réduit à 20 secondes (au lieu de 15 minutes) : garde
+        // l'intérêt d'éviter de retaper la base à chaque chargement de
+        // page en cas de trafic rapproché, tout en gardant les chiffres
+        // affichés quasi à jour après une inscription ou une action —
+        // un décalage de 20s max est imperceptible pour un visiteur.
+        $data = Cache::remember('stats.home', now()->addSeconds(20), function () {
 
             // Une seule requête au lieu de 3 pour talents/clients/villes
             // -> moins d'allers-retours réseau vers la base Postgres.
