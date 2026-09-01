@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { Clock, CheckCircle, XCircle, Calendar, Wallet, X, Loader2 } from "lucide-react";
+import { Clock, CheckCircle, XCircle, Calendar, Wallet, X, Loader2, Paperclip } from "lucide-react";
 import { getDemandesRecues, repondreDemande } from "../../services/demande.service";
+import { uploadDirectToCloudinary } from "../../services/cloudinaryDirect.service";
 import TalentTopNav from "../../components/TalentTopNav";
 import "../../assets/styles/TalentDashboard.css";
 import "../../assets/styles/DemandesRecues.css";
@@ -13,14 +14,15 @@ const STATUT_CONFIG = {
 };
 
 const FILTERS = [
-  { key: "toutes",     label: "Total",      cardCls: "dr-summary-total" },
+  { key: "toutes", label: "Total", cardCls: "dr-summary-total" },
   { key: "en_attente", label: "En attente", cardCls: "dr-summary-pending" },
-  { key: "acceptee",   label: "Acceptées",  cardCls: "dr-summary-accepted" },
-  { key: "refusee",    label: "Refusées",   cardCls: "dr-summary-rejected" },
-  { key: "terminee",   label: "Terminées",  cardCls: "dr-summary-terminee" },
+  { key: "acceptee", label: "Acceptées", cardCls: "dr-summary-accepted" },
+  { key: "refusee", label: "Refusées", cardCls: "dr-summary-rejected" },
+  { key: "terminee", label: "Terminées", cardCls: "dr-summary-terminee" },
 ];
 
 const MOTIF_MAX_LENGTH = 300;
+const LIVRABLE_MESSAGE_MAX_LENGTH = 500;
 
 export default function DemandesRecues() {
   const [demandes, setDemandes] = useState(null);
@@ -31,26 +33,42 @@ export default function DemandesRecues() {
   const [filter, setFilter] = useState("toutes");
   const [confirmingRefus, setConfirmingRefus] = useState(false);
 
+  const [livrableModal, setLivrableModal] = useState(null);
+  const [livrableFile, setLivrableFile] = useState(null);
+  const [livrableMessage, setLivrableMessage] = useState("");
+  const [livrableUploading, setLivrableUploading] = useState(false);
+  const [livrableError, setLivrableError] = useState("");
+
   useEffect(() => {
     getDemandesRecues()
       .then((res) => setDemandes(res.data || []))
       .catch(() => setError("Impossible de charger vos demandes."));
   }, []);
 
-  // Ferme la modale de refus avec la touche Échap
   const closeMotifModal = useCallback(() => {
-    if (confirmingRefus) return; // évite de fermer pendant l'envoi
+    if (confirmingRefus) return;
     setMotifModal(null);
   }, [confirmingRefus]);
 
+  const closeLivrableModal = useCallback(() => {
+    if (livrableUploading) return;
+    setLivrableModal(null);
+    setLivrableFile(null);
+    setLivrableMessage("");
+    setLivrableError("");
+  }, [livrableUploading]);
+
   useEffect(() => {
-    if (!motifModal) return;
+    if (!motifModal && !livrableModal) return;
     const onKeyDown = (e) => {
-      if (e.key === "Escape") closeMotifModal();
+      if (e.key === "Escape") {
+        if (motifModal) closeMotifModal();
+        if (livrableModal) closeLivrableModal();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [motifModal, closeMotifModal]);
+  }, [motifModal, livrableModal, closeMotifModal, closeLivrableModal]);
 
   const handleAccepter = async (id) => {
     setRespondingId(id);
@@ -65,16 +83,54 @@ export default function DemandesRecues() {
     }
   };
 
-  const handleTerminer = async (id) => {
-    setRespondingId(id);
-    setError("");
+  const ouvrirLivrableModal = (demande) => {
+    setLivrableModal(demande);
+    setLivrableFile(null);
+    setLivrableMessage("");
+    setLivrableError("");
+  };
+
+  const confirmerLivrable = async () => {
+    if (!livrableModal) return;
+    if (!livrableFile) {
+      setLivrableError("Veuillez joindre un fichier avant de confirmer.");
+      return;
+    }
+
+    setLivrableUploading(true);
+    setLivrableError("");
     try {
-      await repondreDemande(id, "terminee");
-      setDemandes((prev) => prev.map((d) => (d.id === id ? { ...d, statut: "terminee" } : d)));
+      const { url, publicId } = await uploadDirectToCloudinary(livrableFile, "auto");
+
+      await repondreDemande(livrableModal.id, "terminee", null, {
+        livrable_url: url,
+        livrable_public_id: publicId,
+        livrable_nom_fichier: livrableFile.name,
+        livrable_message: livrableMessage || null,
+      });
+
+      setDemandes((prev) =>
+        prev.map((d) =>
+          d.id === livrableModal.id
+            ? {
+                ...d,
+                statut: "terminee",
+                livrable_url: url,
+                livrable_nom_fichier: livrableFile.name,
+                livrable_message: livrableMessage || null,
+              }
+            : d
+        )
+      );
+      setLivrableModal(null);
+      setLivrableFile(null);
+      setLivrableMessage("");
     } catch (err) {
-      setError(err.response?.data?.message || "Impossible de marquer cette demande comme terminée.");
+      setLivrableError(
+        err.response?.data?.message || "Impossible d'envoyer le livrable. Réessayez."
+      );
     } finally {
-      setRespondingId(null);
+      setLivrableUploading(false);
     }
   };
 
@@ -179,13 +235,10 @@ export default function DemandesRecues() {
                   const StatusIcon = config.icon;
                   const enAttente = d.statut === "en_attente";
                   const acceptee = d.statut === "acceptee";
+                  const terminee = d.statut === "terminee";
 
                   return (
-                    <div
-                      key={d.id}
-                      className="dr-card td-anim-in"
-                      style={{ animationDelay: `${60 * i}ms` }}
-                    >
+                    <div key={d.id} className="dr-card td-anim-in" style={{ animationDelay: `${60 * i}ms` }}>
                       <div className="dr-card-top">
                         <div className="dr-client-row">
                           <div className="dr-client-avatar">{d.client_nom?.[0] ?? "?"}</div>
@@ -214,23 +267,11 @@ export default function DemandesRecues() {
 
                       {enAttente && (
                         <div className="dr-actions">
-                          <button
-                            onClick={() => handleAccepter(d.id)}
-                            disabled={respondingId === d.id}
-                            className="dr-accept-btn"
-                          >
-                            {respondingId === d.id ? (
-                              <Loader2 size={14} className="dr-loading-spin" />
-                            ) : (
-                              <CheckCircle size={14} />
-                            )}
+                          <button onClick={() => handleAccepter(d.id)} disabled={respondingId === d.id} className="dr-accept-btn">
+                            {respondingId === d.id ? <Loader2 size={14} className="dr-loading-spin" /> : <CheckCircle size={14} />}
                             Accepter
                           </button>
-                          <button
-                            onClick={() => ouvrirRefus(d)}
-                            disabled={respondingId === d.id}
-                            className="dr-reject-btn"
-                          >
+                          <button onClick={() => ouvrirRefus(d)} disabled={respondingId === d.id} className="dr-reject-btn">
                             <XCircle size={14} /> Refuser
                           </button>
                         </div>
@@ -238,18 +279,19 @@ export default function DemandesRecues() {
 
                       {acceptee && (
                         <div className="dr-actions">
-                          <button
-                            onClick={() => handleTerminer(d.id)}
-                            disabled={respondingId === d.id}
-                            className="dr-terminer-btn"
-                          >
-                            {respondingId === d.id ? (
-                              <Loader2 size={14} className="dr-loading-spin" />
-                            ) : (
-                              <CheckCircle size={14} />
-                            )}
+                          <button onClick={() => ouvrirLivrableModal(d)} className="dr-terminer-btn">
+                            <CheckCircle size={14} />
                             Marquer comme terminée
                           </button>
+                        </div>
+                      )}
+
+                      {terminee && d.livrable_url && (
+                        <div className="dr-actions">
+                          <a href={d.livrable_url} target="_blank" rel="noopener noreferrer" className="dr-terminer-btn">
+                            <Paperclip size={14} />
+                            Voir le livrable envoyé
+                          </a>
                         </div>
                       )}
                     </div>
@@ -266,12 +308,7 @@ export default function DemandesRecues() {
           <div className="dr-modal" onClick={(e) => e.stopPropagation()}>
             <div className="dr-modal-header">
               <h2 className="dr-modal-title">Refuser la demande de {motifModal.client_nom}</h2>
-              <button
-                className="dr-modal-close"
-                onClick={closeMotifModal}
-                disabled={confirmingRefus}
-                aria-label="Fermer"
-              >
+              <button className="dr-modal-close" onClick={closeMotifModal} disabled={confirmingRefus} aria-label="Fermer">
                 <X size={18} />
               </button>
             </div>
@@ -294,6 +331,76 @@ export default function DemandesRecues() {
               <button onClick={confirmerRefus} className="dr-modal-confirm" disabled={confirmingRefus}>
                 {confirmingRefus ? <Loader2 size={14} className="dr-loading-spin" /> : null}
                 Confirmer le refus
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {livrableModal && (
+        <div className="dr-modal-overlay" onClick={closeLivrableModal}>
+          <div className="dr-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="dr-modal-header">
+              <h2 className="dr-modal-title">Livrable pour {livrableModal.client_nom}</h2>
+              <button className="dr-modal-close" onClick={closeLivrableModal} disabled={livrableUploading} aria-label="Fermer">
+                <X size={18} />
+              </button>
+            </div>
+
+            <p className="dr-modal-char-count" style={{ marginBottom: 8 }}>
+              Joignez le résultat de la prestation (photo, PDF, vidéo, fichier ZIP...).
+            </p>
+
+            <input
+              type="file"
+              id="livrable-file-input"
+              accept="image/*,application/pdf,video/*,.zip,application/zip,application/x-zip-compressed"
+              onChange={(e) => setLivrableFile(e.target.files?.[0] || null)}
+              disabled={livrableUploading}
+              style={{ display: "none" }}
+            />
+            <label
+              htmlFor="livrable-file-input"
+              className="dr-modal-cancel"
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                cursor: livrableUploading ? "not-allowed" : "pointer",
+                opacity: livrableUploading ? 0.6 : 1,
+                width: "fit-content",
+              }}
+            >
+              <Paperclip size={14} />
+              Choisir un fichier
+            </label>
+            {livrableFile && (
+              <p className="dr-modal-char-count" style={{ marginTop: 6 }}>
+                Fichier sélectionné : {livrableFile.name}
+              </p>
+            )}
+
+            <textarea
+              rows={3}
+              maxLength={LIVRABLE_MESSAGE_MAX_LENGTH}
+              placeholder="Message pour le client (facultatif)..."
+              className="dr-modal-textarea"
+              value={livrableMessage}
+              onChange={(e) => setLivrableMessage(e.target.value)}
+              disabled={livrableUploading}
+              style={{ marginTop: 12 }}
+            />
+            <p className="dr-modal-char-count">{livrableMessage.length}/{LIVRABLE_MESSAGE_MAX_LENGTH}</p>
+
+            {livrableError && <p className="profil-creer-error">{livrableError}</p>}
+
+            <div className="dr-modal-actions">
+              <button onClick={closeLivrableModal} className="dr-modal-cancel" disabled={livrableUploading}>
+                Annuler
+              </button>
+              <button onClick={confirmerLivrable} className="dr-modal-confirm" disabled={livrableUploading}>
+                {livrableUploading ? <Loader2 size={14} className="dr-loading-spin" /> : null}
+                Confirmer et terminer
               </button>
             </div>
           </div>

@@ -9,9 +9,12 @@ import api from "./api";
  * ce qui réduit sensiblement le temps d'upload ressenti.
  *
  * @param {File} file
+ * @param {string} resourceType - "image" (défaut, inchangé pour l'existant),
+ *   "auto" pour laisser Cloudinary détecter (PDF, vidéo, etc. — utile pour
+ *   les livrables qui ne sont pas forcément des images), ou "video"/"raw".
  * @returns {Promise<{url: string, publicId: string}>}
  */
-export async function uploadDirectToCloudinary(file) {
+export async function uploadDirectToCloudinary(file, resourceType = "image") {
   // 1. Demander une signature valide à notre backend
   const sigResponse = await api.post("/cloudinary/signature");
   const { signature, timestamp, api_key, cloud_name, folder } = sigResponse.data.data;
@@ -26,7 +29,7 @@ export async function uploadDirectToCloudinary(file) {
   formData.append("signature", signature);
   formData.append("folder", folder);
 
-  const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`;
+  const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloud_name}/${resourceType}/upload`;
 
   const response = await fetch(cloudinaryUrl, {
     method: "POST",

@@ -22,7 +22,20 @@ export const getDemandesRecues = async () => {
   return res.data;
 };
 
-export const repondreDemande = async (id, statut, motifRefus = null) => {
-  const res = await api.patch(`/talent/demandes/${id}`, { statut, motif_refus: motifRefus });
+/**
+ * @param {number} id - id de la demande
+ * @param {string} statut - 'acceptee' | 'refusee' | 'terminee'
+ * @param {string|null} motifRefus - motif si statut === 'refusee'
+ * @param {object|null} livrable - { livrable_url, livrable_public_id, livrable_nom_fichier, livrable_message } requis si statut === 'terminee'
+ */
+export const repondreDemande = async (id, statut, motifRefus = null, livrable = null) => {
+  const payload = { statut, motif_refus: motifRefus };
+  if (livrable) {
+    payload.livrable_url = livrable.livrable_url;
+    payload.livrable_public_id = livrable.livrable_public_id;
+    payload.livrable_nom_fichier = livrable.livrable_nom_fichier;
+    payload.livrable_message = livrable.livrable_message;
+  }
+  const res = await api.patch(`/talent/demandes/${id}`, payload);
   return res.data;
 };

@@ -163,6 +163,12 @@ class DemandePrestationController extends Controller
         $validator = Validator::make($request->all(), [
             'statut' => 'required|in:acceptee,refusee,terminee',
             'motif_refus' => 'nullable|string|max:500',
+            'livrable_url' => 'required_if:statut,terminee|nullable|string|max:2048',
+            'livrable_public_id' => 'nullable|string|max:255',
+            'livrable_nom_fichier' => 'nullable|string|max:255',
+            'livrable_message' => 'nullable|string|max:1000',
+        ], [
+            'livrable_url.required_if' => 'Veuillez joindre le livrable avant de marquer comme terminé.',
         ]);
 
         if ($validator->fails()) {
@@ -188,7 +194,17 @@ class DemandePrestationController extends Controller
             return response()->json(['message' => 'Cette action n\'est pas possible dans l\'état actuel de la demande.'], 422);
         }
 
-        $demande->update(['statut' => $request->statut]);
+        $dataMaj = ['statut' => $request->statut];
+
+        if ($request->statut === 'terminee') {
+            $dataMaj['livrable_url'] = $request->livrable_url;
+            $dataMaj['livrable_public_id'] = $request->livrable_public_id;
+            $dataMaj['livrable_nom_fichier'] = $request->livrable_nom_fichier;
+            $dataMaj['livrable_message'] = $request->livrable_message;
+            $dataMaj['livrable_date'] = now();
+        }
+
+        $demande->update($dataMaj);
 
         if (in_array($request->statut, ['acceptee', 'refusee'])) {
             try {
@@ -241,6 +257,10 @@ class DemandePrestationController extends Controller
             'date_souhaitee' => $d->date_souhaitee,
             'budget' => $d->budget,
             'created_at' => $d->created_at,
+            'livrable_url' => $d->livrable_url,
+            'livrable_nom_fichier' => $d->livrable_nom_fichier,
+            'livrable_message' => $d->livrable_message,
+            'livrable_date' => $d->livrable_date,
         ];
     }
 
@@ -254,6 +274,10 @@ class DemandePrestationController extends Controller
             'date_souhaitee' => $d->date_souhaitee,
             'budget' => $d->budget,
             'created_at' => $d->created_at,
+            'livrable_url' => $d->livrable_url,
+            'livrable_nom_fichier' => $d->livrable_nom_fichier,
+            'livrable_message' => $d->livrable_message,
+            'livrable_date' => $d->livrable_date,
         ];
     }
 

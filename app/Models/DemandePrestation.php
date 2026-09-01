@@ -12,6 +12,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $message_initial
  * @property \Illuminate\Support\Carbon|null $date_souhaitee
  * @property numeric|null $budget
+ * @property string|null $livrable_url
+ * @property string|null $livrable_public_id
+ * @property string|null $livrable_nom_fichier
+ * @property string|null $livrable_message
+ * @property \Illuminate\Support\Carbon|null $livrable_date
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Avis|null $avis
@@ -19,18 +24,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Message> $messages
  * @property-read int|null $messages_count
  * @property-read \App\Models\ProfilTalent $profilTalent
- * @method static \Illuminate\Database\Eloquent\Builder<static>|DemandePrestation newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|DemandePrestation newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|DemandePrestation query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|DemandePrestation whereBudget($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|DemandePrestation whereClientId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|DemandePrestation whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|DemandePrestation whereDateSouhaitee($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|DemandePrestation whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|DemandePrestation whereMessageInitial($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|DemandePrestation whereProfilTalentId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|DemandePrestation whereStatut($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|DemandePrestation whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class DemandePrestation extends Model
@@ -44,6 +37,11 @@ class DemandePrestation extends Model
         'message_initial',
         'date_souhaitee',
         'budget',
+        'livrable_url',
+        'livrable_public_id',
+        'livrable_nom_fichier',
+        'livrable_message',
+        'livrable_date',
     ];
 
     protected function casts(): array
@@ -51,6 +49,7 @@ class DemandePrestation extends Model
         return [
             'date_souhaitee' => 'date',
             'budget' => 'decimal:2',
+            'livrable_date' => 'datetime',
         ];
     }
 
